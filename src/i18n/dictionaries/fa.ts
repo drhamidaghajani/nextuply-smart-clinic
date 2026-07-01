@@ -19,7 +19,6 @@ export const fa = {
     headline: "معماری زیبایی، با دقت یک جراح و نگاه یک هنرمند",
     subheadline: "دکتر علیرضا صدیقی — متخصص جراحی فک و صورت و زیبایی، تهران و تبریز",
     ctaPrimary: "رزرو مشاوره",
-    videoPending: "ویدیوی هیرو در انتظار دریافت — نگاه کنید به CONTENT_INVENTORY.md §8",
   },
   brandIntro: {
     // TODO(content): manifesto copy — draft below follows Nextuply's brand-tone DNA (formal, analytical, no hype); needs client sign-off.

@@ -39,3 +39,14 @@ yarn-error.log*
 # typescript
 *.tsbuildinfo
 next-env.d.ts
+
+# media assets — see docs/adr/0003-media-assets-not-in-git.md
+public/media/**/*.mp4
+public/media/**/*.mov
+public/media/**/*.webm
+public/media/**/*.jpg
+public/media/**/*.jpeg
+public/media/**/*.png
+public/media/**/*.webp
+public/media/.DS_Store
+!public/media/**/.gitkeep

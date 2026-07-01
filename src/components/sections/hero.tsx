@@ -30,12 +30,12 @@ export function Hero({ dict }: { dict: Dictionary["hero"] }) {
         <h1 className="text-balance text-3xl font-bold uppercase leading-tight tracking-tight sm:text-5xl md:text-6xl">
           {dict.title}
         </h1>
-        <p className="mt-6 flex flex-wrap items-center justify-center gap-x-3 text-balance text-3xl font-light leading-tight text-warm-white/80 sm:text-5xl md:text-6xl">
-          <span>{dict.doctorName}</span>
-          <span aria-hidden className="text-warm-white/40">
+        <p className="mt-6 font-heading text-base font-light text-warm-white/80 sm:whitespace-nowrap sm:text-xl sm:tracking-[0.2em]">
+          {dict.doctorName}
+          <span aria-hidden className="mx-3 text-warm-white/40">
             |
           </span>
-          <span>{dict.doctorSpecialty}</span>
+          {dict.doctorSpecialty}
         </p>
       </div>
 

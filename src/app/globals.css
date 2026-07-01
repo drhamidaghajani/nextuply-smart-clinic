@@ -1,0 +1,39 @@
+@import "tailwindcss";
+
+/* Design tokens — see DESIGN_SYSTEM.md §2 (color), §3 (typography), §4 (spacing) */
+:root {
+  --color-cream: #f3ecdc;
+  --color-warm-white: #faf7f1;
+  --color-gold: #c9a15a;
+  --color-gold-hover: #b78e46;
+  --color-charcoal: #2a2a28;
+  --color-deep-navy: #12141c;
+}
+
+@theme inline {
+  --color-cream: var(--color-cream);
+  --color-warm-white: var(--color-warm-white);
+  --color-gold: var(--color-gold);
+  --color-gold-hover: var(--color-gold-hover);
+  --color-charcoal: var(--color-charcoal);
+  --color-deep-navy: var(--color-deep-navy);
+  --font-persian: var(--font-vazirmatn);
+  --font-latin: var(--font-geist-sans);
+}
+
+body {
+  background: var(--color-cream);
+  color: var(--color-charcoal);
+}
+
+/* Respect prefers-reduced-motion globally — DESIGN_SYSTEM.md §5 */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}

@@ -22,6 +22,17 @@ All notable changes to this project are documented here. Format loosely follows 
 - `CONTENT_INVENTORY.md` — real content extracted from Dr. Sadighi's current live site (dralirezasadighi.com): credentials, services, contact/hours, testimonials, existing before/after cases, blog topics.
 - `DESIGN_SYSTEM.md` §9 — Reference Benchmarks: real Awwwards-caliber sites reviewed (Royal Clinic, Badrutt's Palace Hotel, Aesthetics Clinic) and explicit anti-patterns to avoid (Demophorius, the current live site, drwilliammiami.com, WebGL-spectacle-tier Awwwards sites).
 
+### Added — 2026-07-01 (implementation start)
+
+- `docs/adr/0001-project-bootstrap.md`, `docs/adr/0002-fa-first-locale-scope.md` — first ADRs, written before scaffolding per PROJECT_GUIDE.md §1.
+- `HOMEPAGE_STORYBOARD.md` — 11-section homepage blueprint (emotion flow, per-section goals/CTAs/motion) implementing Hamid's design brief image.
+- `DESIGN_SYSTEM.md` — final color palette locked in (cream/gold/charcoal/deep-navy), §9 Reference Benchmarks, glassmorphism guardrail.
+- **Next.js 15 app actually scaffolded**: TypeScript, Tailwind v4 (tokens wired to DESIGN_SYSTEM.md), ESLint (flat config via `FlatCompat`), `framer-motion`, `gsap`, `zod`. `[locale]` routing (`fa`/`en`/`ar`) with middleware redirect to `fa`.
+- Homepage built end-to-end for `fa`: all 11 HOMEPAGE_STORYBOARD.md sections as real components with real copy from CONTENT_INVENTORY.md where available, honest placeholders (not stock photos) where real media is pending. `npm run build` and `npm run lint` pass clean; production server smoke-tested (HTTP 200 on `/fa`).
+- GSAP ScrollTrigger choreography (Doctor Story, Patient Journey, AI Experience per the Motion Timeline) intentionally deferred to a follow-up pass — current cut ships Framer Motion entrance animations only, to avoid shipping unreviewed scroll-jacking behavior in one blind pass.
+- `CONTENT_INVENTORY.md` §8 — asset intake spec (folder paths, naming, technical specs) for the Hero video and Before/After photos.
+- Git initialized (`main` branch), first commit made. Not yet connected to a GitHub remote — pending Hamid's confirmation of repo name/visibility.
+
 ### Decided
 
 - Backend/data store: PostgreSQL + Prisma on a dedicated Iranian VPS.
@@ -30,6 +41,9 @@ All notable changes to this project are documented here. Format loosely follows 
 - Dr. Sadighi is a real, signed client — the platform is built against his real content/brand, not a generic placeholder.
 - **Data model correction**: added a `Location` entity (DATABASE_GUIDE.md) after discovering the real client operates two physical locations (Tehran and Tabriz) under one clinic/brand.
 - **Design direction**: warm luxury-heritage color register (Royal Clinic / Badrutt's Palace inspired) over clinical-monochrome; motion tier set to cinematic GSAP scroll-storytelling with at most one restrained WebGL accent in the Hero — explicitly not Awwwards-flagship WebGL-spectacle tier.
+- **Color palette finalized** (superseding the earlier brown/burgundy placeholder): cream/warm-white/gold/charcoal/deep-navy, per Hamid's supplied reference — see DESIGN_SYSTEM.md §2.
+- **Next.js pinned to v15** — `create-next-app@latest` resolved to Next 16; downgraded to match the version documented in VISION.md/ADR-0001 rather than silently drifting to the newer major version. Flagged to Hamid for confirmation.
+- **fa-first build scope** (`docs/adr/0002`): Persian content ships now; English/Arabic content will be supplied by Hamid to match the finished Persian structure, per his instruction.
 
 ### Open
 

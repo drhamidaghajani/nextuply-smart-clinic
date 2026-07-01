@@ -32,7 +32,7 @@ Rules:
 
 **FINAL font pairing confirmed by Hamid (2026-07-02), superseding the earlier "single Persian family for everything" assumption:**
 
-- **Headings/titles (fa)**: **Vazirmatn** — used for `h1`–`h6` and any large display/label text.
+- **Headings/titles (fa)**: **Vazirmatn** — applies by *role*, not just tag: any text functioning as a title/headline gets Vazirmatn, even if it's markup as a `<p>` (e.g. the Hero's "Dr. Name | Specialty" line). `h1`–`h6` get it automatically via a global CSS rule; a title-like element that isn't a heading tag needs the `font-heading` utility applied explicitly (confirmed 2026-07-02 after that exact gap surfaced in the Hero).
 - **Body text (fa)**: **IranSans** — used for paragraphs, UI labels, form text, captions. Hamid has the font files and will supply them; see CONTENT_INVENTORY.md §9 for the intake spec (where to put them, which weights).
 - **Latin**: a modern, geometric-humanist sans (Inter-class) for `en` content and numerals — unchanged.
 - **Arabic**: shares the Persian heading/body split where glyph coverage allows, falling back to a dedicated Arabic-optimized font only if quality suffers — unchanged, still pending real `ar` content per docs/adr/0002.

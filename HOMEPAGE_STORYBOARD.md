@@ -24,9 +24,8 @@ Every section below states which point on this arc it serves — a section that 
 
 - **Arc position**: Curiosity → first Trust signal
 - **Goal**: the "10 seconds = international medical brand" test happens entirely here.
-- **Content**: full-bleed real video (Dr. Sadighi's supplied clip, `public/media/video/hero-doctor.mp4`), played back slowed (0.6x) so motion doesn't feel aggressive. Centered, bold uppercase title + a lighter "Dr. Name | Specialty" line beneath it, then the CTA. A scroll-down chevron sits at the very bottom of the viewport.
-- **CTA**: "رزرو مشاوره" (Book a consultation)
-- **Overlay/Color**: flat `deep-navy` (`#0B1120`) wash at ~60% opacity over the whole video for text legibility — not a gradient, not cream/warm-white. Gold is used only in the CTA button, not in the headline.
+- **Content**: full-bleed real video (Dr. Sadighi's supplied clip, `public/media/video/hero-doctor.mp4`), played back slowed (0.6x) so motion doesn't feel aggressive. Centered title ("معماری زیبایی، با دقت یک جراح و نگاه یک هنرمند" — confirmed copy) + a "Dr. Name | Specialty" line beneath it **at the same size as the title** (2026-07-02 — no longer a smaller/lighter subtitle). A scroll-down chevron sits at the very bottom of the viewport. **No CTA button in the Hero** (explicit call).
+- **Overlay/Color**: flat `deep-navy` (`#0B1120`) wash at ~60% opacity over the whole video for text legibility — not a gradient, not cream/warm-white.
 - **Header constraint**: no navigation/header may be visible while the Hero video is playing — noted here for when Header design is reached (per the section-by-section process in CLAUDE.md); not yet built.
 - **Motion**: GSAP scroll-entrance choreography is still a deferred follow-up (per §3's timeline) — current build ships the video/typography/overlay treatment only, no scroll-triggered animation on this section yet.
 

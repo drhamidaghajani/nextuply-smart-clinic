@@ -15,14 +15,11 @@ export const fa = {
     bookConsultation: "رزرو مشاوره",
   },
   hero: {
-    // Structure locked to Hamid's reference (drwilliammiami.com, 2026-07-02):
-    // big title + "Dr. Name | Specialty" line underneath. TODO(content):
-    // exact title wording pending Hamid's sign-off — this is a structural
-    // placeholder, not approved marketing copy.
-    title: "کلینیک تخصصی دکتر صدیقی",
+    // Title + doctor line confirmed by Hamid 2026-07-02 — approved copy, not a placeholder.
+    // No CTA button in the Hero per his instruction.
+    title: "معماری زیبایی، با دقت یک جراح و نگاه یک هنرمند",
     doctorName: "دکتر علیرضا صدیقی",
-    doctorSpecialty: "متخصص جراحی فک و صورت و زیبایی",
-    ctaPrimary: "رزرو مشاوره",
+    doctorSpecialty: "جراح تخصصی فک، صورت و زیبایی بینی",
   },
   brandIntro: {
     // TODO(content): manifesto copy — draft below follows Nextuply's brand-tone DNA (formal, analytical, no hype); needs client sign-off.

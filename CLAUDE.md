@@ -8,6 +8,17 @@ NEXTUPLY Smart Clinic: a production-grade clinic platform, built first and fully
 
 Three product layers: public marketing site, an operational platform (booking, patient portal, doctor dashboard), and a domain-specific AI layer (**Closer AI** = patient concierge/triage/booking, **Oracle AI** = reputation & content-strategy engine). Do not confuse these with Nextuply's company-level Oracle/Closer/Sentinel B2B products — same lineage, different, medical-vertical persona and prompts.
 
+## Visual/UI Design Process — Section-by-Section Only (from Hamid, 2026-07-02)
+
+**This overrides any earlier impression that Claude should design whole pages or sections autonomously.** Hamid explicitly rejected the first full-homepage build ("این سایتی که طراحی کردی مزخرفه واقعا" — what you designed is genuinely bad) and set a hard process rule for the rest of this project:
+
+- **Never design a full page, or even a full section, unilaterally again.** Architecture, data modeling, and engineering conventions are still Claude's call per the rules below — this restriction is specifically about visual/UI design decisions (layout, copy tone, imagery treatment, styling choices for a section).
+- **Work strictly section-by-section**, in this order: Hero → each homepage section in sequence → Header → Footer → then, later, internal pages one at a time.
+- **For each section: Hamid provides his own reference/idea/example first.** Claude implements *that*, not an original design. Do not propose a section's design before he's shared his reference for it.
+- If Hamid hasn't given a reference for the section currently being worked on, stop and ask — don't fill the gap with an autonomous design choice, even a small one.
+
+**How to apply:** Before touching any section's visual design, confirm Hamid has already given a concrete reference for that specific section in this conversation. If not, ask for it instead of proceeding.
+
 ## Non-Negotiable Engineering Rules (from Hamid, 2026-07-01)
 
 1. **Production-grade, not demo.** Every line shipped is expected to run for a real clinic with real patients.

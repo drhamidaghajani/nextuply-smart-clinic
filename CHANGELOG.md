@@ -4,6 +4,12 @@ All notable changes to this project are documented here. Format loosely follows 
 
 ## [Unreleased]
 
+### Changed — 2026-07-02
+
+- **Process change (critical)**: Hamid rejected the autonomously-designed homepage. New rule, written into `CLAUDE.md`: no page or section is designed without Hamid supplying his own reference first; work proceeds strictly section-by-section (Hero → each section → Header → Footer → internal pages), one at a time.
+- **Typography correction**: headings use Vazirmatn, body text uses IranSans (not Vazirmatn for everything) — `DESIGN_SYSTEM.md` §3 updated; font files pending from Hamid, intake spec added at `CONTENT_INVENTORY.md` §9, folder `public/fonts/iransans/` created.
+- Fixed a dev-server runtime error (`Cannot find module './vendor-chunks/motion-dom.js'`) by clearing the stale `.next` build cache and restarting — a known Next.js dev-mode cache issue, not an application bug.
+
 ### Added — 2026-07-01
 
 - Full pre-implementation documentation set, written before any application code, per Hamid's design-before-code mandate:

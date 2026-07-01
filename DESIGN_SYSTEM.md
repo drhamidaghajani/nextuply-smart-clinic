@@ -30,9 +30,12 @@ Rules:
 
 ## 3. Typography
 
-- **Latin**: a modern, geometric-humanist sans (Inter-class) for `en` content and numerals.
-- **Persian**: a professional Persian webfont with genuinely balanced weights (e.g. Vazirmatn-class) — not a default system Arabic font stretched to serve Persian.
-- **Arabic**: shares the Persian font family where glyph coverage allows, falling back to a dedicated Arabic-optimized font only if quality suffers.
+**FINAL font pairing confirmed by Hamid (2026-07-02), superseding the earlier "single Persian family for everything" assumption:**
+
+- **Headings/titles (fa)**: **Vazirmatn** — used for `h1`–`h6` and any large display/label text.
+- **Body text (fa)**: **IranSans** — used for paragraphs, UI labels, form text, captions. Hamid has the font files and will supply them; see CONTENT_INVENTORY.md §9 for the intake spec (where to put them, which weights).
+- **Latin**: a modern, geometric-humanist sans (Inter-class) for `en` content and numerals — unchanged.
+- **Arabic**: shares the Persian heading/body split where glyph coverage allows, falling back to a dedicated Arabic-optimized font only if quality suffers — unchanged, still pending real `ar` content per docs/adr/0002.
 - **Scale**: a single modular type scale (e.g. 1.25 ratio) shared across locales; line-height increased for Persian/Arabic body text (~1.7–1.8) versus Latin (~1.5) to account for script density.
 - Headings are restrained in size relative to typical marketing sites — prestige comes from spacing and material quality, not oversized display type.
 

@@ -8,11 +8,17 @@ import {
 } from "@/i18n/locales";
 import "../globals.css";
 
+// Headings only, per DESIGN_SYSTEM.md §3 (2026-07-02 font pairing decision).
 const vazirmatn = Vazirmatn({
   subsets: ["arabic"],
   variable: "--font-vazirmatn",
   display: "swap",
 });
+
+// TODO(assets): body text should use IranSans, not Vazirmatn — pending font
+// files from Hamid (CONTENT_INVENTORY.md §9, target path public/fonts/iransans/).
+// Once they land, wire via next/font/local here and swap `font-persian` on
+// <body> below to a body-specific token so headings keep Vazirmatn.
 
 const inter = Inter({
   subsets: ["latin"],

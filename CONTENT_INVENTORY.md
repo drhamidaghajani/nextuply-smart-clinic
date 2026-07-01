@@ -83,3 +83,12 @@ Requested by Hamid 2026-07-01. Exact folder paths below match `public/` in FOLDE
 - **How many**: **minimum 3 cases per procedure**, for the 2–3 procedures we lead with on the Homepage Before/After Gallery (recommend starting with the practice's strongest results — likely rhinoplasty and blepharoplasty per current site's emphasis, see §2 above). More is better for the full Gallery page later, but 3 well-shot pairs beats 6 mediocre ones for the Homepage's premium bar.
 - **Technical spec per photo**: minimum 2000px on the longer edge, JPG or PNG (we'll convert to optimized WebP/AVIF at build time — send the highest quality original, don't pre-compress); before/after pairs shot at the **same angle, distance, lighting, and background** — this consistency matters more than resolution for the slider to look credible and premium.
 - **Consent**: only send cases with documented patient consent for public marketing use — this gets flagged again in DATABASE_GUIDE.md's `MediaAsset` entity (consent metadata field), but the responsibility for having consent in hand starts here.
+
+## 9. Font Intake Spec (Vazirmatn + IranSans)
+
+Requested by Hamid 2026-07-02. Font pairing decided in DESIGN_SYSTEM.md §3: **Vazirmatn for headings**, **IranSans for body text**. Vazirmatn is loaded via `next/font/google` already (no file needed from Hamid). IranSans is not on Google Fonts and needs the actual font files.
+
+- **Where to put them**: `public/fonts/iransans/`.
+- **Naming**: `IRANSansX-<Weight>.woff2` (e.g. `IRANSansX-Regular.woff2`, `IRANSansX-Medium.woff2`, `IRANSansX-Bold.woff2`) — exact family name (`IRANSansX` vs `IRANSans` vs a different variant) should match whatever Hamid's files are actually named; tell us if it differs so `next/font/local` is configured with the right filenames.
+- **Weights needed**: at minimum **Regular (400), Medium (500), Bold (700)** — covers body copy, slightly emphasized UI text, and bold inline emphasis. If DemiBold/SemiBold (600) or Light (300) variants exist and Hamid wants finer control, send those too; not required to start.
+- **Format**: `.woff2` preferred (smallest, best browser support for a modern Next.js site). If only `.ttf`/`.otf` source files exist, send those instead and they'll be converted — just note the format when sending.

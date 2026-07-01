@@ -15,9 +15,13 @@ export const fa = {
     bookConsultation: "رزرو مشاوره",
   },
   hero: {
-    // TODO(content): headline copy to be finalized with the client — placeholder reflects the brief's tone, not final approved copy.
-    headline: "معماری زیبایی، با دقت یک جراح و نگاه یک هنرمند",
-    subheadline: "دکتر علیرضا صدیقی — متخصص جراحی فک و صورت و زیبایی، تهران و تبریز",
+    // Structure locked to Hamid's reference (drwilliammiami.com, 2026-07-02):
+    // big title + "Dr. Name | Specialty" line underneath. TODO(content):
+    // exact title wording pending Hamid's sign-off — this is a structural
+    // placeholder, not approved marketing copy.
+    title: "کلینیک تخصصی دکتر صدیقی",
+    doctorName: "دکتر علیرضا صدیقی",
+    doctorSpecialty: "متخصص جراحی فک و صورت و زیبایی",
     ctaPrimary: "رزرو مشاوره",
   },
   brandIntro: {

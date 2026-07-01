@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import { Inter, Vazirmatn } from "next/font/google";
+import localFont from "next/font/local";
 import { notFound } from "next/navigation";
 import {
   LOCALE_DIRECTION,
@@ -15,10 +16,18 @@ const vazirmatn = Vazirmatn({
   display: "swap",
 });
 
-// TODO(assets): body text should use IranSans, not Vazirmatn — pending font
-// files from Hamid (CONTENT_INVENTORY.md §9, target path public/fonts/iransans/).
-// Once they land, wire via next/font/local here and swap `font-persian` on
-// <body> below to a body-specific token so headings keep Vazirmatn.
+// Body text, per the same decision. Files supplied by Hamid — see
+// CONTENT_INVENTORY.md §9 (one filename had a typo, "RANSansX-Medium" →
+// renamed to "IRANSansX-Medium" to match the other two weights).
+const iransans = localFont({
+  src: [
+    { path: "../../../public/fonts/iransans/IRANSansX-Regular.woff2", weight: "400", style: "normal" },
+    { path: "../../../public/fonts/iransans/IRANSansX-Medium.woff2", weight: "500", style: "normal" },
+    { path: "../../../public/fonts/iransans/IRANSansX-Bold.woff2", weight: "700", style: "normal" },
+  ],
+  variable: "--font-iransans",
+  display: "swap",
+});
 
 const inter = Inter({
   subsets: ["latin"],
@@ -51,7 +60,9 @@ export default async function LocaleLayout({
 
   return (
     <html lang={locale} dir={LOCALE_DIRECTION[locale]}>
-      <body className={`${vazirmatn.variable} ${inter.variable} font-persian antialiased`}>
+      <body
+        className={`${vazirmatn.variable} ${iransans.variable} ${inter.variable} font-body antialiased`}
+      >
         {children}
       </body>
     </html>

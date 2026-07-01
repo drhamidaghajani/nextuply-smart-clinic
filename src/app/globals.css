@@ -7,7 +7,7 @@
   --color-gold: #c9a15a;
   --color-gold-hover: #b78e46;
   --color-charcoal: #2a2a28;
-  --color-deep-navy: #12141c;
+  --color-deep-navy: #0b1120;
 }
 
 @theme inline {
@@ -17,13 +17,25 @@
   --color-gold-hover: var(--color-gold-hover);
   --color-charcoal: var(--color-charcoal);
   --color-deep-navy: var(--color-deep-navy);
-  --font-persian: var(--font-vazirmatn);
+  /* Heading/body split — DESIGN_SYSTEM.md §3 (2026-07-02): Vazirmatn for
+     headings, IranSans for body text. */
+  --font-heading: var(--font-vazirmatn);
+  --font-body: var(--font-iransans);
   --font-latin: var(--font-geist-sans);
 }
 
 body {
   background: var(--color-cream);
   color: var(--color-charcoal);
+}
+
+h1,
+h2,
+h3,
+h4,
+h5,
+h6 {
+  font-family: var(--font-heading);
 }
 
 /* Respect prefers-reduced-motion globally — DESIGN_SYSTEM.md §5 */

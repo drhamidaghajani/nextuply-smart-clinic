@@ -20,12 +20,15 @@ Every section below states which point on this arc it serves — a section that 
 
 ### 01 — Hero
 
+**LOCKED 2026-07-02 against Hamid's reference (drwilliammiami.com) — supersedes the earlier speculative version of this entry.**
+
 - **Arc position**: Curiosity → first Trust signal
 - **Goal**: the "10 seconds = international medical brand" test happens entirely here.
-- **Content**: full-bleed cinematic video or photo of the clinic/doctor/space (Dr. Sadighi's supplied video is the primary candidate — see CONTENT_INVENTORY.md §8 for intake spec), oversized typography headline, floating CTA.
+- **Content**: full-bleed real video (Dr. Sadighi's supplied clip, `public/media/video/hero-doctor.mp4`), played back slowed (0.6x) so motion doesn't feel aggressive. Centered, bold uppercase title + a lighter "Dr. Name | Specialty" line beneath it, then the CTA. A scroll-down chevron sits at the very bottom of the viewport.
 - **CTA**: "رزرو مشاوره" (Book a consultation)
-- **Motion**: GSAP-driven entrance (headline/CTA fade-and-rise on load), subtle parallax on the background video/image on scroll start. One optional restrained WebGL accent (DESIGN_SYSTEM.md §5) — e.g. a soft animated gold-tinted gradient layer behind the headline, never a full 3D scene.
-- **Color**: cream/warm-white text-safe overlay on video if needed for contrast; gold used only in the CTA button and one accent word/underline in the headline.
+- **Overlay/Color**: flat `deep-navy` (`#0B1120`) wash at ~60% opacity over the whole video for text legibility — not a gradient, not cream/warm-white. Gold is used only in the CTA button, not in the headline.
+- **Header constraint**: no navigation/header may be visible while the Hero video is playing — noted here for when Header design is reached (per the section-by-section process in CLAUDE.md); not yet built.
+- **Motion**: GSAP scroll-entrance choreography is still a deferred follow-up (per §3's timeline) — current build ships the video/typography/overlay treatment only, no scroll-triggered animation on this section yet.
 
 ### 02 — Brand Intro
 

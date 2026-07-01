@@ -5,31 +5,50 @@ import type { Dictionary } from "@/i18n/dictionaries/fa";
 /**
  * HOMEPAGE_STORYBOARD.md §2 "01 — Hero".
  *
- * Video is real (supplied 2026-07-01) but NOT YET COMPRESSED: served as-is
- * from public/media/video/hero-doctor.mp4 (1920x1080, 33s, ~20MB) because
- * this environment has no ffmpeg to produce the trimmed/compressed MP4+WebM
- * pair CONTENT_INVENTORY.md §8 calls for. This violates the <3s load budget
- * in SYSTEM_ARCHITECTURE.md §10 — do not ship this to production without
- * compressing it first (target: trim to 10–20s, re-encode to ~2–5MB).
+ * Layout/typography locked to Hamid's reference (drwilliammiami.com,
+ * 2026-07-02): full-bleed video, flat dark overlay (#0B1120,
+ * DESIGN_SYSTEM.md §2), big bold title, lighter "Name | Specialty" line
+ * underneath, scroll indicator at the very bottom. Video is deliberately
+ * slowed (HeroVideo's default 0.6x) per his note.
+ *
+ * NOTE for later header work: Hamid was explicit that no navigation/header
+ * should be visible while the Hero video is playing — there is no header
+ * built yet, so nothing to hide here, but this constrains the header design
+ * when we get to it (see HOMEPAGE_STORYBOARD.md §2 "01 — Hero" note).
+ *
+ * Video is real but NOT YET COMPRESSED (no ffmpeg in this environment) —
+ * see hero-video.tsx / SYSTEM_ARCHITECTURE.md §10 for the outstanding
+ * production requirement.
  */
 export function Hero({ dict }: { dict: Dictionary["hero"] }) {
   return (
-    <section className="relative flex min-h-[92vh] items-end overflow-hidden bg-deep-navy text-warm-white">
+    <section className="relative flex min-h-screen items-center justify-center overflow-hidden bg-deep-navy text-warm-white">
       <HeroVideo src="/media/video/hero-doctor.mp4" />
-      <div
-        aria-hidden
-        className="absolute inset-0 bg-gradient-to-b from-deep-navy/50 via-deep-navy/30 to-deep-navy/90"
-      />
-      <div className="relative z-10 mx-auto w-full max-w-5xl px-6 pb-20 pt-32 text-center sm:px-8">
-        <h1 className="text-balance text-4xl font-semibold leading-tight sm:text-6xl">
-          {dict.headline}
+      <div aria-hidden className="absolute inset-0 bg-deep-navy/60" />
+
+      <div className="relative z-10 mx-auto w-full max-w-4xl px-6 text-center sm:px-8">
+        <h1 className="text-balance text-3xl font-bold uppercase leading-tight tracking-tight sm:text-5xl md:text-6xl">
+          {dict.title}
         </h1>
-        <p className="mx-auto mt-6 max-w-2xl text-balance text-base text-warm-white/80 sm:text-lg">
-          {dict.subheadline}
+        <p className="mt-6 flex flex-wrap items-center justify-center gap-x-3 text-base font-light text-warm-white/80 sm:text-xl">
+          <span>{dict.doctorName}</span>
+          <span aria-hidden className="text-warm-white/40">
+            |
+          </span>
+          <span>{dict.doctorSpecialty}</span>
         </p>
         <div className="mt-10">
           <Button href="#booking">{dict.ctaPrimary}</Button>
         </div>
+      </div>
+
+      <div
+        aria-hidden
+        className="absolute inset-x-0 bottom-8 z-10 flex justify-center text-warm-white/60"
+      >
+        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5">
+          <path d="M6 9l6 6 6-6" strokeLinecap="round" strokeLinejoin="round" />
+        </svg>
       </div>
     </section>
   );

@@ -19,7 +19,7 @@
 | `color.warm-white` | `#FAF7F1` | Card/surface background, one step lighter than the page base |
 | `color.gold` (accent) | `#C9A15A` | Primary accent: CTAs, active states, key highlights, icon accents — used sparingly per §1's restraint principle |
 | `color.charcoal` (text) | `#2A2A28` | Primary text color — warm-dark, not pure black |
-| `color.deep-navy` (dark underlay) | `#12141C` | Dark-section background (used for high-contrast emphasis blocks — e.g. the AI Experience or Statistics section on the Homepage Storyboard), not the default page background |
+| `color.deep-navy` (dark underlay) | `#0B1120` | Dark-section background (used for high-contrast emphasis blocks — e.g. the AI Experience section — and the Hero video overlay). **Exact value confirmed by Hamid 2026-07-02** (given directly as a hex code for the Hero overlay), superseding the earlier eyeballed `#12141C`. |
 
 Rules:
 - **Neutral base is cream/champagne**, not clinical pure-white or cold gray — this is what makes the site read as hospitality-luxury rather than hospital.

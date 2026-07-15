@@ -85,3 +85,21 @@ public/media/.DS_Store
 !public/media/journey/surgery.jpeg
 !public/media/journey/treatment-design.jpeg
 !public/media/video/hero-doctor.mp4
+
+# 2026-07-15, same amendment, follow-up (per Hamid — the certificate
+# gallery on the About page has the identical bug: real code reference,
+# real file on disk, silently excluded by the blanket rule above).
+!public/media/certificates/certificate-1.png
+!public/media/certificates/certificate-2.png
+!public/media/certificates/certificate-3.png
+!public/media/certificates/certificate-4.png
+!public/media/certificates/certificate-5.png
+!public/media/certificates/certificate-6.png
+!public/media/certificates/certificate-7.png
+!public/media/certificates/certificate-8.png
+!public/media/certificates/certificate-9.png
+!public/media/certificates/certificate-10.png
+!public/media/certificates/certificate-11.png
+!public/media/certificates/certificate-12.png
+!public/media/certificates/certificate-13.png
+!public/media/certificates/certificate-14.png

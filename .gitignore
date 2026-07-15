@@ -53,3 +53,35 @@ public/media/**/*.png
 public/media/**/*.webp
 public/media/.DS_Store
 !public/media/**/.gitkeep
+
+# 2026-07-15 amendment (see ADR-0003's "Consequences" — a fresh clone/
+# Docker build never got these, which is exactly what broke staging):
+# the specific, currently-referenced-by-code production assets ARE
+# committed, by exact path — everything else under public/media/ (raw
+# source footage, future revisions, anything not wired into a real page
+# yet) stays excluded under the rule above. Do not broaden this to a
+# blanket re-include of public/media/**.
+!public/media/care-instructions/blepharoplasty-care.png
+!public/media/care-instructions/facelift-browlift-care.png
+!public/media/care-instructions/genioplasty-care.png
+!public/media/care-instructions/implant-care.png
+!public/media/care-instructions/jaw-physiotherapy-care.png
+!public/media/care-instructions/jaw-surgery-care.png
+!public/media/care-instructions/rhinoplasty-care.png
+!public/media/care-instructions/sinus-lift-care.png
+!public/media/care-instructions/wisdom-tooth-care.png
+!public/media/doctor-headshot.png
+!public/media/doctor-surgery.jpg
+!public/media/gallery/dental-implant.jpeg
+!public/media/gallery/dr-sadighi-logo.png
+!public/media/gallery/facial-cosmetic.png
+!public/media/gallery/facial-rejuvenation.jpeg
+!public/media/gallery/impacted-tooth.jpeg
+!public/media/gallery/jaw-surgery.jpg
+!public/media/gallery/rhinoplasty.jpeg
+!public/media/journey/consultation.jpeg
+!public/media/journey/follow-up.jpeg
+!public/media/journey/recovery.jpeg
+!public/media/journey/surgery.jpeg
+!public/media/journey/treatment-design.jpeg
+!public/media/video/hero-doctor.mp4

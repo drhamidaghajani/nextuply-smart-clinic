@@ -9,7 +9,7 @@ import type { Dictionary } from "@/i18n/dictionaries/fa";
  */
 export function Statistics({ dict }: { dict: Dictionary["statistics"] }) {
   return (
-    <section className="bg-warm-white px-6 py-24 text-center sm:px-8">
+    <section className="bg-cream px-6 py-24 text-center sm:px-8">
       <Reveal className="mx-auto max-w-2xl">
         <h2 className="text-2xl font-semibold text-charcoal sm:text-3xl">{dict.heading}</h2>
         <p className="mt-6 text-sm text-charcoal/50">

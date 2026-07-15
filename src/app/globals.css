@@ -2,12 +2,15 @@
 
 /* Design tokens — see DESIGN_SYSTEM.md §2 (color), §3 (typography), §4 (spacing) */
 :root {
-  --color-cream: #f3ecdc;
+  --color-cream: #fcfbf4;
   --color-warm-white: #faf7f1;
   --color-gold: #c9a15a;
   --color-gold-hover: #b78e46;
   --color-charcoal: #2a2a28;
-  --color-deep-navy: #0b1120;
+  /* Round 24 (2026-07-11): #0b1120 -> #0f172a per Hamid — the old value
+     read darker than intended everywhere it's used (Hero, AiConcierge's
+     navy box, Services icon grid, etc., all reference this one token). */
+  --color-deep-navy: #0f172a;
 }
 
 @theme inline {
@@ -17,10 +20,14 @@
   --color-gold-hover: var(--color-gold-hover);
   --color-charcoal: var(--color-charcoal);
   --color-deep-navy: var(--color-deep-navy);
-  /* Heading/body split — DESIGN_SYSTEM.md §3 (2026-07-02): Vazirmatn for
-     headings, IranSans for body text. */
+  /* Round 18 (2026-07-11): Vazirmatn everywhere, per Hamid's explicit
+     instruction — overrides the earlier heading/body split documented in
+     DESIGN_SYSTEM.md §3 (2026-07-02, Vazirmatn headings / IranSans body).
+     IranSans stays loaded (layout.tsx) but is no longer the default body
+     font; DESIGN_SYSTEM.md still needs updating to match once this phase
+     of iteration is done. */
   --font-heading: var(--font-vazirmatn);
-  --font-body: var(--font-iransans);
+  --font-body: var(--font-vazirmatn);
   --font-latin: var(--font-geist-sans);
 }
 
@@ -36,6 +43,277 @@ h4,
 h5,
 h6 {
   font-family: var(--font-heading);
+  /* Round 2026-07-14 (per Hamid — global typography pass): every heading
+     balances its own line breaks by default, sitewide, forever — a
+     one-line base rule instead of hand-adding Tailwind's `text-balance`
+     utility to each heading individually across dozens of components
+     (which is what every heading in this codebase was doing ad hoc
+     before this round, and what any *new* heading would silently miss).
+     `text-wrap: balance` only affects short blocks (browsers cap it
+     around ~6 lines), so long headings still wrap normally — this can't
+     make a genuinely long heading look worse. */
+  text-wrap: balance;
+}
+
+p {
+  /* Same reasoning, `pretty` instead of `balance`: prevents a lone
+     orphan word stranding itself on the paragraph's last line without
+     touching how any earlier line wraps — safe as a global default for
+     running body text. */
+  text-wrap: pretty;
+}
+
+/* Hero intro + scroll-hint animations — round 18 (2026-07-11), per
+   Hamid's spec: title/doctor-line rotate in with a soft 3D tilt+fade on
+   load; the down-arrow loops down/fade/reappear. Gated by
+   prefers-reduced-motion below (both get animation-duration: 0.01ms).
+   Round 19 (2026-07-11): rotateX increased from -35deg to -90deg — a
+   genuine "نیم چرخش" (half turn), not just a slight tilt — used both for
+   the title's per-word stagger and the doctor-line's whole-block
+   animation (see hero.tsx), so the two read as the same motion language. */
+@keyframes rotate-in {
+  from {
+    opacity: 0;
+    transform: perspective(1000px) rotateX(-90deg) translateY(12px);
+  }
+  to {
+    opacity: 1;
+    transform: perspective(1000px) rotateX(0deg) translateY(0);
+  }
+}
+
+.animate-rotate-in {
+  animation: rotate-in 1s cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+
+/* Round 21 (2026-07-11): dedicated per-word animation for the Hero
+   title ONLY (دکتر... doctor line keeps .animate-rotate-in above,
+   unchanged) — a half turn hinged at the word's own BOTTOM edge, so it
+   reads as flipping up into place from below, not tipping down from
+   above like .animate-rotate-in. Duration/pause are set in hero.tsx
+   (WORD_ANIM_MS / WORD_PAUSE_MS) so each word fully finishes before the
+   next one starts, per Hamid's "ظاهر که شد کمی مکث کنه" request. */
+@keyframes word-flip-up {
+  from {
+    opacity: 0;
+    transform: perspective(600px) rotateX(90deg) translateY(16px);
+  }
+  to {
+    opacity: 1;
+    transform: perspective(600px) rotateX(0deg) translateY(0);
+  }
+}
+
+.animate-word-flip-up {
+  transform-origin: bottom center;
+  animation-name: word-flip-up;
+  animation-timing-function: cubic-bezier(0.22, 1, 0.36, 1);
+  animation-fill-mode: both;
+}
+
+/* Round 2026-07-04: Hero redesign per Hamid's Awwwards-tier brief
+   (Apple/Stripe/Vercel/Linear/Porsche/Bang & Olufsen references). Three
+   new motion primitives, all pure CSS, all gated by the global
+   prefers-reduced-motion rule below — see hero.tsx for where each is used. */
+
+/* "Background Zoom" — slow, continuous Ken Burns-style breathing on the
+   Hero video. Loops via the video's own `loop` attribute, so this just
+   needs to breathe smoothly rather than reset. */
+@keyframes hero-video-zoom {
+  0%,
+  100% {
+    transform: scale(1);
+  }
+  50% {
+    transform: scale(1.06);
+  }
+}
+
+.hero-video-zoom {
+  animation: hero-video-zoom 24s ease-in-out infinite;
+}
+
+/* "Ambient Light" — very low-opacity corner glows with a slow drift/pulse,
+   never competing with the video or text. Two instances in hero.tsx use
+   staggered animation-delay so they don't pulse in sync. */
+@keyframes ambient-light-drift {
+  0%,
+  100% {
+    transform: scale(1) translate(0, 0);
+    opacity: 0.35;
+  }
+  50% {
+    transform: scale(1.15) translate(12px, -12px);
+    opacity: 0.6;
+  }
+}
+
+.animate-ambient-light {
+  animation: ambient-light-drift 10s ease-in-out infinite;
+}
+
+/* Redesigned scroll indicator — a thin traveling light line instead of a
+   looping chevron icon, per Hamid's "Scroll Indicator فوق‌العاده" request. */
+@keyframes scroll-indicator-travel {
+  0% {
+    transform: translateY(-100%);
+    opacity: 0;
+  }
+  20% {
+    opacity: 1;
+  }
+  80% {
+    opacity: 1;
+  }
+  100% {
+    transform: translateY(275%);
+    opacity: 0;
+  }
+}
+
+.animate-scroll-indicator {
+  animation: scroll-indicator-travel 2.4s cubic-bezier(0.65, 0, 0.35, 1) infinite;
+}
+
+/* Smart Clinic Assistant section (smart-clinic-assistant-section.tsx).
+   Entrance/hover/title-reveal motion lives in the component itself via
+   Framer Motion; only the small continuous decorative loops below are
+   plain CSS (a native `animation` is simpler and more reliable than
+   Framer Motion for an indefinite, unchanging loop). */
+
+/* Two-ring "sonar" status-dot pulse — replaces Tailwind's default
+   `animate-ping` on the eyebrow's availability indicator with a more
+   custom, deliberately staggered two-ring pulse. */
+@keyframes sonar {
+  0% {
+    transform: scale(1);
+    opacity: 0.6;
+  }
+  100% {
+    transform: scale(2.6);
+    opacity: 0;
+  }
+}
+
+.animate-sonar {
+  animation: sonar 1.8s ease-out infinite;
+}
+
+/* Assistant avatar: a slow conic-gradient ring rotation and a gentle
+   pulse on the spark mark itself — these class names were referenced by
+   the avatar since the round that introduced it but were never actually
+   defined here, a latent bug (the ring/spark just sat static, no error,
+   nothing visibly "broken" enough to notice in a screenshot at rest).
+   Caught while porting the avatar into this rebuild. */
+@keyframes emblem-spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+.animate-emblem-spin {
+  animation: emblem-spin 6s linear infinite;
+}
+
+@keyframes emblem-pulse {
+  0%,
+  100% {
+    opacity: 0.85;
+    transform: scale(1);
+  }
+  50% {
+    opacity: 1;
+    transform: scale(1.08);
+  }
+}
+
+.animate-emblem-pulse {
+  animation: emblem-pulse 2.4s ease-in-out infinite;
+}
+
+/* Round 2026-07-04: the orbit (highlight cards), gradient-shift
+   (background), and cursor-spotlight primitives that used to live here
+   were removed along with ai-concierge.tsx/assistant-visual-panel.tsx —
+   the Smart Clinic Assistant section was fully rebuilt as
+   smart-clinic-assistant-section.tsx against Hamid's own Framer-Motion
+   spec, which doesn't call for any of the three. Easy to reintroduce if
+   a future section wants them; not carried forward speculatively. */
+
+/* Round 21-22 (2026-07-11): whole-page scroll-snap, per Hamid — a small
+   scroll gesture on Hero should snap fully to the next section
+   automatically, fast, rather than requiring a full manual scroll.
+   Native CSS scroll-snap instead of a JS wheel-lock (this project tried
+   and reverted several of those). Removed in round 26 for a gradual
+   scroll-linked reveal mechanism (sticky-pinned Hero + AiConcierge
+   sliding up over it), which mandatory snap fights against. Round 28:
+   that reveal mechanism was itself reverted, so scroll-snap is back.
+   Applies to every element carrying .snap-section — currently Hero and
+   AiConcierge (see hero.tsx / ai-concierge.tsx). Works in both scroll
+   directions by default (snap points aren't direction-specific). */
+/* Round 2026-07-12: a real ~435px page-wide horizontal-overflow bug on
+   mobile was first (mis)diagnosed here as needing a blanket `overflow-x:
+   hidden` on `html`/`body`. That "fix" was reverted — `overflow-x: hidden`
+   on an ancestor as high as `html`/`body` breaks `position: sticky` for
+   EVERY descendant on the page (a well-documented CSS gotcha, and the
+   exact one `patient-journey-section.tsx` already had a comment warning
+   about at the section level), which silently broke that section's sticky
+   media panel. The actual root cause was one element with mismatched
+   logical/physical positioning (`start-1/2` + `-translate-x-1/2`) in
+   `patient-journey-section.tsx` — fixed there, at the source, instead of
+   papering over it with a page-level clip. See that file's own comment. */
+/* Round 2026-07-13 (critical bug fix, per Hamid): this used to be a bare
+   `html { scroll-snap-type: y mandatory; }` with NO scoping — applied to
+   every route in the app, homepage and internal pages alike. `SiteFooter`
+   (mounted globally in `[locale]/layout.tsx`, see that file) carries
+   `.snap-section` unconditionally. On any internal page (About, Services,
+   Contact, etc.), which has no other `.snap-section` element anywhere in
+   its tree, the footer became the ONLY snap point in the whole document —
+   with `mandatory` snap-type active, the browser locks the scroll
+   position onto that single point, which is exactly the reported bug
+   ("opens near the footer, snaps back down when scrolling").
+   Scoped now to only activate when `.homepage-scroll-snap` is present in
+   the DOM (the homepage's own `<main>`, see `[locale]/page.tsx`) via
+   `:has()` — internal pages never render that marker, so they get
+   ordinary document scrolling. `.snap-section`/`scroll-snap-align` stays
+   on the footer and every homepage section unchanged; it's simply inert
+   on pages where the ancestor `scroll-snap-type` isn't active, which is
+   the correct, safe default. `:has()` has been supported in every major
+   evergreen browser since 2023; a browser without it simply never gets
+   snap behavior anywhere (same graceful-degradation posture as this
+   file's `@supports` guard on Hero's exit-fade, not a broken state). */
+html:has(.homepage-scroll-snap) {
+  scroll-snap-type: y mandatory;
+}
+
+.snap-section {
+  scroll-snap-align: start;
+}
+
+/* Round 29 (2026-07-11): Hero fades out as it scrolls past/exits the
+   viewport, per Hamid — a decorative touch on top of the scroll-snap
+   transition above, not a replacement for it. Pure CSS scroll-driven
+   animation (view-timeline), no JS: chosen deliberately over a scroll
+   listener given this project's history of unstable JS scroll
+   mechanisms. Wrapped in @supports so browsers without this (still
+   recent) API just keep Hero fully opaque — graceful degradation, never
+   a broken state. Hero and AiConcierge don't overlap in the current
+   layout, so this fades Hero toward the page background, not "into"
+   AiConcierge — the two are simply sequential, not blended. */
+@media (prefers-reduced-motion: no-preference) {
+  @supports (animation-timeline: view()) {
+    .hero-exit-fade {
+      view-timeline-name: --hero-visibility;
+      animation: hero-fade-out linear both;
+      animation-timeline: --hero-visibility;
+      animation-range: exit;
+    }
+  }
+}
+
+@keyframes hero-fade-out {
+  to {
+    opacity: 0;
+  }
 }
 
 /* Respect prefers-reduced-motion globally — DESIGN_SYSTEM.md §5 */

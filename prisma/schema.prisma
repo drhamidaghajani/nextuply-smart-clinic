@@ -1,0 +1,310 @@
+// See docs/adr/0004-assistant-persistence-schema.md for the reasoning
+// behind every non-obvious choice here (postgresql over sqlite even
+// without live credentials, why Clinic exists, single-tenant placeholder,
+// enum values matching src/modules/smart-clinic-assistant/application/
+// types.ts's string-literal unions exactly so no transform layer is
+// needed between Prisma's generated types and this app's own types).
+//
+// DATABASE_GUIDE.md §1's tenancy convention applied to every tenant-owned
+// model below: a `clinicId` field + relation + index. `Clinic` itself is
+// the one platform-level model and does not carry `clinicId`.
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+/// Platform-level — defines a tenant, does not belong to one. Minimal on
+/// purpose: only what the five models below need to reference. A real
+/// Clinic model (branding, locales, contact info per DATABASE_GUIDE.md §2)
+/// is out of this task's scope.
+model Clinic {
+  id        String   @id @default(uuid())
+  name      String
+  createdAt DateTime @default(now())
+
+  leads                   Lead[]
+  triageAnswers           TriageAnswer[]
+  bookingRequests         BookingRequest[]
+  paymentDrafts           PaymentDraft[]
+  smsEvents               SmsEvent[]
+  otpCodes                OtpCode[]
+  assistantSessions       AssistantSession[]
+  doctorAvailabilitySlots DoctorAvailabilitySlot[]
+}
+
+enum LeadStatus {
+  new
+  needs_consultation
+  needs_doctor_review
+  high_intent
+  follow_up_required
+}
+
+enum LeadSource {
+  assistant
+  header
+  homepage
+  floating
+}
+
+enum PreferredContactMethod {
+  phone
+  whatsapp
+  instagram
+}
+
+model Lead {
+  id                     String                   @id @default(uuid())
+  clinicId               String
+  clinic                 Clinic                   @relation(fields: [clinicId], references: [id])
+  fullName               String
+  mobile                 String
+  city                   String?
+  ageRange               String?
+  selectedService        String?
+  preferredContactMethod PreferredContactMethod?
+  notes                  String?
+  locale                 String                   @default("fa")
+  source                 LeadSource               @default(assistant)
+  status                 LeadStatus               @default(new)
+  createdAt              DateTime                 @default(now())
+  updatedAt              DateTime                 @updatedAt
+
+  triageAnswers   TriageAnswer[]
+  bookingRequests BookingRequest[]
+  paymentDrafts   PaymentDraft[]
+  smsEvents       SmsEvent[]
+
+  @@index([clinicId])
+  @@index([clinicId, mobile])
+  @@index([clinicId, status])
+}
+
+model TriageAnswer {
+  id           String   @id @default(uuid())
+  clinicId     String
+  clinic       Clinic   @relation(fields: [clinicId], references: [id])
+  leadId       String
+  lead         Lead     @relation(fields: [leadId], references: [id])
+  service      String
+  questionId   String
+  questionText String
+  answer       String
+  createdAt    DateTime @default(now())
+
+  @@index([clinicId])
+  @@index([leadId])
+}
+
+/// Round 2026-07-15 (Clinic Operations Lite, per Hamid): added `contacted`
+/// — the contract-facing secretary workflow needs a real "we've reached
+/// out, not yet confirmed" state between `requested` and `confirmed`,
+/// which didn't exist before. `pending_payment` is left in place rather
+/// than removed (a non-destructive enum addition vs. a value removal
+/// that would need a data-migration story) even though nothing sets it
+/// today — flagged here rather than silently dropped, since payment-
+/// gateway integration is explicitly out of scope for this round.
+enum AppointmentStatus {
+  requested
+  contacted
+  pending_payment
+  confirmed
+  cancelled
+}
+
+model BookingRequest {
+  id                String            @id @default(uuid())
+  clinicId          String
+  clinic            Clinic            @relation(fields: [clinicId], references: [id])
+  leadId            String
+  lead              Lead              @relation(fields: [leadId], references: [id])
+  /// Free-typed fallback, still populated even when a real slot is
+  /// selected (backward-compatible display value) — see
+  /// `availability-scheduler.ts`'s doc-comment.
+  preferredDate     String?
+  preferredTimeRange String?
+  /// Round 2026-07-15 (availability-based booking, per Hamid): now a real
+  /// foreign key into `DoctorAvailabilitySlot` (was a free-typed, never-
+  /// populated string before this round — see that model's own
+  /// doc-comment history). Nullable: the manual "preferred time" fallback
+  /// path (no availability configured, or patient's window didn't have a
+  /// real option) never sets this.
+  selectedSlotId    String?
+  availabilitySlot  DoctorAvailabilitySlot? @relation(fields: [selectedSlotId], references: [id])
+  /// The concrete calendar date (not just weekday) of the selected slot's
+  /// occurrence — required to count capacity correctly per-occurrence
+  /// rather than aggregating every future week of a recurring slot
+  /// together. Only set alongside `selectedSlotId`.
+  appointmentDate   DateTime?
+  appointmentStatus AppointmentStatus @default(requested)
+  /// Staff-only working note (e.g. "left voicemail, retry Thursday") —
+  /// never shown to the patient, never sent to AI (see AI_USAGE_NOTES.md
+  /// §8, which already excludes `Lead.notes`; this is a separate,
+  /// secretary-authored field on the booking itself, same exclusion
+  /// applies by construction since nothing in `ai/` reads this model).
+  internalNote      String?
+  createdAt         DateTime          @default(now())
+  updatedAt         DateTime          @updatedAt
+
+  paymentDrafts PaymentDraft[]
+  smsEvents     SmsEvent[]
+
+  @@index([clinicId])
+  @@index([leadId])
+  @@index([clinicId, appointmentStatus])
+  @@index([selectedSlotId, appointmentDate])
+}
+
+enum PaymentCurrency {
+  IRR
+  USDT
+}
+
+enum PaymentType {
+  consultation_fee
+  deposit
+  full_payment
+}
+
+enum PaymentStatus {
+  pending
+  paid
+  failed
+}
+
+model PaymentDraft {
+  id               String         @id @default(uuid())
+  clinicId         String
+  clinic           Clinic         @relation(fields: [clinicId], references: [id])
+  leadId           String
+  lead             Lead           @relation(fields: [leadId], references: [id])
+  bookingRequestId String?
+  bookingRequest   BookingRequest? @relation(fields: [bookingRequestId], references: [id])
+  amount           Int?
+  currency         PaymentCurrency
+  paymentType      PaymentType
+  paymentStatus    PaymentStatus  @default(pending)
+  paymentProvider  String         @default("placeholder")
+  createdAt        DateTime       @default(now())
+  updatedAt        DateTime       @updatedAt
+
+  @@index([clinicId])
+  @@index([leadId])
+}
+
+enum SmsEventType {
+  appointment_requested
+  appointment_confirmed
+  payment_pending
+  payment_success
+  reminder_24h
+  location_sent
+}
+
+enum SmsEventStatus {
+  queued
+  sent
+  failed
+  skipped
+}
+
+model SmsEvent {
+  id               String         @id @default(uuid())
+  clinicId         String
+  clinic           Clinic         @relation(fields: [clinicId], references: [id])
+  leadId           String?
+  lead             Lead?          @relation(fields: [leadId], references: [id])
+  bookingRequestId String?
+  bookingRequest   BookingRequest? @relation(fields: [bookingRequestId], references: [id])
+  eventType        SmsEventType
+  status           SmsEventStatus @default(queued)
+  payloadJson      String
+  createdAt        DateTime       @default(now())
+
+  @@index([clinicId])
+  @@index([leadId])
+}
+
+/// Round 2026-07-14 (docs/adr/0007) — mobile verification gating AI
+/// access and booking submission. `assistant_access` covers free-text AI
+/// use / continuing past triage / consultation follow-up; `booking_request`
+/// covers the final-submit defense-in-depth re-check. `codeHash` only —
+/// the raw code is never persisted (see `server/otp/otp-crypto.ts`).
+enum OtpPurpose {
+  assistant_access
+  booking_request
+}
+
+model OtpCode {
+  id         String     @id @default(uuid())
+  clinicId   String
+  clinic     Clinic     @relation(fields: [clinicId], references: [id])
+  mobile     String
+  codeHash   String
+  purpose    OtpPurpose
+  expiresAt  DateTime
+  consumedAt DateTime?
+  attempts   Int        @default(0)
+  createdAt  DateTime   @default(now())
+
+  @@index([clinicId])
+  @@index([clinicId, mobile])
+}
+
+/// Created once `OtpCode` verification succeeds. Its own `id` is handed
+/// to the client as an opaque session token — no JWT/signing dependency
+/// added (see ADR-0007) — and re-checked server-side on every gated
+/// action. No hard expiry in this pass (flagged in ADR-0007's
+/// Consequences as a deliberate, revisitable choice).
+model AssistantSession {
+  id         String   @id @default(uuid())
+  clinicId   String
+  clinic     Clinic   @relation(fields: [clinicId], references: [id])
+  mobile     String
+  verifiedAt DateTime
+  locale     String
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+
+  @@index([clinicId])
+  @@index([clinicId, mobile])
+}
+
+/// Round 2026-07-15 (Clinic Operations Lite, per Hamid's contract-facing
+/// staging brief) — minimal recurring WEEKLY availability, not a full
+/// calendar. `weekday` (0=Sunday..6=Saturday, matching JS `Date.getDay()`)
+/// + a plain `"HH:mm"` string time range describes a standing weekly slot
+/// ("Saturdays 09:00–13:00"), not a specific calendar date — no holiday/
+/// exception-date model, no per-instance booking count against
+/// `capacity` (that would need a real calendar/scheduling engine, out of
+/// scope for "lite"). `capacity` and `isActive` are read-only informational
+/// signals the secretary sets by hand today; nothing in this codebase
+/// currently decrements `capacity` automatically or cross-checks a
+/// `BookingRequest` against a specific slot (`BookingRequest.selectedSlotId`
+/// stays a free-typed string the assistant already collects — wiring the
+/// two together is a real, separate follow-up, not done here).
+model DoctorAvailabilitySlot {
+  id         String   @id @default(uuid())
+  clinicId   String
+  clinic     Clinic   @relation(fields: [clinicId], references: [id])
+  /// 0 (Sunday) .. 6 (Saturday).
+  weekday    Int
+  /// "HH:mm", 24h, e.g. "09:00".
+  startTime  String
+  endTime    String
+  capacity   Int      @default(1)
+  isActive   Boolean  @default(true)
+  note       String?
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+
+  bookingRequests BookingRequest[]
+
+  @@index([clinicId])
+  @@index([clinicId, isActive])
+}

@@ -50,7 +50,7 @@ export function HeroVideo({
       loop
       playsInline
       preload="auto"
-      className="absolute inset-0 h-full w-full object-cover"
+      className="hero-video-zoom absolute inset-0 h-full w-full object-cover"
     >
       <source src={src} type="video/mp4" />
     </video>

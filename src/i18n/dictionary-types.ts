@@ -1,0 +1,547 @@
+/**
+ * Narrow, per-section dictionary interfaces — see
+ * docs/adr/0005-locale-rollout-en-ar.md and docs/adr/0006-full-homepage-
+ * and-assistant-locale-rollout.md for why these exist instead of typing
+ * `en.ts`/`ar.ts` against `Dictionary = typeof fa` (fa.ts's full shape).
+ * `fa.ts` is `as const`, so `Dictionary["hero"]["title"]` etc. are
+ * literal Persian-string types, not `string` — an `en`/`ar` object can
+ * never satisfy that type no matter how correct its shape is. Every
+ * homepage section component and every assistant step component is
+ * therefore typed against the plain-`string` interfaces below, not
+ * against `Dictionary["xxx"]` directly. `fa.ts`'s own slices still
+ * structurally satisfy these interfaces (a literal string is a valid
+ * `string`), so passing `fa.hero` where a `HeroDictionary` is expected
+ * works with no cast.
+ */
+
+export interface NavItem {
+  href: string;
+  label: string;
+}
+
+export interface HeaderDictionary {
+  logoSubtitle: string;
+  navItems: readonly NavItem[];
+  ctaLabel: string;
+  openMenuLabel: string;
+  closeMenuLabel: string;
+}
+
+export interface FooterDictionary {
+  tagline: string;
+  description: string;
+  /** Round 2026-07-13 (taxonomy correction): now linked entries (label + real `/services/[slug]` href), not label-only text — derived from `src/content/services.ts`, single source of truth. */
+  services: readonly { label: string; href: string }[];
+  guide: readonly { label: string; href: string | null }[];
+  locations: {
+    tabriz: { label: string; addressLines: readonly string[]; phone: string; mobile: string };
+    tehran: { label: string; address: string };
+  };
+  hours: readonly string[];
+  instagram: string;
+  siteName: string;
+  columnHeadings: { services: string; contact: string; guide: string };
+  instagramLabel: string;
+  copyrightSuffix: string;
+  linkedInAriaLabel: string;
+}
+
+export interface HeroDictionary {
+  title: string;
+  doctorName: string;
+  doctorSpecialty: string;
+  ctaPrimary: string;
+  ctaSecondary: string;
+}
+
+/** The homepage "Smart Clinic Assistant" marketing section — not the drawer flow itself (see `AssistantFlowDictionary`). */
+export interface AiConciergeDictionary {
+  eyebrow: string;
+  onlineStatus: string;
+  sampleQuestions: readonly string[];
+  chips: readonly string[];
+  ctaPrimary: string;
+  ctaSecondary: string;
+  headline: string;
+  description: string;
+  inputPlaceholder: string;
+}
+
+/**
+ * Round 2026-07-13 (taxonomy correction, per Hamid): the 6-item service
+ * list itself moved to `src/content/services.ts` (`SERVICES`) — the
+ * single source of truth every consumer (homepage cards, case gallery,
+ * `/services` pages, footer, Assistant) now reads from, instead of each
+ * keeping its own copy of service names. This dictionary keeps only the
+ * page-level editorial copy (eyebrow/heading/subheading) that's genuine
+ * per-locale prose, not service data.
+ */
+export interface ServicesDictionary {
+  eyebrow: string;
+  heading: string;
+  subheading: string;
+}
+
+export interface DoctorStoryDictionary {
+  headline: string;
+  body: string;
+  metrics: readonly { value: string; label: string }[];
+  principles: readonly string[];
+  cta: string;
+  portraitAlt: string;
+  surgeryAlt: string;
+}
+
+export interface CaseGalleryDictionary {
+  heading: string;
+  subheading: string;
+}
+
+export interface PatientJourneyDictionary {
+  heading: string;
+  steps: readonly { id: string; title: string; body: string }[];
+  cta: string;
+}
+
+export type PatientStoryEvidence =
+  | { id: string; type: "video"; caption: string }
+  | { id: string; type: "review"; name: string; quote: string }
+  | { id: string; type: "instagram"; caption: string }
+  | { id: string; type: "photo" };
+
+export interface PatientStoriesDictionary {
+  heading: string;
+  subheading: string;
+  videoLabel: string;
+  moreThanLabel: string;
+  googleReviewCount: string;
+  googleBadge: string;
+  instagramBadge: string;
+  evidence: readonly PatientStoryEvidence[];
+  photoStories: readonly { quote: string; meta: string }[];
+  playAriaLabel: string;
+  verifiedOnGoogleLabel: string;
+}
+
+export interface KnowledgeCenterArticle {
+  iconId: string;
+  label: string;
+  title: string;
+  lead?: string;
+  summary?: string;
+  href: string;
+}
+
+export interface KnowledgeCenterDictionary {
+  eyebrow: string;
+  heading: string;
+  subheading: string;
+  articles: {
+    feature: KnowledgeCenterArticle;
+    side: readonly KnowledgeCenterArticle[];
+  };
+  readMoreCta: string;
+}
+
+export interface VideoHubVideo {
+  id: string;
+  category: string;
+  iconId: string;
+  title: string;
+  summary: string;
+  duration: string;
+}
+
+export interface VideoHubDictionary {
+  heading: string;
+  subheading: string;
+  categories: readonly { id: string; label: string }[];
+  videos: readonly VideoHubVideo[];
+  detailsCta: string;
+  playAriaLabel: string;
+}
+
+export interface FaqSectionDictionary {
+  heading: string;
+  subheading: string;
+  intro: string;
+  categories: readonly { id: string; label: string }[];
+  items: readonly { category: string; question: string; answer: string }[];
+}
+
+export interface AssistantServiceOption {
+  id: string;
+  label: string;
+}
+
+/**
+ * Full Smart Clinic Assistant drawer flow — every step's copy, not just
+ * the entry point. `triageQuestions` is keyed by `ServiceId` (see
+ * `application/types.ts`) but typed as a plain string-keyed record here
+ * (not the literal `ServiceId` union) so `en`/`ar` object literals don't
+ * need to satisfy an exact-key-set check field-by-field; the actual
+ * lookup at the call site (`triage-step.tsx`) already treats it as a
+ * `Record<string, readonly string[]>` with a safe `?? []` fallback.
+ */
+export interface AssistantFlowDictionary {
+  openingMessage: string;
+  mainActions: readonly AssistantServiceOption[];
+  services: readonly AssistantServiceOption[];
+  triageQuestions: Record<string, readonly string[]>;
+  safetyNotice: string;
+  leadForm: {
+    fullNameLabel: string;
+    mobileLabel: string;
+    cityLabel: string;
+    ageRangeLabel: string;
+    ageRangePlaceholder: string;
+    contactMethodLabel: string;
+    contactMethods: { phone: string; whatsapp: string; instagram: string };
+    notesLabel: string;
+    submitCta: string;
+  };
+  ui: {
+    openButtonLabel: string;
+    closeButtonLabel: string;
+    backToMenu: string;
+    chooseServiceCta: string;
+    serviceSelectionEyebrow: string;
+    serviceSelectionTitle: string;
+    triageEyebrow: string;
+    triageAnswerPlaceholder: string;
+    consultationBookingEyebrow: string;
+    costQuestionEyebrow: string;
+    costQuestionTitle: string;
+    beforeAfterTitle: string;
+    articlesTitle: string;
+    imageUploadTitle: string;
+    careGuidanceTitle: string;
+    closeCta: string;
+    submittingLabel: string;
+    selectPlaceholder: string;
+    paymentStepEyebrow: string;
+    freeTextSectionLabel: string;
+    freeTextPlaceholder: string;
+    freeTextSubmitCta: string;
+    freeTextThinkingLabel: string;
+    freeTextUnclearMessage: string;
+    qaAnswerEyebrow: string;
+  };
+  steps: {
+    consultationBooking: { intro: string };
+    costQuestion: { intro: string };
+    imageUploadFuture: { notice: string };
+    beforeAfter: { body: string; cta: string };
+    articles: { body: string; cta: string };
+    careGuidance: { body: string; cta: string };
+  };
+  appointment: {
+    heading: string;
+    /** Shown above the real availability-slot option list (round 2026-07-15) — distinct from `noRealAvailabilityNotice` below, which is the manual-fallback message. */
+    realAvailabilityNotice: string;
+    loadingOptionsNotice: string;
+    noRealAvailabilityNotice: string;
+    preferredDayLabel: string;
+    preferredTimeLabel: string;
+    timeRangeOptions: readonly string[];
+    submitCta: string;
+    requestSubmittedNotice: string;
+  };
+  payment: {
+    heading: string;
+    gatewayPendingNotice: string;
+    amountLabel: string;
+    currencyLabel: string;
+    currencyOptions: { IRR: string; USDT: string };
+  };
+  confirmation: {
+    heading: string;
+    body: string;
+  };
+  validation: {
+    mobileInvalid: string;
+    fullNameRequired: string;
+  };
+  phoneVerification: {
+    eyebrow: string;
+    description: string;
+    mobileLabel: string;
+    requestCodeCta: string;
+    sendingLabel: string;
+    codeLabel: string;
+    codePlaceholder: string;
+    verifyCta: string;
+    verifyingLabel: string;
+    changeMobileCta: string;
+    resendCta: string;
+    smsUnavailableMessage: string;
+    invalidMobileMessage: string;
+    invalidCodeMessage: string;
+    expiredCodeMessage: string;
+    tooManyAttemptsMessage: string;
+    devBypassNotice: string;
+  };
+}
+
+/**
+ * Delivery-mode content pages (Hamid's 2026-07-13 brief) — `about`,
+ * `contact`, `services` (index + 8 detail pages), `healthTourism`
+ * (overview + visa/hotel/transfer), `beforeAfterPage`, `knowledge`
+ * (index + starter articles). Kept as plain-`string` interfaces for the
+ * same reason as every type above: `en`/`ar` object literals must
+ * structurally satisfy them without fighting `fa.ts`'s `as const` literal
+ * types.
+ */
+export interface PageFaqItem {
+  question: string;
+  answer: string;
+}
+
+/**
+ * Round 2026-07-13 (premium About-page redesign, per Hamid — content
+ * rewritten and polished from Dr. Sadighi's previous website, not pasted
+ * raw). 10 sections: hero, editorial biography, credentials, philosophy,
+ * specialty focus (reads the canonical 6 services from
+ * `content/services.ts`, not duplicated here), technology & planning,
+ * patient relationship, work-experience timeline, scientific activity,
+ * final CTA. `metaTitle` feeds this page's own `generateMetadata` —
+ * the first per-page metadata override in this app (root layout's
+ * `metadata` stays the site-wide fallback for every other page).
+ */
+export interface AboutPageDictionary {
+  eyebrow: string;
+  title: string;
+  subtitle: string;
+  positioning: string;
+  heroCtaPrimary: string;
+  heroCtaSecondary: string;
+  /** 3 compact trust-marker chips shown inside the hero, per the round-2 premium-redesign brief. */
+  heroTrustMarkers: readonly string[];
+  metaTitle: string;
+
+  bioEyebrow: string;
+  bioHeading: string;
+  bioBody: readonly string[];
+
+  credentialsEyebrow: string;
+  credentials: readonly string[];
+
+  /** "Certificates & Scientific Credentials" section, placed after the credentials band and before biography. Reuses `credentialsEyebrow` above as its kicker rather than a new eyebrow string. Featured-composition + modal gallery — see `certificate-gallery-section.tsx`. */
+  certificatesHeading: string;
+  certificatesSubtitle: string;
+  certificatesStat: string;
+  certificatesButton: string;
+  certificatesOpenOriginal: string;
+
+  philosophyHeading: string;
+  philosophy: readonly string[];
+
+  specialtyHeading: string;
+  specialtyViewDetailsCta: string;
+
+  technologyHeading: string;
+  technologyBody: string;
+
+  patientRelationshipHeading: string;
+  patientRelationshipBody: readonly string[];
+  patientRelationshipCta: string;
+
+  experienceHeading: string;
+  experience: readonly { period: string; place: string }[];
+
+  scientificHeading: string;
+  scientificBody: string;
+  scientificNote: string;
+
+  /** Round-3 addition — refined "next step" tiles: Services/Care/Before-After (icon + label + short caption each). */
+  exploreEyebrow: string;
+  exploreServicesLabel: string;
+  exploreServicesSub: string;
+  exploreCareLabel: string;
+  exploreCareSub: string;
+  exploreBeforeAfterLabel: string;
+  exploreBeforeAfterSub: string;
+
+  ctaHeading: string;
+  ctaBody: string;
+  ctaButton: string;
+  /** Round-2 addition — secondary link on the final CTA ("View Services"). */
+  ctaSecondaryLabel: string;
+}
+
+export interface ContactPageDictionary {
+  eyebrow: string;
+  title: string;
+  subtitle: string;
+  formNoticeHeading: string;
+  formNotice: string;
+  ctaButton: string;
+  locationsHeading: string;
+  hoursHeading: string;
+}
+
+export interface ServiceDetail {
+  slug: string;
+  eyebrow: string;
+  title: string;
+  subtitle: string;
+  overview: string;
+  suitableForHeading: string;
+  suitableFor: readonly string[];
+  consultationPathHeading: string;
+  consultationPath: string;
+  processHeading: string;
+  process: readonly { title: string; body: string }[];
+  faqHeading: string;
+  faq: readonly PageFaqItem[];
+}
+
+export interface ServicesPageDictionary {
+  eyebrow: string;
+  heading: string;
+  subheading: string;
+  viewDetailsCta: string;
+  items: readonly ServiceDetail[];
+  disclaimer: string;
+  beforeAfterCta: string;
+  assistantCtaHeading: string;
+  assistantCtaBody: string;
+  assistantCtaButton: string;
+  /** Round 2026-07-13 (service-page premium redesign) — shared across all 6 detail pages, not per-service. */
+  heroCtaPrimary: string;
+  heroCtaSecondary: string;
+  overviewTrustNote: string;
+  consultationStepsHeading: string;
+  consultationSteps: readonly { title: string; body: string }[];
+  /** Round 2026-07-13, same day (Dr. William Miami-inspired redesign) — the shared "approach" editorial block and the before/after band's caption. */
+  overviewHeading: string;
+  approachEyebrow: string;
+  approachHeading: string;
+  approachNote: string;
+  beforeAfterBandHeading: string;
+  beforeAfterBandNote: string;
+  /** Round 2026-07-13 (patient-care hub) — links a service detail page to its related `/care-instructions/[slug]` guide(s). */
+  careGuideHeading: string;
+}
+
+export interface HealthTourismSubpage {
+  eyebrow: string;
+  title: string;
+  subtitle: string;
+  intro: string;
+  points: readonly string[];
+  cautionNote: string;
+}
+
+export interface HealthTourismPageDictionary {
+  nav: { overview: string; visa: string; hotel: string; transfer: string };
+  overview: {
+    eyebrow: string;
+    title: string;
+    subtitle: string;
+    intro: string;
+    sections: readonly { title: string; body: string }[];
+  };
+  visa: HealthTourismSubpage;
+  hotel: HealthTourismSubpage;
+  transfer: HealthTourismSubpage;
+  ctaHeading: string;
+  ctaBody: string;
+  ctaButton: string;
+}
+
+export interface BeforeAfterPageDictionary {
+  eyebrow: string;
+  title: string;
+  subtitle: string;
+  disclaimer: string;
+  ctaHeading: string;
+  ctaBody: string;
+  ctaButton: string;
+}
+
+export interface KnowledgeArticle {
+  slug: string;
+  category: string;
+  readTime: string;
+  title: string;
+  summary: string;
+  body: readonly string[];
+}
+
+/**
+ * Round 2026-07-13 (patient-care hub, per Hamid's "مراقبت‌های قبل و بعد
+ * عمل" brief) — page-level chrome only, shared across the hub and every
+ * detail page. Per-topic identity (title/description/image) lives in
+ * `content/care-instructions.ts`, same split as `content/services.ts`
+ * vs. `servicesPage` — this is where the rich page content lives, same
+ * role as `ServicesPageDictionary.items`.
+ *
+ * Round 2026-07-13, same day (real content integration, per Hamid — real
+ * copy extracted/rewritten from Dr. Sadighi's previous website): `topics`
+ * now carries real before/after/warning-sign/FAQ content for all 9 care
+ * topics. `pendingReviewNotice` stays defined (a future 10th topic added
+ * without ready content would still need a safe fallback) but is no
+ * longer rendered for any of today's 9 — see the detail page's own
+ * doc-comment.
+ */
+export interface CareTopicDetail {
+  /** Matches a `CareTopicId` from `content/care-instructions.ts`. */
+  slug: string;
+  /** Only `jaw-physiotherapy` uses this — a lead paragraph for a topic with no discrete before/after split. */
+  intro?: string;
+  /** Empty array renders no "before" section (e.g. `jaw-physiotherapy`, `wisdom-tooth-care`'s minimal case). */
+  beforeCare: readonly string[];
+  afterCare: readonly string[];
+  /** Only `implant-care` uses this — the crown/prosthesis follow-up phase, distinct enough from surgical aftercare to warrant its own heading. */
+  additionalCareHeading?: string;
+  additionalCare?: readonly string[];
+  warningSigns: readonly string[];
+  faq: readonly PageFaqItem[];
+  /**
+   * Internal guidance for how the Smart Clinic Assistant SHOULD respond
+   * if a patient asks about this topic in free text — written as
+   * directives to an AI ("اگر کاربر پرسید X..., هدایت کن"), not patient-
+   * readable copy. Deliberately NOT rendered anywhere in the page UI
+   * today (no per-topic AI prompt wiring exists yet — building that is a
+   * separate, unrequested AI-flow change). Kept as structured data so a
+   * future round can wire it into the AI Gateway's system prompt without
+   * a content rewrite.
+   */
+  assistantPromptHints: readonly string[];
+}
+
+export interface CareInstructionsPageDictionary {
+  eyebrow: string;
+  heading: string;
+  subheading: string;
+  trustNote: string;
+  viewGuideCta: string;
+  safetyNote: string;
+  assistantCtaHeading: string;
+  assistantCtaBody: string;
+  assistantCtaButton: string;
+  disclaimer: string;
+  backToHubCta: string;
+  detail: {
+    beforeHeading: string;
+    afterHeading: string;
+    warningSignsHeading: string;
+    warningSignsBody: string;
+    faqHeading: string;
+    pendingReviewNotice: string;
+  };
+  topics: readonly CareTopicDetail[];
+}
+
+export interface KnowledgePageDictionary {
+  eyebrow: string;
+  heading: string;
+  subheading: string;
+  readMoreCta: string;
+  backToIndexCta: string;
+  articles: readonly KnowledgeArticle[];
+  ctaHeading: string;
+  ctaBody: string;
+  ctaButton: string;
+}

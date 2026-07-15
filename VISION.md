@@ -65,6 +65,16 @@ Create a scalable product, not a one-off client website.
 -   Patient Assistant
 -   Workflow Automation
 
+## One Assistant Principle
+
+The user never interacts with multiple AI agents.
+
+Regardless of future architecture, the entire clinic is represented by a
+single Smart Clinic Assistant. All future AI modules (Closer AI, Oracle
+AI, Patient Assistant, Workflow Automation, and anything added later)
+operate behind this unified interface — never surfaced to the patient as
+separate bots or assistants.
+
 ## Design Direction
 
 Inspired by: - Apple - Stripe - Linear - Raycast - Vercel

@@ -1,0 +1,29 @@
+# 0006. Full homepage and Smart Clinic Assistant locale rollout (en/ar)
+
+Status: Accepted
+Date: 2026-07-13
+
+## Context
+
+`docs/adr/0005-locale-rollout-en-ar.md` shipped a partial `en`/`ar` rollout: translated header/footer, and a minimal "coming soon" holding page in place of the real homepage body. Hamid has now confirmed this is not acceptable for the current product direction — the requirement is a **real, complete** English and Arabic homepage (same structure as `fa`, dictionary-driven) plus a **fully localized Smart Clinic Assistant drawer**, not a placeholder.
+
+This ADR records the architectural decisions for that full rollout, extending — not re-litigating — 0005's decision to keep `fa` as the primary source of truth.
+
+## Decision
+
+- **One page component, three dictionaries, no duplication.** `src/app/[locale]/page.tsx` renders the same 10 section components for `fa`/`en`/`ar` alike, fed by `getDictionary(locale)`. The earlier `renderHoldingHomepage` fallback is deleted entirely, not kept as a fallback path — `en`/`ar` are no longer "less than" `fa` structurally, only in how recently their copy was written.
+- **Every section component's `dict` prop is retyped from `Dictionary["section"]` (fa.ts's own type) to a new plain-`string` interface in `src/i18n/dictionary-types.ts`.** This is a real, necessary code change, not cosmetic: `fa.ts` is declared `as const`, so `Dictionary["hero"]["title"]` is a Persian *literal* string type. No `en`/`ar` object can ever satisfy that type regardless of correctness — the mismatch is structural, not a bug in the translated content. The fix already used for `header`/`footer` in ADR-0005 is now applied to all remaining sections and to the assistant flow.
+- **Component-level RTL bugs fixed, not routed around.** The 7 section components that hardcoded `dir="rtl"` (`featured-services-section.tsx`, `case-gallery-section.tsx`, `patient-journey-section.tsx`, `patient-stories-section.tsx`, `knowledge-center-section.tsx`, `video-hub-section.tsx`, `faq-section.tsx`) now take a `locale` prop and set `dir={LOCALE_DIRECTION[locale]}`, matching the pattern `site-footer.tsx` already established in 0005. Three components' physical `text-right` utility (would stay right-aligned even under `dir="ltr"`) are corrected to logical `text-start`.
+- **Every hardcoded non-dict string found during this round's component audit is moved into the dictionary** (textarea placeholder, two image alt texts, two aria-labels, a "read more" link label, an age-range example placeholder, and — a real pre-existing bug, not new — a hardcoded English "Verified on Google" string that was never localized even in the `fa` build). See CHANGELOG.md for the full list with file:line references.
+- **The assistant drawer becomes locale-aware via one seam**: `AssistantProvider` (mounted once in `layout.tsx`, which already has `locale` from route params) now accepts and stores `locale`. `AssistantDrawer` and every step component read `getDictionary(locale).assistantFlow` instead of importing `fa` directly. Session flow state (`useAssistantFlow`) is unaffected — it never held locale-specific data.
+- **Client-side validation messages become locale-aware via a schema factory, not a runtime language-detection hack.** `application/validation.ts`'s `leadInfoSchema`/`mobileSchema` moved their two hardcoded Persian error strings into `assistantFlow.validation` in each dictionary, and are rebuilt by a new `buildLeadInfoSchema(messages)` factory. `submit-booking-request.ts` (server-side) calls this factory with the submission's own `locale` field (already part of the payload since the persistence-pass ADR-0004) — so a mismatched client/server locale can't happen structurally.
+- **Triage risk-keyword detection (`lead-status.ts`) is extended with English/Arabic equivalents**, not left Persian-only. This is an internal-only staff-triage heuristic (never patient-facing), but leaving it Persian-only would silently stop working for every `en`/`ar` submission — flagged and fixed as part of "medically cautious" localization, not treated as out of scope.
+- **Header CTA vs. language switcher**: kept both, did not remove the CTA. The header already carries both side by side (established across several prior correction rounds, not touched here) with no clutter reported against the current design. Removing an already-approved CTA is itself a visual-design decision this session doesn't have a fresh reference for, per `CLAUDE.md`'s section-by-section design rule — reported rather than silently implemented, per this round's own instruction to do so when both options seem viable.
+- **Full content coverage for the homepage's 10 rendered sections and the assistant's full flow (all 9 services' triage questions, all steps, validation, confirmation) — not a "critical path" subset this time.** The still-partial `en.ts`/`ar.ts` from 0005 are superseded by complete section coverage in this round.
+
+## Consequences
+
+- `fa.ts` gains a handful of new keys (extracted hardcoded strings) but no rendered-output change for `fa` — same strings, now sourced from the dictionary instead of a component literal.
+- `HomepageHoldingDictionary` and the holding-page render path are dead code after this round — not deleted from `dictionary-types.ts` in this pass (harmless, documented `@deprecated`-style) to keep the diff focused; a follow-up cleanup can remove them once confirmed unused elsewhere.
+- Real, professional English and Arabic copy exists for the full homepage and assistant flow — but is a first-pass translation, not clinically or legally reviewed by Hamid/medical staff. Same standing caveat this project already applies to draft Persian copy (`TODO(content)` convention in `fa.ts`) now applies symmetrically to the new `en`/`ar` content.
+- Real backend integrations (calendar, payment, SMS) remain unchanged/out of scope — this ADR is content and locale-plumbing only.

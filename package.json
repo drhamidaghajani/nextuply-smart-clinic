@@ -3,12 +3,20 @@
   "version": "0.1.0",
   "private": true,
   "scripts": {
-    "dev": "next dev",
+    "dev": "next dev -p 3001",
     "build": "next build",
     "start": "next start",
-    "lint": "eslint"
+    "lint": "eslint",
+    "prisma:generate": "prisma generate",
+    "prisma:migrate": "prisma migrate dev",
+    "prisma:deploy": "prisma migrate deploy",
+    "prisma:studio": "prisma studio",
+    "verify:staging-db": "tsx scripts/verify-staging-db.ts",
+    "verify:sms-config": "tsx scripts/verify-sms-config.ts",
+    "verify:ai-gateway": "tsx scripts/verify-ai-gateway.ts"
   },
   "dependencies": {
+    "@prisma/client": "^6.19.3",
     "framer-motion": "^12.42.2",
     "gsap": "^3.15.0",
     "next": "^15.5.19",
@@ -24,7 +32,9 @@
     "@types/react-dom": "^19",
     "eslint": "^9",
     "eslint-config-next": "^15.5.19",
+    "prisma": "^6.19.3",
     "tailwindcss": "^4",
+    "tsx": "^4.23.1",
     "typescript": "^5"
   }
 }

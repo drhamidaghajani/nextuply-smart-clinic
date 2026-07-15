@@ -2,11 +2,15 @@ import type { Metadata } from "next";
 import { Inter, Vazirmatn } from "next/font/google";
 import localFont from "next/font/local";
 import { notFound } from "next/navigation";
+import { SiteFooter } from "@/components/sections/site-footer";
+import { SiteHeader } from "@/components/site-header";
+import { getDictionary } from "@/i18n/get-dictionary";
 import {
   LOCALE_DIRECTION,
   SUPPORTED_LOCALES,
   isSupportedLocale,
 } from "@/i18n/locales";
+import { AssistantDrawer, AssistantProvider, FloatingAssistantTrigger } from "@/modules/smart-clinic-assistant";
 import "../globals.css";
 
 // Headings only, per DESIGN_SYSTEM.md §3 (2026-07-02 font pairing decision).
@@ -58,12 +62,38 @@ export default async function LocaleLayout({
     notFound();
   }
 
+  const dict = getDictionary(locale);
+
   return (
     <html lang={locale} dir={LOCALE_DIRECTION[locale]}>
       <body
         className={`${vazirmatn.variable} ${iransans.variable} ${inter.variable} font-body antialiased`}
       >
-        {children}
+        {/* Round 2026-07-09 (per Hamid): global chrome + the Smart Clinic
+            Assistant's shared state, mounted here (not per-page) so both
+            survive client-side route changes — see
+            src/modules/smart-clinic-assistant/ui/assistant-provider.tsx for why.
+
+            Round 2026-07-12: `AssistantDrawer` added — the real panel the
+            provider's `open()` now opens (previously just scrolled to the
+            homepage section, since no drawer existed yet).
+
+            Round 2026-07-13 (locale rollout, docs/adr/0005): `SiteHeader`/
+            `SiteFooter` receive `getDictionary(locale)`'s output instead
+            of `fa` unconditionally.
+
+            Round 2026-07-13, same day (docs/adr/0006): `AssistantProvider`
+            now takes `locale` too — `AssistantDrawer` (mounted below,
+            inside the provider) reads it via `useAssistant()` to select
+            its own dictionary, so the whole assistant flow is
+            locale-aware, not just the homepage body. */}
+        <AssistantProvider locale={locale}>
+          <SiteHeader dict={dict.header} locale={locale} />
+          {children}
+          <SiteFooter dict={dict.footer} locale={locale} />
+          <FloatingAssistantTrigger />
+          <AssistantDrawer />
+        </AssistantProvider>
       </body>
     </html>
   );

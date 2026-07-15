@@ -21,6 +21,8 @@ Pre-implementation. Full architecture and standards are documented below and mus
 | [CODING_STANDARDS.md](./CODING_STANDARDS.md) | Engineering conventions |
 | [API_GUIDELINES.md](./API_GUIDELINES.md) | Server Actions, route handlers, AI Gateway contract |
 | [DATABASE_GUIDE.md](./DATABASE_GUIDE.md) | Prisma/Postgres conventions, tenancy model |
+| [docs/database-setup.md](./docs/database-setup.md) | How to get a real Postgres running, apply migrations, verify persistence |
+| [AI_USAGE_NOTES.md](./AI_USAGE_NOTES.md) | Exactly where/why the Smart Clinic Assistant calls OpenAI, cost controls, fallback behavior |
 | [COMPONENT_GUIDE.md](./COMPONENT_GUIDE.md) | Component tiers and contracts |
 | [DEPLOYMENT_GUIDE.md](./DEPLOYMENT_GUIDE.md) | Hosting, CI/CD, backups |
 | [CLAUDE.md](./CLAUDE.md) | Standing directives for AI-assisted development in this repo |

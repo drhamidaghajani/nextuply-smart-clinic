@@ -1,0 +1,51 @@
+# Production/staging compose file for sadighi.nextuply.com.
+#
+# Deliberately isolated from every other app on the same Nextuply server
+# (PetYar/PetAI included): its own containers (sadighi-app,
+# sadighi-postgres), its own DB volume
+# (/opt/nextuply/data/postgres/sadighi), its own internal network
+# (sadighi-internal). The only thing shared with other apps on this host
+# is the `nextuply-net` network, used solely so Nginx Proxy Manager can
+# reach `sadighi-app:3000` — nothing in this file references, depends on,
+# or shares a network/volume/container with any PetYar/PetAI service.
+# Do not add PetYar's Postgres or network here under any circumstance.
+#
+# See docs/deployment.md's "Docker staging deployment" section for the
+# full command sequence (network creation, build, migrate, verify, up).
+
+services:
+  sadighi-app:
+    container_name: sadighi-app
+    build:
+      context: .
+      dockerfile: Dockerfile
+    restart: unless-stopped
+    env_file:
+      - .env.production
+    expose:
+      - "3000"
+    depends_on:
+      - sadighi-postgres
+    networks:
+      - nextuply-net
+      - sadighi-internal
+
+  sadighi-postgres:
+    image: postgres:16-alpine
+    container_name: sadighi-postgres
+    restart: unless-stopped
+    env_file:
+      - .env.db
+    volumes:
+      - /opt/nextuply/data/postgres/sadighi:/var/lib/postgresql/data
+    networks:
+      - sadighi-internal
+    expose:
+      - "5432"
+
+networks:
+  nextuply-net:
+    external: true
+
+  sadighi-internal:
+    driver: bridge

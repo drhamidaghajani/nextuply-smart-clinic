@@ -1,6 +1,6 @@
 # 0002. Persian-first build scope
 
-Status: Accepted
+Status: Accepted — partially superseded by [0005](./0005-locale-rollout-en-ar.md) (2026-07-13): `en`/`ar` homepage support has now started (header/footer/holding page + partial dictionaries). Persian remains primary and this ADR's historical reasoning for launching `fa`-only first is unchanged; kept for the record, not deleted.
 Date: 2026-07-01
 
 ## Context

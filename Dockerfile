@@ -72,6 +72,24 @@ COPY --from=build /app/public ./public
 COPY --from=build /app/package.json ./package.json
 COPY --from=build /app/prisma ./prisma
 
+# Round 2026-07-17 (per Hamid): `scripts/verify-staging-db.ts`,
+# `verify-sms-config.ts`, `verify-ai-gateway.ts` are run manually against
+# the deployed image (`docker compose run --rm sadighi-app npm run
+# verify:...`) — they need `scripts/` itself plus the plain-TS source
+# files they import (`src/modules/smart-clinic-assistant/{server/otp,ai}
+# /*`). `tsx` is already a production `dependency` (package.json), so it
+# was already present via `prod-deps` above — only the source text was
+# missing, which is the actual bug this fixes. Copying all of `src/`
+# rather than hand-picking an exact minimal file list: these scripts
+# deliberately avoid `@/`-aliased imports (see verify-staging-db.ts's own
+# doc-comment — bare `tsx` runs don't get Next.js's alias resolution), so
+# their relative imports could reach anywhere under `src/`, and a curated
+# subset would silently break the next time one of them gains an import.
+# `src/` is plain TypeScript source already in git — no secrets, no build
+# output, negligible size next to `node_modules`/`.next`.
+COPY --from=build /app/scripts ./scripts
+COPY --from=build /app/src ./src
+
 USER nextjs
 EXPOSE 3000
 CMD ["npm", "run", "start"]

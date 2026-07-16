@@ -16,10 +16,11 @@ import { isSessionVerified } from "./otp/session-guard";
  * The client (`AssistantDrawer`) already gates this call behind
  * verification, so in practice this should always receive a valid token
  * — the check here is defense-in-depth against a stale/tampered client
- * state, not the primary gate. On failure, returns `{ type: "unclear" }`
- * rather than a distinct error — the client never reaches this function
- * without already believing it's verified, so this is a genuine edge
- * case, not a path the UI needs to specially explain.
+ * state, not the primary gate. On failure, returns `{ type: "unavailable" }`
+ * (round 2026-07-16: was `"unclear"` — an unverified session is a system/
+ * access condition, not an ambiguous question) — the client never reaches
+ * this function without already believing it's verified, so this is a
+ * genuine edge case, not a path the UI needs to specially explain.
  *
  * Round 2026-07-14, same day (AI Gateway boundary pass): the real
  * `verified` boolean from `isSessionVerified` is now threaded into
@@ -31,7 +32,7 @@ import { isSessionVerified } from "./otp/session-guard";
 export async function interpretFreeText(rawInput: { message: string; locale: string; sessionToken: string | null }): Promise<FreeTextResult> {
   const verified = await isSessionVerified(rawInput.sessionToken);
   if (!verified) {
-    return { type: "unclear" };
+    return { type: "unavailable" };
   }
 
   const message = typeof rawInput.message === "string" ? rawInput.message.trim() : "";

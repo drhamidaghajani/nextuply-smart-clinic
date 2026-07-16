@@ -10,7 +10,10 @@ import { cacheKey, getCached, setCached } from "./response-cache";
 export type FreeTextResult =
   | { type: "intent"; step: AssistantStep; serviceId: ServiceId | null }
   | { type: "qa"; answer: string }
-  | { type: "unclear" };
+  /** Model responded but was genuinely ambiguous/low-confidence/safety-flagged — "I didn't understand," a content problem. */
+  | { type: "unclear" }
+  /** The AI transport itself didn't work (not configured, unverified, timeout, network/http error) — a system problem, not a content one. Round 2026-07-16 (contract-alignment pass): kept distinct from "unclear" so the UI can show "smart replies are temporarily unavailable" instead of the misleading "I didn't understand your question." Does not touch `ai-gateway-client.ts`/`config.ts` — this is purely how the existing `{ ok: false, reason }` result is translated into UI copy. */
+  | { type: "unavailable" };
 
 /** Below this, treat the model's classification as too uncertain to route on — falls back to `"unclear"` (the safe, deterministic-menu direction) rather than acting on a low-confidence guess. */
 const MIN_CONFIDENCE = 0.4;
@@ -61,7 +64,7 @@ export async function detectFreeTextIntent(message: string, locale: Locale, sess
   }
 
   if (!sessionVerified) {
-    return { type: "unclear" };
+    return { type: "unavailable" };
   }
 
   const key = cacheKey(["intent", locale, message]);
@@ -82,7 +85,7 @@ export async function detectFreeTextIntent(message: string, locale: Locale, sess
   );
 
   if (!result.ok) {
-    return { type: "unclear" };
+    return { type: "unavailable" };
   }
 
   const finalResult = toFreeTextResult(result.data);

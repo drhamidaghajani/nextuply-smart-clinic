@@ -480,6 +480,7 @@ export const assistantFlow = {
     freeTextSubmitCta: "Ask",
     freeTextThinkingLabel: "Thinking...",
     freeTextUnclearMessage: "I couldn't quite understand that — please use one of the options above, or try rephrasing your question.",
+    freeTextUnavailableMessage: "Smart replies are temporarily unavailable right now. You can use the quick-guidance options instead, or call the clinic directly to coordinate.",
     qaAnswerEyebrow: "Answer to Your Question",
   },
   steps: {
@@ -487,7 +488,7 @@ export const assistantFlow = {
       intro: "To book a consultation, please choose the service you're interested in. After an initial review, our clinic team will guide you through the next steps.",
     },
     costQuestion: {
-      intro: "An initial cost estimate depends on the specific service and a clinical review. Please choose the service you're interested in for an approximate estimate after initial review.",
+      intro: "The exact cost is determined after an examination and review of your case. For a more precise estimate, you can continue with the consultation booking path.",
     },
     imageUploadFuture: {
       notice: "Photo upload for initial review will be enabled in an upcoming update.",
@@ -518,7 +519,7 @@ export const assistantFlow = {
   },
   payment: {
     heading: "Deposit / Consultation Fee Payment",
-    gatewayPendingNotice: "Online payment will be enabled once our payment gateway is connected.",
+    gatewayPendingNotice: "Online deposit payment will be enabled in the next phase. For now, your request will be submitted and our clinic receptionist will call you to coordinate.",
     amountLabel: "Amount",
     currencyLabel: "Currency",
     currencyOptions: { IRR: "IRR (Iranian Rial)", USDT: "USDT (Tether)" },
@@ -543,7 +544,8 @@ export const assistantFlow = {
     verifyingLabel: "Verifying...",
     changeMobileCta: "Change Number",
     resendCta: "Resend Code",
-    smsUnavailableMessage: "Mobile verification is being connected to our SMS system. Please contact the clinic by phone or WhatsApp.",
+    smsUnavailableMessage: "SMS verification is temporarily unavailable right now. Please call the clinic or use WhatsApp to book or follow up.",
+    smsUnavailableBookingMessage: "Mobile verification is required to finalize your booking request. This step is temporarily unavailable right now — please call the clinic directly.",
     invalidMobileMessage: "This mobile number isn't valid.",
     invalidCodeMessage: "That code isn't correct.",
     expiredCodeMessage: "This code has expired — please request a new one.",

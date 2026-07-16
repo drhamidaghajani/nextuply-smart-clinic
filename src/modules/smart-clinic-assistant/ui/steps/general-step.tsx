@@ -44,6 +44,7 @@ export function GeneralStep({
   onMessageChange,
   isAsking,
   unclearMessage,
+  unavailableMessage,
   onAsk,
 }: {
   dict: AssistantFlowDictionary;
@@ -52,6 +53,8 @@ export function GeneralStep({
   onMessageChange: (value: string) => void;
   isAsking: boolean;
   unclearMessage: boolean;
+  /** Round 2026-07-16 (contract-alignment pass): AI transport failure/not-configured — distinct copy from `unclearMessage` ("I didn't understand"), since this means the smart-reply system itself is temporarily down, not that the question was ambiguous. */
+  unavailableMessage: boolean;
   onAsk: () => void;
 }) {
   return (
@@ -105,6 +108,7 @@ export function GeneralStep({
           </div>
         </label>
         {unclearMessage ? <p className="mt-2 text-xs leading-6 text-charcoal/55">{dict.ui.freeTextUnclearMessage}</p> : null}
+        {unavailableMessage ? <p className="mt-2 text-xs leading-6 text-charcoal/55">{dict.ui.freeTextUnavailableMessage}</p> : null}
       </div>
     </div>
   );

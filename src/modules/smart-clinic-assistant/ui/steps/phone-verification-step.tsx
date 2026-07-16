@@ -22,23 +22,34 @@ type Phase = "enter_mobile" | "enter_code";
  * `onVerified(sessionToken, mobile)` is the drawer's cue to resume
  * whatever action was interrupted — this component itself has no idea
  * what that action was, keeping it a plain, reusable verification form.
+ *
+ * Round 2026-07-16 (contract-alignment pass): reached only after
+ * `ContactCaptureStep` (name/mobile) for the booking flow now — see
+ * `assistant-drawer.tsx`'s doc-comment — so `initialMobile` pre-fills the
+ * field instead of asking a second time; still editable (a typo caught
+ * here shouldn't require backing all the way out). Also shows a
+ * `purpose`-specific SMS-unavailable message: the booking-submit case
+ * gets a message naming that specific step, since "SMS unavailable" mid-
+ * booking is a more consequential dead end than mid free-text-question.
  */
 export function PhoneVerificationStep({
   dict,
   locale,
   purpose,
+  initialMobile,
   onVerified,
   onCancel,
 }: {
   dict: AssistantFlowDictionary;
   locale: Locale;
   purpose: OtpPurpose;
+  initialMobile?: string;
   onVerified: (sessionToken: string, mobile: string) => void;
   onCancel: () => void;
 }) {
   const t = dict.phoneVerification;
   const [phase, setPhase] = useState<Phase>("enter_mobile");
-  const [mobile, setMobile] = useState("");
+  const [mobile, setMobile] = useState(initialMobile ?? "");
   const [code, setCode] = useState("");
   const [isSending, setIsSending] = useState(false);
   const [isVerifying, setIsVerifying] = useState(false);
@@ -94,7 +105,9 @@ export function PhoneVerificationStep({
       <p className="text-sm leading-7 text-charcoal/70">{t.description}</p>
 
       {smsUnavailable ? (
-        <div className="mt-4 rounded-xl bg-gold/10 px-3.5 py-3 text-xs leading-6 text-charcoal/70">{t.smsUnavailableMessage}</div>
+        <div className="mt-4 rounded-xl bg-gold/10 px-3.5 py-3 text-xs leading-6 text-charcoal/70">
+          {purpose === "booking_request" ? t.smsUnavailableBookingMessage : t.smsUnavailableMessage}
+        </div>
       ) : phase === "enter_mobile" ? (
         <div className="mt-4 flex flex-col gap-3.5">
           <TextField

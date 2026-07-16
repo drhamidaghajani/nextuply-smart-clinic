@@ -6,13 +6,14 @@ import { redirect } from "next/navigation";
 
 import { isDatabaseConfigured } from "@/infrastructure/db/client";
 import { INTERNAL_ADMIN_COOKIE, INTERNAL_ADMIN_COOKIE_MAX_AGE_SECONDS } from "@/core/internal-auth-cookie";
+import { sendAutomationEvent } from "@/modules/clinic-operations/server/automation-webhook";
 
 import {
   createDoctorAvailabilitySlot,
   setDoctorAvailabilitySlotActive,
   updateDoctorAvailabilitySlot,
 } from "./availability-repository";
-import { updateBookingRequestStatus } from "./lead-repository";
+import { getBookingRequestForStatusChange, updateBookingRequestStatus } from "./lead-repository";
 import type { BookingAppointmentStatus } from "../application/types";
 
 /**
@@ -77,6 +78,13 @@ export async function internalLogoutAction(locale: string): Promise<void> {
  * happens. `revalidatePath` after a successful write so the calling
  * page's next render (these routes are already `force-dynamic`) shows
  * the change immediately, no client-side state needed.
+ *
+ * Round 2026-07-16 (contract-alignment pass, per Hamid):
+ * `updateAppointmentStatusAction` now also fires the
+ * `appointment.status_changed` automation event (see
+ * `clinic-operations/server/automation-webhook.ts`) when the status
+ * actually changes — fire-and-forget, no-ops if `N8N_WEBHOOK_URL` is
+ * unset.
  */
 
 function parseWeekday(value: FormDataEntryValue | null): number | null {
@@ -146,6 +154,28 @@ export async function updateAppointmentStatusAction(locale: string, bookingReque
   const noteRaw = formData.get("internalNote");
   const internalNote = typeof noteRaw === "string" && noteRaw.trim() ? noteRaw.trim() : null;
 
+  // Round 2026-07-16 (contract-alignment pass): read the pre-update row so
+  // the `appointment.status_changed` automation event below can report
+  // both `oldStatus` and `newStatus` — `updateBookingRequestStatus` itself
+  // stays an `updateMany` (see its own doc-comment) so this read is kept
+  // separate rather than folded in.
+  const before = await getBookingRequestForStatusChange(bookingRequestId);
+
   await updateBookingRequestStatus({ id: bookingRequestId, appointmentStatus, internalNote });
   revalidatePath(`/${locale}/internal/appointments`);
+
+  if (before && before.appointmentStatus !== appointmentStatus) {
+    // Fire-and-forget — see automation-webhook.ts's doc-comment. Never
+    // awaited so a slow/unreachable n8n instance can't delay this action.
+    void sendAutomationEvent({
+      event: "appointment.status_changed",
+      bookingRequestId,
+      leadId: before.leadId,
+      oldStatus: before.appointmentStatus,
+      newStatus: appointmentStatus,
+      appointmentDate: before.appointmentDate ? before.appointmentDate.toISOString().slice(0, 10) : null,
+      selectedSlotId: before.selectedSlotId,
+      updatedAt: new Date().toISOString(),
+    });
+  }
 }

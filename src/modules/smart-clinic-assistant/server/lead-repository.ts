@@ -193,6 +193,23 @@ export async function listBookingRequestsForAdmin() {
 }
 
 /**
+ * Round 2026-07-16 (contract-alignment pass): the pre-update read
+ * `updateAppointmentStatusAction` needs to know the OLD status before
+ * calling `updateBookingRequestStatus` below, so it can include both
+ * `oldStatus`/`newStatus` in the `appointment.status_changed` automation
+ * event — `updateMany` (used for the actual write, for its clinicId-scoped
+ * zero-rows-on-mismatch safety) doesn't return the pre-update row, hence
+ * this separate read. clinicId-scoped like every other read here.
+ */
+export async function getBookingRequestForStatusChange(id: string) {
+  const clinicId = getDefaultClinicId();
+  return prisma.bookingRequest.findFirst({
+    where: { id, clinicId },
+    select: { id: true, leadId: true, appointmentStatus: true, appointmentDate: true, selectedSlotId: true },
+  });
+}
+
+/**
  * The one write path `/internal/appointments` gets — updates
  * `appointmentStatus` and/or `internalNote` on a single `BookingRequest`,
  * clinicId-scoped (a mismatched id/clinicId updates zero rows rather than

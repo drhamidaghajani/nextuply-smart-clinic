@@ -60,17 +60,29 @@ import { useAssistantFlow } from "./use-assistant-flow";
  * animation and shadow now flip with it rather than sliding the full
  * width of the screen to reach the wrong-looking rest position.
  *
- * Round 2026-07-14 (docs/adr/0007, mobile-verification pass): four
- * actions are now gated behind a verified mobile — free-text ask,
- * completing triage, choosing "general consultation," and the final
- * booking submit. `runGated` is the one chokepoint: if `sessionToken` is
- * already set, the action runs immediately; otherwise it's stashed in
- * `pendingActionRef` and `PhoneVerificationStep` is shown, resuming the
- * EXACT stashed action (called with the freshly-issued token, never a
- * stale closure-captured one) on success — "resume the previous action,"
- * never a flow restart. The verified mobile also pre-fills (not
- * force-locks) `leadInfo.mobile` so `ContactCaptureStep` doesn't ask for
- * the same number twice.
+ * Round 2026-07-14 (docs/adr/0007, mobile-verification pass): actions
+ * gated behind a verified mobile via `runGated`, the one chokepoint: if
+ * `sessionToken` is already set, the action runs immediately; otherwise
+ * it's stashed in `pendingActionRef` and `PhoneVerificationStep` is
+ * shown, resuming the EXACT stashed action (called with the freshly-
+ * issued token, never a stale closure-captured one) on success —
+ * "resume the previous action," never a flow restart.
+ *
+ * Round 2026-07-16 (contract-alignment pass, per Hamid — real UX bug:
+ * "many assistant paths ask for mobile verification too early"):
+ * completing triage and choosing "general consultation" are NO LONGER
+ * gated — verified against his explicit brief, OTP must only block (a)
+ * the final booking submit and (b) free-text AI questions, never
+ * service selection, triage, cost/care guidance, or seeing availability
+ * options. The booking flow's step ORDER also changed to match his
+ * literal spec: triage → appointment/time selection → contact capture
+ * (name/mobile) → payment prep → OTP (only now, at final submit) →
+ * submit. Previously contact capture came BEFORE appointment selection
+ * and was itself gated — both reversed here. Since name/mobile is
+ * collected in `ContactCaptureStep` before OTP is ever shown,
+ * `PhoneVerificationStep` now receives that mobile as a pre-fill
+ * (`initialMobile`) instead of the old reverse direction ("the verified
+ * mobile pre-fills leadInfo.mobile").
  */
 export function AssistantDrawer() {
   const { isOpen, step, setStep, close, source, locale } = useAssistant();
@@ -93,6 +105,8 @@ export function AssistantDrawer() {
   const [freeTextMessage, setFreeTextMessage] = useState("");
   const [isAskingFreeText, setIsAskingFreeText] = useState(false);
   const [freeTextUnclear, setFreeTextUnclear] = useState(false);
+  /** Distinct from `freeTextUnclear` — AI transport failure/not-configured, not an ambiguous question. See `intent-detector.ts`'s `FreeTextResult` doc-comment. */
+  const [freeTextUnavailable, setFreeTextUnavailable] = useState(false);
 
   useEffect(() => {
     if (!isOpen) return;
@@ -162,7 +176,11 @@ export function AssistantDrawer() {
   const handleServiceSelect = (serviceId: ServiceId) => {
     dispatch({ type: "SET_SERVICE", serviceId });
     if (serviceId === "general_consultation") {
-      runGated(() => setStep("contact_capture"), "assistant_access");
+      // No per-service triage questions for a general consultation — goes
+      // straight to real availability, same as every other service does
+      // once its triage is done. Ungated, per the contract: OTP only
+      // gates the final submit.
+      setStep("appointment_selection");
     } else {
       setStep("triage");
     }
@@ -191,10 +209,15 @@ export function AssistantDrawer() {
       void (async () => {
         setIsAskingFreeText(true);
         setFreeTextUnclear(false);
+        setFreeTextUnavailable(false);
         const result = await interpretFreeText({ message: trimmed, locale, sessionToken: token });
         setIsAskingFreeText(false);
         if (result.type === "unclear") {
           setFreeTextUnclear(true);
+          return;
+        }
+        if (result.type === "unavailable") {
+          setFreeTextUnavailable(true);
           return;
         }
         setFreeTextMessage("");
@@ -206,11 +229,8 @@ export function AssistantDrawer() {
   const handleTriageComplete = (answers: TriageAnswer[]) => {
     dispatch({ type: "SET_TRIAGE_ANSWERS", answers });
     dispatch({ type: "COMPLETE_TRIAGE" });
-    runGated(() => setStep("contact_capture"), "assistant_access");
-  };
-
-  const handleContactSubmit = (leadInfo: LeadInfo) => {
-    dispatch({ type: "SET_LEAD_INFO", leadInfo });
+    // Ungated — availability is not patient-specific data, showing real
+    // open time options requires no verified mobile.
     setStep("appointment_selection");
   };
 
@@ -222,6 +242,14 @@ export function AssistantDrawer() {
       selectedSlotId: result.selectedSlotId,
       appointmentDate: result.appointmentDate,
     });
+    // Name/mobile is asked only now, AFTER a time preference exists —
+    // per the contract's explicit step order. Still ungated: OTP happens
+    // once, at the final submit below, not here.
+    setStep("contact_capture");
+  };
+
+  const handleContactSubmit = (leadInfo: LeadInfo) => {
+    dispatch({ type: "SET_LEAD_INFO", leadInfo });
     setStep("payment_preparation");
   };
 
@@ -325,6 +353,7 @@ export function AssistantDrawer() {
                   onMessageChange={setFreeTextMessage}
                   isAsking={isAskingFreeText}
                   unclearMessage={freeTextUnclear}
+                  unavailableMessage={freeTextUnavailable}
                   onAsk={handleAskFreeText}
                 />
               )}
@@ -451,6 +480,7 @@ export function AssistantDrawer() {
                   dict={dict}
                   locale={locale}
                   purpose={pendingPurpose}
+                  initialMobile={state.leadInfo.mobile}
                   onVerified={handleVerified}
                   onCancel={handleVerificationCancel}
                 />

@@ -3,6 +3,8 @@
 import { isDatabaseConfigured } from "@/infrastructure/db/client";
 import { isSupportedLocale, type Locale } from "@/i18n/locales";
 
+import { sendAutomationEvent } from "@/modules/clinic-operations/server/automation-webhook";
+
 import { computeLeadStatus } from "../application/lead-status";
 import { triggerSmsEvent } from "../application/sms-events";
 import type { AppointmentRequest } from "../application/types";
@@ -35,6 +37,12 @@ import { isSessionVerified } from "./otp/session-guard";
  *
  * `leadId`/`bookingRequestId` are `null` whenever `persisted` is false —
  * never a fabricated id standing in for a real one.
+ *
+ * Round 2026-07-16 (contract-alignment pass, per Hamid): fires the
+ * `booking.requested` automation event (see
+ * `clinic-operations/server/automation-webhook.ts`) once persistence
+ * succeeds — fire-and-forget, no-ops if `N8N_WEBHOOK_URL` is unset, never
+ * blocks or affects this function's own return value.
  */
 /** Last-resort fallback only (zod's own per-field messages, sourced from the submission's locale, cover the real cases) — see `getValidationMessages`. */
 const GENERIC_INVALID_MESSAGE: Record<Locale, string> = {
@@ -111,7 +119,7 @@ export async function submitBookingRequest(rawInput: unknown): Promise<
       });
       bookingRequestId = bookingRequest.id;
 
-      await createPaymentDraftForLead({
+      const paymentDraft = await createPaymentDraftForLead({
         leadId: lead.id,
         bookingRequestId: bookingRequest.id,
         amount: payment.amount,
@@ -127,6 +135,24 @@ export async function submitBookingRequest(rawInput: unknown): Promise<
       });
 
       persisted = true;
+
+      // Fire-and-forget — see automation-webhook.ts's doc-comment for why
+      // this is never `await`ed: an unreachable/slow n8n instance must
+      // never add latency to this patient-facing submission. No-ops
+      // gracefully if N8N_WEBHOOK_URL isn't configured.
+      void sendAutomationEvent({
+        event: "booking.requested",
+        bookingRequestId: bookingRequest.id,
+        leadId: lead.id,
+        serviceId,
+        appointmentDate: bookingRequest.appointmentDate ? bookingRequest.appointmentDate.toISOString().slice(0, 10) : null,
+        selectedSlotId: bookingRequest.selectedSlotId,
+        preferredDate: bookingRequest.preferredDate,
+        preferredTimeRange: bookingRequest.preferredTimeRange,
+        appointmentStatus: bookingRequest.appointmentStatus,
+        paymentStatus: paymentDraft.paymentStatus,
+        createdAt: bookingRequest.createdAt.toISOString(),
+      });
     } catch (error) {
       // TODO(backend): surface this to real error monitoring once it
       // exists — for now, visible in the server log only, never thrown

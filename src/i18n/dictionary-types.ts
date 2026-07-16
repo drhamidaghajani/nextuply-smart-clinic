@@ -225,6 +225,8 @@ export interface AssistantFlowDictionary {
     freeTextSubmitCta: string;
     freeTextThinkingLabel: string;
     freeTextUnclearMessage: string;
+    /** Round 2026-07-16 — AI transport failure/not-configured, distinct from `freeTextUnclearMessage` ("I didn't understand"). See `intent-detector.ts`'s `FreeTextResult` doc-comment. */
+    freeTextUnavailableMessage: string;
     qaAnswerEyebrow: string;
   };
   steps: {
@@ -275,6 +277,8 @@ export interface AssistantFlowDictionary {
     changeMobileCta: string;
     resendCta: string;
     smsUnavailableMessage: string;
+    /** Round 2026-07-16 — shown specifically when SMS is unavailable during the final booking submit (`purpose: "booking_request"`), naming that consequence explicitly rather than the generic message. */
+    smsUnavailableBookingMessage: string;
     invalidMobileMessage: string;
     invalidCodeMessage: string;
     expiredCodeMessage: string;

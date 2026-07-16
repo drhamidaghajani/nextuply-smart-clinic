@@ -2,13 +2,22 @@
  * SMS (Melipayamak OTP) configuration verification — run before staging/
  * doctor review to confirm the provider is wired correctly.
  *
+ * Round 2026-07-17: updated for `sms-provider.ts`'s ported
+ * `BaseServiceNumber` endpoint and its two supported env var naming
+ * styles (`MELIPAYAMAK_*` primary, `SMS_*` fallback) — this script tests
+ * the exact same `isSmsProviderConfigured`/`sendOtpSms` functions the
+ * real app calls, so its presence-check report now reflects whichever
+ * style is actually set.
+ *
  * Two modes:
  *
  * 1. Config-only check (default, safe to run anytime, never sends SMS):
  *      npm run verify:sms-config
- *    Reports which of SMS_USERNAME/SMS_PASSWORD/SMS_OTP_PATTERN_ID are
- *    set (presence only — VALUES are never printed) and whether the
- *    provider is considered "configured" overall.
+ *    Reports which of MELIPAYAMAK_USERNAME/MELIPAYAMAK_API_KEY/
+ *    MELIPAYAMAK_OTP_BODY_ID (or their SMS_USERNAME/SMS_PASSWORD/
+ *    SMS_OTP_PATTERN_ID fallback equivalents) are set (presence only —
+ *    VALUES are never printed) and whether the provider is considered
+ *    "configured" overall.
  *
  * 2. Real send test (opt-in only — sends an actual SMS, costs real
  *    provider credit): requires an explicit `--send <mobile>` CLI flag
@@ -18,7 +27,8 @@
  *    The OTP code generated for this test is never printed or logged —
  *    same "no OTP codes in output" rule as production. This mode reuses
  *    the exact same `sendOtpSms` function the real app calls (not a
- *    reimplementation), so a pass here means the real code path works.
+ *    reimplementation), so a pass here means the real code path — the
+ *    real `BaseServiceNumber` endpoint and request shape — works.
  */
 import { generateOtpCode } from "../src/modules/smart-clinic-assistant/server/otp/otp-crypto";
 import { isSmsProviderConfigured, sendOtpSms } from "../src/modules/smart-clinic-assistant/server/otp/sms-provider";
@@ -31,9 +41,12 @@ function parseSendFlag(argv: string[]): string | null {
 
 async function main() {
   const configReport = {
-    SMS_USERNAME: Boolean(process.env.SMS_USERNAME),
-    SMS_PASSWORD: Boolean(process.env.SMS_PASSWORD),
-    SMS_OTP_PATTERN_ID: Boolean(process.env.SMS_OTP_PATTERN_ID || process.env.SMS_TEMPLATE_ID),
+    MELIPAYAMAK_USERNAME: Boolean(process.env.MELIPAYAMAK_USERNAME),
+    MELIPAYAMAK_API_KEY: Boolean(process.env.MELIPAYAMAK_API_KEY),
+    MELIPAYAMAK_OTP_BODY_ID: Boolean(process.env.MELIPAYAMAK_OTP_BODY_ID),
+    SMS_USERNAME_fallback: Boolean(process.env.SMS_USERNAME),
+    SMS_PASSWORD_fallback: Boolean(process.env.SMS_PASSWORD),
+    SMS_OTP_PATTERN_ID_fallback: Boolean(process.env.SMS_OTP_PATTERN_ID || process.env.SMS_TEMPLATE_ID),
     SMS_BASE_URL_overridden: Boolean(process.env.SMS_BASE_URL),
   };
   const configured = isSmsProviderConfigured();
@@ -44,7 +57,7 @@ async function main() {
 
   if (!configured) {
     console.error(
-      "[verify-sms-config] FAILED: not all of SMS_USERNAME / SMS_PASSWORD / SMS_OTP_PATTERN_ID (or SMS_TEMPLATE_ID) are set."
+      "[verify-sms-config] FAILED: no complete set of credentials found — set all three of either MELIPAYAMAK_USERNAME / MELIPAYAMAK_API_KEY / MELIPAYAMAK_OTP_BODY_ID, or the SMS_USERNAME / SMS_PASSWORD / SMS_OTP_PATTERN_ID (or SMS_TEMPLATE_ID) fallback."
     );
     process.exit(1);
   }

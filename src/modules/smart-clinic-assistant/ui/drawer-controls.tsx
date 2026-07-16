@@ -94,3 +94,37 @@ export function SelectField({
 export function SafetyNotice({ children }: { children: ReactNode }) {
   return <p className="mt-4 rounded-xl bg-charcoal/[0.04] px-3.5 py-3 text-xs leading-6 text-charcoal/55">{children}</p>;
 }
+
+/**
+ * Round 2026-07-17 (Smart Assistant product redesign): a small pill
+ * follow-up action — deliberately smaller/quieter than `PrimaryButton`/
+ * `OutlineButton` (which are always full-width) so a row of 2-4 can sit
+ * side by side after an AI answer without reading as another full form
+ * step. `emphasized` marks the one chip (if any) tied to the AI's own
+ * suggested next step, per Hamid's "calm, subtle" brief — a slightly
+ * bolder border/text, still not a solid fill.
+ */
+export function Chip({ children, emphasized, className, ...props }: ButtonHTMLAttributes<HTMLButtonElement> & { children: ReactNode; emphasized?: boolean }) {
+  return (
+    <button
+      type="button"
+      className={`inline-flex items-center justify-center rounded-full border px-3.5 py-2 text-xs font-medium transition-colors duration-200 disabled:pointer-events-none disabled:opacity-50 ${
+        emphasized ? "border-gold/60 text-gold hover:bg-gold/10" : "border-charcoal/15 text-charcoal/70 hover:border-gold hover:text-gold"
+      } ${className ?? ""}`}
+      {...props}
+    >
+      {children}
+    </button>
+  );
+}
+
+/** Three-dot "assistant is thinking" indicator — the only motion in the AI conversation panel, and only while an answer is actually in flight. Respects the site-wide reduced-motion handling done at the drawer level (this itself is a lightweight CSS animation, not a Framer Motion sequence, so it's cheap to leave running). */
+export function TypingIndicator() {
+  return (
+    <span className="inline-flex items-center gap-1 px-1 py-2" aria-hidden="true">
+      <span className="h-1.5 w-1.5 animate-bounce rounded-full bg-charcoal/30 [animation-delay:-0.3s]" />
+      <span className="h-1.5 w-1.5 animate-bounce rounded-full bg-charcoal/30 [animation-delay:-0.15s]" />
+      <span className="h-1.5 w-1.5 animate-bounce rounded-full bg-charcoal/30" />
+    </span>
+  );
+}

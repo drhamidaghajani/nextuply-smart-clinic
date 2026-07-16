@@ -6,6 +6,7 @@ import { isDatabaseConfigured } from "@/infrastructure/db/client";
 import { formatDateTimeForLocale } from "@/i18n/format-jalali-date";
 import { fa } from "@/i18n/dictionaries/fa";
 import { isSupportedLocale } from "@/i18n/locales";
+import { ConversationTranscript } from "@/modules/smart-clinic-assistant/admin/conversation-transcript";
 import {
   APPOINTMENT_STATUS_LABELS,
   EDITABLE_APPOINTMENT_STATUSES,
@@ -112,6 +113,7 @@ export default async function AppointmentsAdminPage({ params }: { params: Promis
                       <th className="px-3 py-2 font-medium">خلاصه غربالگری</th>
                       <th className="px-3 py-2 font-medium">وضعیت نوبت / یادداشت</th>
                       <th className="px-3 py-2 font-medium">وضعیت پرداخت</th>
+                      <th className="px-3 py-2 font-medium">گفتگو با دستیار</th>
                       <th className="px-3 py-2 font-medium">تاریخ ثبت</th>
                       <th className="px-3 py-2 font-medium">سرنخ</th>
                     </tr>
@@ -202,6 +204,9 @@ export default async function AppointmentsAdminPage({ params }: { params: Promis
                             </form>
                           </td>
                           <td className="px-3 py-3">{latestPayment ? PAYMENT_STATUS_LABELS[latestPayment.paymentStatus] : "—"}</td>
+                          <td className="px-3 py-3">
+                            <ConversationTranscript sessions={booking.lead.assistantSessions} locale={locale} serviceLabels={SERVICE_LABELS} />
+                          </td>
                           <td className="px-3 py-3 whitespace-nowrap text-charcoal/60">{formatDateTimeForLocale(booking.createdAt, locale)}</td>
                           <td className="px-3 py-3 whitespace-nowrap">
                             <a href={`/${locale}/internal/assistant-leads#lead-${booking.lead.id}`} className="text-xs text-gold hover:text-gold-hover">

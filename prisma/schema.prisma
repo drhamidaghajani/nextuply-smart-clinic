@@ -34,6 +34,7 @@ model Clinic {
   smsEvents               SmsEvent[]
   otpCodes                OtpCode[]
   assistantSessions       AssistantSession[]
+  assistantMessages       AssistantMessage[]
   doctorAvailabilitySlots DoctorAvailabilitySlot[]
 }
 
@@ -59,9 +60,9 @@ enum PreferredContactMethod {
 }
 
 model Lead {
-  id                     String                   @id @default(uuid())
+  id                     String                  @id @default(uuid())
   clinicId               String
-  clinic                 Clinic                   @relation(fields: [clinicId], references: [id])
+  clinic                 Clinic                  @relation(fields: [clinicId], references: [id])
   fullName               String
   mobile                 String
   city                   String?
@@ -69,16 +70,17 @@ model Lead {
   selectedService        String?
   preferredContactMethod PreferredContactMethod?
   notes                  String?
-  locale                 String                   @default("fa")
-  source                 LeadSource               @default(assistant)
-  status                 LeadStatus               @default(new)
-  createdAt              DateTime                 @default(now())
-  updatedAt              DateTime                 @updatedAt
+  locale                 String                  @default("fa")
+  source                 LeadSource              @default(assistant)
+  status                 LeadStatus              @default(new)
+  createdAt              DateTime                @default(now())
+  updatedAt              DateTime                @updatedAt
 
-  triageAnswers   TriageAnswer[]
-  bookingRequests BookingRequest[]
-  paymentDrafts   PaymentDraft[]
-  smsEvents       SmsEvent[]
+  triageAnswers     TriageAnswer[]
+  bookingRequests   BookingRequest[]
+  paymentDrafts     PaymentDraft[]
+  smsEvents         SmsEvent[]
+  assistantSessions AssistantSession[]
 
   @@index([clinicId])
   @@index([clinicId, mobile])
@@ -118,15 +120,15 @@ enum AppointmentStatus {
 }
 
 model BookingRequest {
-  id                String            @id @default(uuid())
-  clinicId          String
-  clinic            Clinic            @relation(fields: [clinicId], references: [id])
-  leadId            String
-  lead              Lead              @relation(fields: [leadId], references: [id])
+  id                 String                  @id @default(uuid())
+  clinicId           String
+  clinic             Clinic                  @relation(fields: [clinicId], references: [id])
+  leadId             String
+  lead               Lead                    @relation(fields: [leadId], references: [id])
   /// Free-typed fallback, still populated even when a real slot is
   /// selected (backward-compatible display value) — see
   /// `availability-scheduler.ts`'s doc-comment.
-  preferredDate     String?
+  preferredDate      String?
   preferredTimeRange String?
   /// Round 2026-07-15 (availability-based booking, per Hamid): now a real
   /// foreign key into `DoctorAvailabilitySlot` (was a free-typed, never-
@@ -134,25 +136,26 @@ model BookingRequest {
   /// doc-comment history). Nullable: the manual "preferred time" fallback
   /// path (no availability configured, or patient's window didn't have a
   /// real option) never sets this.
-  selectedSlotId    String?
-  availabilitySlot  DoctorAvailabilitySlot? @relation(fields: [selectedSlotId], references: [id])
+  selectedSlotId     String?
+  availabilitySlot   DoctorAvailabilitySlot? @relation(fields: [selectedSlotId], references: [id])
   /// The concrete calendar date (not just weekday) of the selected slot's
   /// occurrence — required to count capacity correctly per-occurrence
   /// rather than aggregating every future week of a recurring slot
   /// together. Only set alongside `selectedSlotId`.
-  appointmentDate   DateTime?
-  appointmentStatus AppointmentStatus @default(requested)
+  appointmentDate    DateTime?
+  appointmentStatus  AppointmentStatus       @default(requested)
   /// Staff-only working note (e.g. "left voicemail, retry Thursday") —
   /// never shown to the patient, never sent to AI (see AI_USAGE_NOTES.md
   /// §8, which already excludes `Lead.notes`; this is a separate,
   /// secretary-authored field on the booking itself, same exclusion
   /// applies by construction since nothing in `ai/` reads this model).
-  internalNote      String?
-  createdAt         DateTime          @default(now())
-  updatedAt         DateTime          @updatedAt
+  internalNote       String?
+  createdAt          DateTime                @default(now())
+  updatedAt          DateTime                @updatedAt
 
-  paymentDrafts PaymentDraft[]
-  smsEvents     SmsEvent[]
+  paymentDrafts     PaymentDraft[]
+  smsEvents         SmsEvent[]
+  assistantSessions AssistantSession[]
 
   @@index([clinicId])
   @@index([leadId])
@@ -178,20 +181,20 @@ enum PaymentStatus {
 }
 
 model PaymentDraft {
-  id               String         @id @default(uuid())
+  id               String          @id @default(uuid())
   clinicId         String
-  clinic           Clinic         @relation(fields: [clinicId], references: [id])
+  clinic           Clinic          @relation(fields: [clinicId], references: [id])
   leadId           String
-  lead             Lead           @relation(fields: [leadId], references: [id])
+  lead             Lead            @relation(fields: [leadId], references: [id])
   bookingRequestId String?
   bookingRequest   BookingRequest? @relation(fields: [bookingRequestId], references: [id])
   amount           Int?
   currency         PaymentCurrency
   paymentType      PaymentType
-  paymentStatus    PaymentStatus  @default(pending)
-  paymentProvider  String         @default("placeholder")
-  createdAt        DateTime       @default(now())
-  updatedAt        DateTime       @updatedAt
+  paymentStatus    PaymentStatus   @default(pending)
+  paymentProvider  String          @default("placeholder")
+  createdAt        DateTime        @default(now())
+  updatedAt        DateTime        @updatedAt
 
   @@index([clinicId])
   @@index([leadId])
@@ -214,17 +217,17 @@ enum SmsEventStatus {
 }
 
 model SmsEvent {
-  id               String         @id @default(uuid())
+  id               String          @id @default(uuid())
   clinicId         String
-  clinic           Clinic         @relation(fields: [clinicId], references: [id])
+  clinic           Clinic          @relation(fields: [clinicId], references: [id])
   leadId           String?
-  lead             Lead?          @relation(fields: [leadId], references: [id])
+  lead             Lead?           @relation(fields: [leadId], references: [id])
   bookingRequestId String?
   bookingRequest   BookingRequest? @relation(fields: [bookingRequestId], references: [id])
   eventType        SmsEventType
-  status           SmsEventStatus @default(queued)
+  status           SmsEventStatus  @default(queued)
   payloadJson      String
-  createdAt        DateTime       @default(now())
+  createdAt        DateTime        @default(now())
 
   @@index([clinicId])
   @@index([leadId])
@@ -261,18 +264,72 @@ model OtpCode {
 /// added (see ADR-0007) — and re-checked server-side on every gated
 /// action. No hard expiry in this pass (flagged in ADR-0007's
 /// Consequences as a deliberate, revisitable choice).
+///
+/// Round 2026-07-17 (Smart Assistant product redesign, per Hamid):
+/// extended to double as the "conversation" record for the post-OTP,
+/// up-to-3-question AI conversation — deliberately NOT a separate
+/// `AssistantConversation` model, since this row already IS the exact
+/// identity+lifetime container a conversation needs (one verified mobile,
+/// one session, created once per verification). `fullName`/`serviceSlug`
+/// are filled in best-effort the first time they're known (identification
+/// step, or an already-selected service) — both nullable since a
+/// conversation can start before either is known. `leadId`/
+/// `bookingRequestId` stay null until (if ever) this same verified
+/// session goes on to submit a real booking — `submit-booking-request.ts`
+/// links them after the fact using the session token it already has, not
+/// a fuzzy mobile-number match. `questionLimit`/`questionCount` enforce
+/// the product's "up to 3 AI-assisted questions" rule server-side (the
+/// authoritative check — never trust client-side counting alone).
 model AssistantSession {
-  id         String   @id @default(uuid())
-  clinicId   String
-  clinic     Clinic   @relation(fields: [clinicId], references: [id])
-  mobile     String
-  verifiedAt DateTime
-  locale     String
-  createdAt  DateTime @default(now())
-  updatedAt  DateTime @updatedAt
+  id               String          @id @default(uuid())
+  clinicId         String
+  clinic           Clinic          @relation(fields: [clinicId], references: [id])
+  mobile           String
+  verifiedAt       DateTime
+  locale           String
+  fullName         String?
+  serviceSlug      String?
+  leadId           String?
+  lead             Lead?           @relation(fields: [leadId], references: [id])
+  bookingRequestId String?
+  bookingRequest   BookingRequest? @relation(fields: [bookingRequestId], references: [id])
+  questionLimit    Int             @default(3)
+  questionCount    Int             @default(0)
+  createdAt        DateTime        @default(now())
+  updatedAt        DateTime        @updatedAt
+
+  messages AssistantMessage[]
 
   @@index([clinicId])
   @@index([clinicId, mobile])
+  @@index([leadId])
+  @@index([bookingRequestId])
+}
+
+enum AssistantMessageRole {
+  user
+  assistant
+  system
+}
+
+/// One row per user question or assistant answer in the post-OTP AI
+/// conversation — the actual transcript `AssistantSession` above tracks
+/// the count/limit for. `system` exists for forward-compatibility (e.g. a
+/// future logged safety-notice or routing note) but nothing in this round
+/// writes it. Never stores an OTP code or any secret — `content` is only
+/// ever the question text or the assistant's answer text.
+model AssistantMessage {
+  id        String               @id @default(uuid())
+  clinicId  String
+  clinic    Clinic               @relation(fields: [clinicId], references: [id])
+  sessionId String
+  session   AssistantSession     @relation(fields: [sessionId], references: [id])
+  role      AssistantMessageRole
+  content   String
+  createdAt DateTime             @default(now())
+
+  @@index([clinicId])
+  @@index([sessionId])
 }
 
 /// Round 2026-07-15 (Clinic Operations Lite, per Hamid's contract-facing
@@ -289,19 +346,19 @@ model AssistantSession {
 /// stays a free-typed string the assistant already collects — wiring the
 /// two together is a real, separate follow-up, not done here).
 model DoctorAvailabilitySlot {
-  id         String   @id @default(uuid())
-  clinicId   String
-  clinic     Clinic   @relation(fields: [clinicId], references: [id])
+  id        String   @id @default(uuid())
+  clinicId  String
+  clinic    Clinic   @relation(fields: [clinicId], references: [id])
   /// 0 (Sunday) .. 6 (Saturday).
-  weekday    Int
+  weekday   Int
   /// "HH:mm", 24h, e.g. "09:00".
-  startTime  String
-  endTime    String
-  capacity   Int      @default(1)
-  isActive   Boolean  @default(true)
-  note       String?
-  createdAt  DateTime @default(now())
-  updatedAt  DateTime @updatedAt
+  startTime String
+  endTime   String
+  capacity  Int      @default(1)
+  isActive  Boolean  @default(true)
+  note      String?
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 
   bookingRequests BookingRequest[]
 

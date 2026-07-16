@@ -6,6 +6,7 @@ import { isDatabaseConfigured } from "@/infrastructure/db/client";
 import { formatDateTimeForLocale } from "@/i18n/format-jalali-date";
 import { fa } from "@/i18n/dictionaries/fa";
 import { isSupportedLocale } from "@/i18n/locales";
+import { ConversationTranscript } from "@/modules/smart-clinic-assistant/admin/conversation-transcript";
 import {
   APPOINTMENT_STATUS_LABELS,
   CONTACT_METHOD_LABELS,
@@ -115,6 +116,7 @@ export default async function AssistantLeadsAdminPage({ params }: { params: Prom
                   <th className="px-3 py-2 font-medium">وضعیت نوبت</th>
                   <th className="px-3 py-2 font-medium">وضعیت پرداخت</th>
                   <th className="px-3 py-2 font-medium">روش تماس</th>
+                  <th className="px-3 py-2 font-medium">گفتگو با دستیار</th>
                   <th className="px-3 py-2 font-medium">تاریخ ثبت</th>
                   <th className="px-3 py-2 font-medium">نوبت</th>
                 </tr>
@@ -143,6 +145,9 @@ export default async function AssistantLeadsAdminPage({ params }: { params: Prom
                       <td className="px-3 py-2">{latestPayment ? PAYMENT_STATUS_LABELS[latestPayment.paymentStatus] : "—"}</td>
                       <td className="px-3 py-2">
                         {lead.preferredContactMethod ? CONTACT_METHOD_LABELS[lead.preferredContactMethod] : "—"}
+                      </td>
+                      <td className="px-3 py-2">
+                        <ConversationTranscript sessions={lead.assistantSessions} locale={locale} serviceLabels={SERVICE_LABELS} />
                       </td>
                       <td className="px-3 py-2 whitespace-nowrap text-charcoal/60">{formatDateTimeForLocale(lead.createdAt, locale)}</td>
                       <td className="px-3 py-2 whitespace-nowrap">

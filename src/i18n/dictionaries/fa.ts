@@ -1148,14 +1148,17 @@ export const fa = {
   // questions for the 4 services he didn't give explicit examples for,
   // written in the same style/safety register as his 4 worked examples.
   assistantFlow: {
-    openingMessage:
-      "سلام، من دستیار هوشمند کلینیک دکتر علیرضا صدیقی هستم. برای راهنمایی دقیق‌تر، چند سؤال کوتاه می‌پرسم تا مسیر مناسب مشاوره یا رزرو برای شما مشخص شود.",
+    // Round 2026-07-17 (Smart Assistant product redesign, per Hamid) —
+    // exact required opening copy; "پیگیری نوبت" removed from the 5 main
+    // actions to match his exact new list (it routed to the confirmation
+    // screen, which never applies before a real booking exists — no
+    // regression, see assistant-drawer.tsx's doc-comment history).
+    openingMessage: "سلام، من دستیار هوشمند کلینیک دکتر علیرضا صدیقی هستم. می‌توانم مسیر مناسب مشاوره یا رزرو را برای شما مشخص کنم.",
     mainActions: [
       { id: "consultation_booking", label: "رزرو مشاوره" },
       { id: "service_selection", label: "انتخاب خدمت مناسب" },
       { id: "triage", label: "بررسی شرایط اولیه" },
       { id: "cost_question", label: "سؤال درباره هزینه" },
-      { id: "follow_up", label: "پیگیری نوبت" },
       { id: "care_guidance", label: "مراقبت‌های قبل و بعد" },
     ],
     // Round 2026-07-13 (taxonomy correction, per Hamid): derived from
@@ -1251,14 +1254,16 @@ export const fa = {
       submittingLabel: "در حال ثبت...",
       selectPlaceholder: "انتخاب کنید",
       paymentStepEyebrow: "مرحله پرداخت",
-      // Added 2026-07-14 (AI free-text pass, see AI_USAGE_NOTES.md).
-      freeTextSectionLabel: "یا سؤال خود را بنویسید",
+      // Added 2026-07-14 (AI free-text pass, see AI_USAGE_NOTES.md). Round
+      // 2026-07-17: this copy now lives in `ai-conversation-step.tsx`
+      // (post-OTP only), not the old always-open landing composer.
       freeTextPlaceholder: "سؤال خود را اینجا بنویسید...",
       freeTextSubmitCta: "پرسیدن",
       freeTextThinkingLabel: "در حال بررسی...",
       freeTextUnclearMessage: "متوجه نشدم — لطفاً از گزینه‌های بالا استفاده کنید یا سؤال را واضح‌تر بنویسید.",
       freeTextUnavailableMessage: "در حال حاضر پاسخ‌گویی هوشمند موقتاً در دسترس نیست. می‌توانید از مسیرهای راهنمایی سریع استفاده کنید یا برای هماهنگی با کلینیک تماس بگیرید.",
-      qaAnswerEyebrow: "پاسخ به سؤال شما",
+      // Round 2026-07-17 — the deliberate "ask a question" action replacing the old always-open composer.
+      askQuestionCta: "پرسیدن سؤال",
     },
     // His exact consultation-booking opening message from the 2026-07-09
     // round, reused (see this key's own top comment).
@@ -1304,9 +1309,41 @@ export const fa = {
       currencyLabel: "واحد پرداخت",
       currencyOptions: { IRR: "ریال", USDT: "تتر (USDT)" },
     },
+    // Round 2026-07-17 (Smart Assistant product redesign) — his exact required copy.
+    identify: {
+      description: "برای اینکه پاسخ‌ها و درخواست شما قابل پیگیری باشد، لطفاً نام و شماره موبایل خود را وارد کنید. پس از تأیید شماره، می‌توانید تا ۳ سؤال اصلی از دستیار بپرسید یا مسیر رزرو را ادامه دهید.",
+      submitCta: "ادامه",
+    },
+    aiConversation: {
+      verifiedIntro: "شماره شما تأیید شد. اکنون می‌توانید ۳ سؤال اصلی خود را درباره درمان، آمادگی، مراقبت یا مسیر رزرو بپرسید.",
+      questionsRemainingLabels: { "3": "۳ سؤال باقی مانده", "2": "۲ سؤال باقی مانده", "1": "۱ سؤال باقی مانده" },
+      limitReachedNotice: "برای بررسی دقیق‌تر، ادامه مسیر از طریق رزرو مشاوره انجام می‌شود.",
+      safetyNotice: "این راهنمایی جایگزین معاینه و نظر پزشک نیست؛ تصمیم نهایی پس از بررسی توسط تیم کلینیک انجام می‌شود.",
+      viewSuggestedStepCta: "مشاهده",
+      askAnotherCta: "سؤال بعدی",
+      relatedCareCta: "مراقبت‌های مرتبط",
+      continueBookingCta: "ادامه رزرو",
+    },
+    contextualAsk: {
+      prompt: "قبل از ادامه، سؤالی دارید؟",
+      cta: "پرسیدن سؤال",
+    },
     confirmation: {
       heading: "درخواست شما ثبت شد",
       body: "همکاران ما به‌زودی با شما تماس می‌گیرند تا مراحل بعدی را هماهنگ کنند.",
+      summaryLabel: "خلاصه درخواست",
+      serviceLabel: "خدمت انتخاب‌شده",
+      timeLabel: "زمان انتخابی یا پیشنهادی",
+      contactStatusLabel: "وضعیت تماس",
+      contactStatusValue: "در انتظار بررسی تیم کلینیک",
+      tipsLabel: "نکات کوتاه قبل از تماس",
+      tips: [
+        "تلفن همراه خود را در دسترس داشته باشید تا همکاران ما بتوانند با شما تماس بگیرند.",
+        "در صورت تغییر زمان پیشنهادی، حتماً به منشی کلینیک اطلاع دهید.",
+        "برای هماهنگی سریع‌تر می‌توانید از واتساپ کلینیک هم استفاده کنید.",
+      ],
+      viewCareCta: "مشاهده مراقبت‌های مرتبط",
+      askAnotherCta: "پرسیدن سؤال دیگر",
     },
     // Added 2026-07-13 (full locale-rollout round, docs/adr/0006) —
     // extracted verbatim from `application/validation.ts`'s hardcoded

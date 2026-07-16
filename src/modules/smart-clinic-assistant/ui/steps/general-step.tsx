@@ -2,60 +2,33 @@
 
 import type { AssistantFlowDictionary } from "@/i18n/dictionary-types";
 
+import { ACTION_STEP_MAP } from "../../application/action-step-map";
 import type { AssistantStep } from "../../application/types";
 import { OutlineButton, PrimaryButton } from "../drawer-controls";
 
-const ACTION_STEP_MAP: Record<string, AssistantStep> = {
-  consultation_booking: "consultation_booking",
-  service_selection: "service_selection",
-  triage: "service_selection", // "بررسی شرایط اولیه" needs a service picked first — triage is per-service.
-  cost_question: "cost_question",
-  follow_up: "confirmation",
-  care_guidance: "care_guidance", // deterministic — see assistant-drawer.tsx, no AI call.
-};
-
 /**
  * The assistant's landing view — his exact opening message plus the 5
- * main actions from the brief. "بررسی شرایط اولیه" routes through
- * `service_selection` first since triage questions are per-service (no
- * service picked yet at this point) — flagged here since it's the one
- * action that doesn't map 1:1 to its own step.
+ * main actions from the brief.
  *
- * Round 2026-07-14 (AI cost-control brief, see AI_USAGE_NOTES.md): added
- * a free-text input below the 5 buttons — the ONLY place in this whole
- * module a patient can type an open-ended message.
- *
- * Round 2026-07-14, same day (docs/adr/0007, mobile-verification pass):
- * this component is now purely presentational for the free-text input —
- * `message`/`isAsking`/`unclearMessage` are controlled props, and
- * `onAsk` is a plain synchronous trigger. The actual async
- * `interpretFreeText` call moved up to `AssistantDrawer`, because
- * verification can interrupt it: if the drawer needs to show
- * `PhoneVerificationStep` mid-submit, THIS component unmounts (the
- * drawer swaps steps), so any local state here would be lost. The
- * drawer captures the in-flight message in a closure before navigating
- * away and replays the exact same call after verification succeeds —
- * "resume the exact previous action," not a restart.
+ * Round 2026-07-17 (Smart Assistant product redesign, per Hamid — "the
+ * assistant still feels like a guided form, not a real smart assistant.
+ * The free-text input before identifying the user is also meaningless
+ * and should not exist in the initial state."): the always-visible
+ * free-text composer that used to sit below the 5 buttons is REMOVED
+ * entirely from this unauthenticated view — see `ai-conversation-step.tsx`
+ * for where free-text now lives (post-OTP only, up to 3 questions). In
+ * its place: one deliberate, distinct "پرسیدن سؤال" action (`onAskQuestion`)
+ * that starts the identify→OTP→AI-conversation path — a real decision to
+ * ask something, not a composer sitting open by default.
  */
 export function GeneralStep({
   dict,
   onNavigate,
-  message,
-  onMessageChange,
-  isAsking,
-  unclearMessage,
-  unavailableMessage,
-  onAsk,
+  onAskQuestion,
 }: {
   dict: AssistantFlowDictionary;
   onNavigate: (step: AssistantStep) => void;
-  message: string;
-  onMessageChange: (value: string) => void;
-  isAsking: boolean;
-  unclearMessage: boolean;
-  /** Round 2026-07-16 (contract-alignment pass): AI transport failure/not-configured — distinct copy from `unclearMessage` ("I didn't understand"), since this means the smart-reply system itself is temporarily down, not that the question was ambiguous. */
-  unavailableMessage: boolean;
-  onAsk: () => void;
+  onAskQuestion: () => void;
 }) {
   return (
     <div>
@@ -73,42 +46,17 @@ export function GeneralStep({
       </div>
 
       <div className="mt-6 border-t border-charcoal/10 pt-5">
-        <label className="mb-2.5 block text-xs font-medium text-charcoal/55">
-          {dict.ui.freeTextSectionLabel}
-          <div className="mt-2 flex items-center gap-2">
-            <input
-              type="text"
-              value={message}
-              onChange={(event) => onMessageChange(event.target.value)}
-              onKeyDown={(event) => {
-                if (event.key === "Enter") {
-                  event.preventDefault();
-                  onAsk();
-                }
-              }}
-              placeholder={dict.ui.freeTextPlaceholder}
-              disabled={isAsking}
-              className="w-full flex-1 rounded-xl border border-charcoal/15 bg-white px-3.5 py-2.5 text-sm font-normal normal-case text-charcoal placeholder:text-charcoal/30 focus:border-gold focus:outline-none focus:ring-1 focus:ring-gold/40"
-            />
-            {/* A raw button, not `PrimaryButton` — that component is
-                `w-full` by design (every other caller uses it alone on its
-                own row); this is the one place in the drawer a button sits
-                inline next to another control, so it needs its own compact
-                sizing rather than fighting `PrimaryButton`'s default width
-                with a class override (this project has no class-merging
-                utility, so a later override isn't guaranteed to win). */}
-            <button
-              type="button"
-              onClick={onAsk}
-              disabled={isAsking || !message.trim()}
-              className="shrink-0 rounded-full bg-gradient-to-b from-gold to-gold-hover px-4 py-2.5 text-sm font-semibold text-deep-navy transition-[filter] duration-200 hover:brightness-105 disabled:pointer-events-none disabled:opacity-50"
-            >
-              {isAsking ? dict.ui.freeTextThinkingLabel : dict.ui.freeTextSubmitCta}
-            </button>
-          </div>
-        </label>
-        {unclearMessage ? <p className="mt-2 text-xs leading-6 text-charcoal/55">{dict.ui.freeTextUnclearMessage}</p> : null}
-        {unavailableMessage ? <p className="mt-2 text-xs leading-6 text-charcoal/55">{dict.ui.freeTextUnavailableMessage}</p> : null}
+        <button
+          type="button"
+          onClick={onAskQuestion}
+          className="inline-flex w-full items-center justify-center gap-1.5 rounded-full border border-dashed border-charcoal/20 px-6 py-3 text-sm font-medium text-charcoal/70 transition-colors duration-200 hover:border-gold hover:text-gold"
+        >
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={1.8} strokeLinecap="round" strokeLinejoin="round" className="h-4 w-4">
+            <path d="M8.5 9.5a3.5 3.5 0 1 1 5.5 2.9c-.9.6-1.5 1.1-1.5 2.1" />
+            <path d="M12 17.5h.01" />
+          </svg>
+          {dict.ui.askQuestionCta}
+        </button>
       </div>
     </div>
   );

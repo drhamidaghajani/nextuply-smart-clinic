@@ -16,6 +16,7 @@ import {
   createPaymentDraftForLead,
   createSmsEvent as persistSmsEvent,
 } from "./lead-repository";
+import { linkAssistantSessionToBooking } from "./otp/otp-repository";
 import { isSessionVerified } from "./otp/session-guard";
 
 /**
@@ -86,7 +87,8 @@ export async function submitBookingRequest(rawInput: unknown): Promise<
   // behind verification — this exists so no code path anywhere can ever
   // persist a real lead/booking without a server-validated session,
   // regardless of how the client got here.
-  const verified = await isSessionVerified(detectSessionToken(rawInput));
+  const sessionToken = detectSessionToken(rawInput);
+  const verified = await isSessionVerified(sessionToken);
   if (!verified) {
     return { ok: false, error: NOT_VERIFIED_MESSAGE[locale] };
   }
@@ -135,6 +137,20 @@ export async function submitBookingRequest(rawInput: unknown): Promise<
       });
 
       persisted = true;
+
+      // Round 2026-07-17 (Smart Assistant product redesign): best-effort
+      // link from this verified session to the booking it just produced —
+      // see `otp-repository.ts`'s doc-comment. Never blocks/fails the
+      // booking itself; a dev-bypass token that never had an AI
+      // conversation simply has nothing to link (silent no-op, zero rows
+      // matched), not an error.
+      if (sessionToken) {
+        try {
+          await linkAssistantSessionToBooking({ sessionId: sessionToken, leadId: lead.id, bookingRequestId: bookingRequest.id });
+        } catch (error) {
+          console.error("[booking-request:conversation-link-failed]", error);
+        }
+      }
 
       // Fire-and-forget — see automation-webhook.ts's doc-comment for why
       // this is never `await`ed: an unreachable/slow n8n instance must

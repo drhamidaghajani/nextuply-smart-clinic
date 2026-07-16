@@ -28,8 +28,19 @@ import { isSessionVerified } from "./otp/session-guard";
  * unverified session can never reach the gateway/OpenAI, checked at
  * three independent points (here, and again inside `callAiGateway`
  * itself), not just trusted once.
+ *
+ * Round 2026-07-17 (Smart Assistant product redesign): `currentStep`/
+ * `selectedService` are optional, passed through to `detectFreeTextIntent`
+ * for real AI context — default to the same values this function always
+ * used, so the sole pre-existing caller needs no changes.
  */
-export async function interpretFreeText(rawInput: { message: string; locale: string; sessionToken: string | null }): Promise<FreeTextResult> {
+export async function interpretFreeText(rawInput: {
+  message: string;
+  locale: string;
+  sessionToken: string | null;
+  currentStep?: string;
+  selectedService?: string | null;
+}): Promise<FreeTextResult> {
   const verified = await isSessionVerified(rawInput.sessionToken);
   if (!verified) {
     return { type: "unavailable" };
@@ -42,5 +53,5 @@ export async function interpretFreeText(rawInput: { message: string; locale: str
     return { type: "unclear" };
   }
 
-  return detectFreeTextIntent(message, locale, verified);
+  return detectFreeTextIntent(message, locale, verified, rawInput.currentStep ?? "general", rawInput.selectedService ?? null);
 }

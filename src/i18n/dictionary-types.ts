@@ -220,14 +220,14 @@ export interface AssistantFlowDictionary {
     submittingLabel: string;
     selectPlaceholder: string;
     paymentStepEyebrow: string;
-    freeTextSectionLabel: string;
     freeTextPlaceholder: string;
     freeTextSubmitCta: string;
     freeTextThinkingLabel: string;
     freeTextUnclearMessage: string;
     /** Round 2026-07-16 — AI transport failure/not-configured, distinct from `freeTextUnclearMessage` ("I didn't understand"). See `intent-detector.ts`'s `FreeTextResult` doc-comment. */
     freeTextUnavailableMessage: string;
-    qaAnswerEyebrow: string;
+    /** Round 2026-07-17 (Smart Assistant product redesign) — the deliberate, distinct "ask a question" action on the opening menu; replaces the old always-open free-text composer. */
+    askQuestionCta: string;
   };
   steps: {
     consultationBooking: { intro: string };
@@ -256,9 +256,42 @@ export interface AssistantFlowDictionary {
     currencyLabel: string;
     currencyOptions: { IRR: string; USDT: string };
   };
+  /** Round 2026-07-17 (Smart Assistant product redesign) — collects name+mobile before an AI conversation's OTP step (`identify-step.tsx`); a lighter two-field form than `leadForm`'s full booking contact capture. */
+  identify: {
+    description: string;
+    submitCta: string;
+  };
+  /** Round 2026-07-17 — the post-OTP, up-to-3-question AI conversation panel (`ai-conversation-step.tsx`). */
+  aiConversation: {
+    verifiedIntro: string;
+    /** Keyed by remaining-question count as a string — only "1"/"2"/"3" are ever looked up (0 shows `limitReachedNotice` instead). */
+    questionsRemainingLabels: { "3": string; "2": string; "1": string };
+    limitReachedNotice: string;
+    safetyNotice: string;
+    /** Chip shown alongside an AI-suggested next step ("مشاهده"), not the step's own title — kept short since it's a chip, not a heading. */
+    viewSuggestedStepCta: string;
+    askAnotherCta: string;
+    relatedCareCta: string;
+    continueBookingCta: string;
+  };
+  /** Round 2026-07-17 — the "قبل از ادامه، سؤالی دارید؟" prompt shown on booking-flow steps (item 6 of the brief). */
+  contextualAsk: {
+    prompt: string;
+    cta: string;
+  };
   confirmation: {
     heading: string;
     body: string;
+    /** Round 2026-07-17 (richer confirmation screen, per Hamid) */
+    summaryLabel: string;
+    serviceLabel: string;
+    timeLabel: string;
+    contactStatusLabel: string;
+    contactStatusValue: string;
+    tipsLabel: string;
+    tips: readonly string[];
+    viewCareCta: string;
+    askAnotherCta: string;
   };
   validation: {
     mobileInvalid: string;

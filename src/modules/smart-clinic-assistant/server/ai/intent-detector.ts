@@ -8,7 +8,8 @@ import { matchLocally } from "./local-intent-matcher";
 import { cacheKey, getCached, setCached } from "./response-cache";
 
 export type FreeTextResult =
-  | { type: "intent"; step: AssistantStep; serviceId: ServiceId | null }
+  /** Round 2026-07-17 (Smart Assistant product redesign): `responseText` is populated when the model gave one alongside its routing classification — lets a caller (the post-OTP AI conversation) show a real answer instead of silently teleporting the user to a different step, which was the "feels like a form" complaint this round exists to fix. `null` when the model didn't return one; callers fall back to a step-label sentence in that case. */
+  | { type: "intent"; step: AssistantStep; serviceId: ServiceId | null; responseText: string | null }
   | { type: "qa"; answer: string }
   /** Model responded but was genuinely ambiguous/low-confidence/safety-flagged — "I didn't understand," a content problem. */
   | { type: "unclear" }
@@ -41,6 +42,7 @@ function toFreeTextResult(output: ClassifyAssistantMessageOutput): FreeTextResul
     type: "intent",
     step: output.intent,
     serviceId: isKnownServiceId(output.selectedService) ? output.selectedService : null,
+    responseText: output.responseText?.trim() || null,
   };
 }
 
@@ -56,18 +58,33 @@ function toFreeTextResult(output: ClassifyAssistantMessageOutput): FreeTextResul
  * caller (`interpret-free-text.ts`) already did the real
  * `isSessionVerified` lookup; `callAiGateway` re-checks the boolean
  * itself too (belt-and-suspenders, see that file).
+ *
+ * Round 2026-07-17 (Smart Assistant product redesign): free-text no
+ * longer lives on the unauthenticated landing screen at all — it's now
+ * the post-OTP, up-to-3-question AI conversation (see
+ * `server/ai/ask-assistant-question.ts`), which can be reached from
+ * several different points in the flow (not just "general"). `currentStep`/
+ * `selectedService` are now caller-supplied (defaulting to the previous
+ * hardcoded values) so the AI gets real context instead of always being
+ * told the user is on the landing menu.
  */
-export async function detectFreeTextIntent(message: string, locale: Locale, sessionVerified: boolean): Promise<FreeTextResult> {
+export async function detectFreeTextIntent(
+  message: string,
+  locale: Locale,
+  sessionVerified: boolean,
+  currentStep: string = "general",
+  selectedService: string | null = null
+): Promise<FreeTextResult> {
   const localMatch = matchLocally(message, locale);
   if (localMatch) {
-    return { type: "intent", step: localMatch.step, serviceId: localMatch.serviceId };
+    return { type: "intent", step: localMatch.step, serviceId: localMatch.serviceId, responseText: null };
   }
 
   if (!sessionVerified) {
     return { type: "unavailable" };
   }
 
-  const key = cacheKey(["intent", locale, message]);
+  const key = cacheKey(["intent", locale, currentStep, selectedService ?? "", message]);
   const cached = getCached<FreeTextResult>(key);
   if (cached) return cached;
 
@@ -76,8 +93,8 @@ export async function detectFreeTextIntent(message: string, locale: Locale, sess
     "classify_assistant_message",
     {
       locale,
-      currentStep: "general", // free-text input only exists on the landing screen — see `general-step.tsx`.
-      selectedService: null,
+      currentStep,
+      selectedService,
       userMessage: cappedMessage,
       verified: true,
     },

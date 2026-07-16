@@ -393,14 +393,15 @@ export const faqSection = {
 } satisfies FaqSectionDictionary;
 
 export const assistantFlow = {
-  openingMessage:
-    "Hello, I'm Dr. Alireza Sadighi Clinic's Smart Assistant. To guide you more precisely, I'll ask a few short questions to find the right path for your consultation or booking.",
+  // Round 2026-07-17 (Smart Assistant product redesign): exact new
+  // opening copy per the Persian original; "Follow Up on My Appointment"
+  // dropped from the 5 main actions to match the new exact list.
+  openingMessage: "Hello, I'm Dr. Alireza Sadighi Clinic's Smart Assistant. I can help you find the right path for your consultation or booking.",
   mainActions: [
     { id: "consultation_booking", label: "Book a Consultation" },
     { id: "service_selection", label: "Choose the Right Service" },
     { id: "triage", label: "Initial Assessment" },
     { id: "cost_question", label: "Ask About Cost" },
-    { id: "follow_up", label: "Follow Up on My Appointment" },
     { id: "care_guidance", label: "Pre & Post Care" },
   ],
   // Round 2026-07-13 (taxonomy correction): derived from
@@ -475,13 +476,12 @@ export const assistantFlow = {
     submittingLabel: "Submitting...",
     selectPlaceholder: "Select...",
     paymentStepEyebrow: "Payment Step",
-    freeTextSectionLabel: "Or ask your own question",
     freeTextPlaceholder: "Type your question here...",
     freeTextSubmitCta: "Ask",
     freeTextThinkingLabel: "Thinking...",
     freeTextUnclearMessage: "I couldn't quite understand that — please use one of the options above, or try rephrasing your question.",
     freeTextUnavailableMessage: "Smart replies are temporarily unavailable right now. You can use the quick-guidance options instead, or call the clinic directly to coordinate.",
-    qaAnswerEyebrow: "Answer to Your Question",
+    askQuestionCta: "Ask a Question",
   },
   steps: {
     consultationBooking: {
@@ -524,9 +524,42 @@ export const assistantFlow = {
     currencyLabel: "Currency",
     currencyOptions: { IRR: "IRR (Iranian Rial)", USDT: "USDT (Tether)" },
   },
+  // Round 2026-07-17 (Smart Assistant product redesign).
+  identify: {
+    description:
+      "So we can follow up on your questions and request, please enter your name and mobile number. Once verified, you can ask the assistant up to 3 main questions, or continue with the booking path.",
+    submitCta: "Continue",
+  },
+  aiConversation: {
+    verifiedIntro: "Your number is verified. You can now ask up to 3 main questions about your treatment, preparation, care, or the booking path.",
+    questionsRemainingLabels: { "3": "3 questions remaining", "2": "2 questions remaining", "1": "1 question remaining" },
+    limitReachedNotice: "For a more thorough review, please continue through the consultation booking path.",
+    safetyNotice: "This guidance does not replace an in-person examination or a doctor's opinion; the final decision is made after review by our clinic team.",
+    viewSuggestedStepCta: "View",
+    askAnotherCta: "Next Question",
+    relatedCareCta: "Related Care",
+    continueBookingCta: "Continue Booking",
+  },
+  contextualAsk: {
+    prompt: "Have a question before continuing?",
+    cta: "Ask a Question",
+  },
   confirmation: {
     heading: "Your Request Has Been Submitted",
     body: "Our team will contact you shortly to coordinate the next steps.",
+    summaryLabel: "Request Summary",
+    serviceLabel: "Selected Service",
+    timeLabel: "Selected or Requested Time",
+    contactStatusLabel: "Contact Status",
+    contactStatusValue: "Pending review by our clinic team",
+    tipsLabel: "A Few Notes Before We Call",
+    tips: [
+      "Please keep your mobile phone reachable so our team can call you.",
+      "If your preferred time changes, please let our receptionist know.",
+      "You can also reach the clinic on WhatsApp for faster coordination.",
+    ],
+    viewCareCta: "View Related Care",
+    askAnotherCta: "Ask Another Question",
   },
   validation: {
     mobileInvalid: "Invalid mobile number — please enter a valid Iranian mobile number (e.g. 0912xxxxxxx).",

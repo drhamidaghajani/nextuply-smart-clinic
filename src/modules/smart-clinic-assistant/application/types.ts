@@ -31,15 +31,17 @@ export type AssistantIntent =
  * preparation, confirmation) are only ever reached *through* the flow,
  * never seeded directly by an external CTA.
  *
- * `"qa_response"` (docs/adr/0006, AI cost-control pass) is reached only
- * from `GeneralStep`'s free-text input, when the message is classified
- * as an open question rather than mapping to an existing screen.
- *
  * `"phone_verification"` (docs/adr/0007, mobile-verification pass) is
- * reached only when a gated action (free-text ask, completing triage,
- * "general consultation," final submit) is attempted before the mobile
- * is verified — `AssistantDrawer` stores the interrupted action and
- * resumes it on success, never seeded directly by an external CTA.
+ * reached only when a gated action (final booking submit, or asking to
+ * identify for an AI conversation) is attempted before the mobile is
+ * verified — `AssistantDrawer` stores the interrupted action and resumes
+ * it on success, never seeded directly by an external CTA.
+ *
+ * `"identify"`/`"ai_conversation"` (round 2026-07-17, Smart Assistant
+ * product redesign): the free-text AI entry point moved off the
+ * unauthenticated landing screen entirely — see `assistant-drawer.tsx`'s
+ * doc-comment. `"identify"` collects name+mobile before OTP is requested;
+ * `"ai_conversation"` is the post-OTP, up-to-3-question panel.
  */
 export type AssistantStep =
   | AssistantIntent
@@ -48,10 +50,11 @@ export type AssistantStep =
   | "appointment_selection"
   | "payment_preparation"
   | "confirmation"
-  | "qa_response"
   | "phone_verification"
   /** Round 2026-07-13 (patient-care hub) — deterministic, no AI call; routes to `/care-instructions`. See `assistant-drawer.tsx`. */
-  | "care_guidance";
+  | "care_guidance"
+  | "identify"
+  | "ai_conversation";
 
 /**
  * Round 2026-07-13 (taxonomy correction, per Hamid): the real service

@@ -151,7 +151,16 @@ export async function createSmsEvent({
   });
 }
 
-/** For the internal admin view — one row per Lead with its latest booking/payment, clinicId-scoped like everything else here. */
+/**
+ * For the internal admin view — one row per Lead with its latest
+ * booking/payment, clinicId-scoped like everything else here.
+ *
+ * Round 2026-07-17 (Smart Assistant product redesign): `assistantSessions`
+ * (with their `messages`) included too, so the page can show whether this
+ * lead asked the AI conversation any questions and, if so, let staff
+ * expand the transcript — see that page's doc-comment for the "no
+ * developer terms, no JSON dumps" presentation rule this feeds.
+ */
 export async function listLeadsForAdmin() {
   const clinicId = getDefaultClinicId();
   return prisma.lead.findMany({
@@ -160,6 +169,7 @@ export async function listLeadsForAdmin() {
     include: {
       bookingRequests: { orderBy: { createdAt: "desc" }, take: 1 },
       paymentDrafts: { orderBy: { createdAt: "desc" }, take: 1 },
+      assistantSessions: { orderBy: { createdAt: "desc" }, include: { messages: { orderBy: { createdAt: "asc" } } } },
     },
   });
 }
@@ -174,6 +184,10 @@ export async function listLeadsForAdmin() {
  * deliberately NOT a CRM: no bulk actions, no assignment/ownership, no
  * audit trail beyond `updatedAt`, no arbitrary field editing beyond
  * `appointmentStatus`/`internalNote`.
+ *
+ * Round 2026-07-17 (Smart Assistant product redesign): `lead.assistantSessions`
+ * (with `messages`) included too — same conversation-visibility purpose
+ * as `listLeadsForAdmin` above.
  */
 export async function listBookingRequestsForAdmin() {
   const clinicId = getDefaultClinicId();
@@ -181,7 +195,12 @@ export async function listBookingRequestsForAdmin() {
     where: { clinicId },
     orderBy: { createdAt: "desc" },
     include: {
-      lead: { include: { triageAnswers: true } },
+      lead: {
+        include: {
+          triageAnswers: true,
+          assistantSessions: { orderBy: { createdAt: "desc" }, include: { messages: { orderBy: { createdAt: "asc" } } } },
+        },
+      },
       paymentDrafts: { orderBy: { createdAt: "desc" }, take: 1 },
       // Round 2026-07-15 (availability-based booking): capacity is
       // computed in the page component from this booking's own

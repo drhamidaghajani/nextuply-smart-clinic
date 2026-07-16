@@ -18,12 +18,27 @@ export function issueDevBypassToken(mobile: string): string {
   return `${DEV_BYPASS_PREFIX}${mobile}:${Date.now()}`;
 }
 
+export function isDevBypassToken(token: string): boolean {
+  return token.startsWith(DEV_BYPASS_PREFIX);
+}
+
 function isValidDevBypassToken(token: string): boolean {
   if (process.env.NODE_ENV === "production") return false;
   const parts = token.slice(DEV_BYPASS_PREFIX.length).split(":");
   const timestamp = Number(parts[parts.length - 1]);
   if (!Number.isFinite(timestamp)) return false;
   return Date.now() - timestamp < DEV_BYPASS_TOKEN_TTL_MS;
+}
+
+/** Round 2026-07-17 (Smart Assistant product redesign): exported so `ask-assistant-question.ts` can validate a dev-bypass token AND recover its mobile, to lazily back it with a real (deterministic-id) `AssistantSession` row when a database IS configured but SMS isn't — see that file's doc-comment. Never used for the actual verification gate itself, which stays exactly as it was. */
+export { isValidDevBypassToken };
+
+export function extractDevBypassMobile(token: string): string | null {
+  if (!isDevBypassToken(token)) return null;
+  const rest = token.slice(DEV_BYPASS_PREFIX.length);
+  const lastColon = rest.lastIndexOf(":");
+  if (lastColon === -1) return null;
+  return rest.slice(0, lastColon);
 }
 
 /**

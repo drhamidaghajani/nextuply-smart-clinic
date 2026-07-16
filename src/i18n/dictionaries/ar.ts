@@ -380,14 +380,15 @@ export const faqSection = {
 } satisfies FaqSectionDictionary;
 
 export const assistantFlow = {
-  openingMessage:
-    "مرحبًا، أنا المساعد الذكي لعيادة الدكتور عليرضا صديقي. لإرشادكم بدقة أكبر، سأطرح عليكم بضعة أسئلة قصيرة لتحديد المسار المناسب لاستشارتكم أو حجزكم.",
+  // Round 2026-07-17 (Smart Assistant product redesign): exact new
+  // opening copy per the Persian original; "متابعة الموعد" dropped from
+  // the 5 main actions to match the new exact list.
+  openingMessage: "مرحبًا، أنا المساعد الذكي لعيادة الدكتور عليرضا صديقي. يمكنني مساعدتكم في تحديد المسار المناسب لاستشارتكم أو حجزكم.",
   mainActions: [
     { id: "consultation_booking", label: "احجز استشارة" },
     { id: "service_selection", label: "اختيار الخدمة المناسبة" },
     { id: "triage", label: "تقييم أولي" },
     { id: "cost_question", label: "سؤال عن التكلفة" },
-    { id: "follow_up", label: "متابعة الموعد" },
     { id: "care_guidance", label: "تعليمات ما قبل وبعد" },
   ],
   // Round 2026-07-13 (taxonomy correction): derived from
@@ -462,13 +463,12 @@ export const assistantFlow = {
     submittingLabel: "جارٍ الإرسال...",
     selectPlaceholder: "اختر...",
     paymentStepEyebrow: "خطوة الدفع",
-    freeTextSectionLabel: "أو اكتبوا سؤالكم الخاص",
     freeTextPlaceholder: "اكتبوا سؤالكم هنا...",
     freeTextSubmitCta: "اسأل",
     freeTextThinkingLabel: "جارٍ التحقق...",
     freeTextUnclearMessage: "لم أفهم ذلك تمامًا — يرجى استخدام أحد الخيارات أعلاه أو إعادة صياغة سؤالكم.",
     freeTextUnavailableMessage: "الردود الذكية غير متاحة مؤقتًا في الوقت الحالي. يمكنكم استخدام مسارات الإرشاد السريع، أو الاتصال بالعيادة مباشرة للتنسيق.",
-    qaAnswerEyebrow: "الإجابة على سؤالكم",
+    askQuestionCta: "اطرح سؤالاً",
   },
   steps: {
     consultationBooking: {
@@ -511,9 +511,41 @@ export const assistantFlow = {
     currencyLabel: "عملة الدفع",
     currencyOptions: { IRR: "ريال إيراني", USDT: "تيثر (USDT)" },
   },
+  // Round 2026-07-17 (Smart Assistant product redesign).
+  identify: {
+    description: "لمتابعة أسئلتكم وطلبكم، يرجى إدخال اسمكم ورقم جوالكم. بعد التحقق من الرقم، يمكنكم طرح حتى 3 أسئلة رئيسية على المساعد أو متابعة مسار الحجز.",
+    submitCta: "متابعة",
+  },
+  aiConversation: {
+    verifiedIntro: "تم التحقق من رقمكم. يمكنكم الآن طرح حتى 3 أسئلة رئيسية حول العلاج أو التحضير أو العناية أو مسار الحجز.",
+    questionsRemainingLabels: { "3": "3 أسئلة متبقية", "2": "سؤالان متبقيان", "1": "سؤال واحد متبقٍ" },
+    limitReachedNotice: "لمراجعة أدق، يتم متابعة المسار عبر حجز الاستشارة.",
+    safetyNotice: "هذا الإرشاد لا يغني عن الفحص ورأي الطبيب؛ يُتخذ القرار النهائي بعد مراجعة فريق العيادة.",
+    viewSuggestedStepCta: "عرض",
+    askAnotherCta: "السؤال التالي",
+    relatedCareCta: "عناية ذات صلة",
+    continueBookingCta: "متابعة الحجز",
+  },
+  contextualAsk: {
+    prompt: "هل لديكم سؤال قبل المتابعة؟",
+    cta: "اطرح سؤالاً",
+  },
   confirmation: {
     heading: "تم استلام طلبكم",
     body: "سيتواصل معكم فريقنا قريبًا لتنسيق الخطوات التالية.",
+    summaryLabel: "ملخص الطلب",
+    serviceLabel: "الخدمة المختارة",
+    timeLabel: "الوقت المختار أو المقترح",
+    contactStatusLabel: "حالة التواصل",
+    contactStatusValue: "قيد المراجعة من فريق العيادة",
+    tipsLabel: "ملاحظات قصيرة قبل الاتصال",
+    tips: [
+      "يرجى إبقاء هاتفكم الجوال في متناول اليد ليتمكن فريقنا من الاتصال بكم.",
+      "في حال تغيّر الوقت المقترح، يرجى إبلاغ منسقة العيادة.",
+      "يمكنكم أيضًا التواصل مع العيادة عبر واتساب للتنسيق بشكل أسرع.",
+    ],
+    viewCareCta: "عرض العناية ذات الصلة",
+    askAnotherCta: "طرح سؤال آخر",
   },
   validation: {
     mobileInvalid: "رقم الجوال غير صالح — يرجى إدخال رقم جوال إيراني صحيح (مثال: 0912xxxxxxx).",

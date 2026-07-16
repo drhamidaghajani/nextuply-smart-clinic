@@ -7,22 +7,25 @@ import { useEffect, useRef, useState } from "react";
 import { getDictionary } from "@/i18n/get-dictionary";
 import { LOCALE_DIRECTION } from "@/i18n/locales";
 
-import type { LeadInfo, PaymentCurrency, ServiceId, TriageAnswer } from "../application/types";
-import type { FreeTextResult } from "../server/ai/intent-detector";
-import { interpretFreeText } from "../server/interpret-free-text";
+import type { AssistantStep, LeadInfo, PaymentCurrency, ServiceId, TriageAnswer } from "../application/types";
 import type { OtpPurpose } from "../server/request-otp";
 import { submitBookingRequest } from "../server/submit-booking-request";
 import { useAssistant } from "./assistant-provider";
+import { AiConversationStep } from "./steps/ai-conversation-step";
 import { AppointmentSelectionStep, type AppointmentSelectionResult } from "./steps/appointment-selection-step";
 import { ConfirmationStep } from "./steps/confirmation-step";
 import { ContactCaptureStep } from "./steps/contact-capture-step";
 import { GeneralStep } from "./steps/general-step";
+import { IdentifyStep } from "./steps/identify-step";
 import { InfoStep } from "./steps/info-step";
 import { PaymentPreparationStep } from "./steps/payment-preparation-step";
 import { PhoneVerificationStep } from "./steps/phone-verification-step";
 import { ServiceSelectionStep } from "./steps/service-selection-step";
 import { TriageStep } from "./steps/triage-step";
 import { useAssistantFlow } from "./use-assistant-flow";
+
+/** Booking-flow steps the contextual "قبل از ادامه، سؤالی دارید؟" prompt (item 6) can interrupt — never shown on the earlier, pre-service steps. */
+const BOOKING_STEPS_WITH_ASK_PROMPT: readonly AssistantStep[] = ["appointment_selection", "contact_capture", "payment_preparation"];
 
 /**
  * The real assistant panel this module's earlier `TODO(assistant)` was
@@ -83,6 +86,24 @@ import { useAssistantFlow } from "./use-assistant-flow";
  * `PhoneVerificationStep` now receives that mobile as a pre-fill
  * (`initialMobile`) instead of the old reverse direction ("the verified
  * mobile pre-fills leadInfo.mobile").
+ *
+ * Round 2026-07-17 (Smart Assistant product redesign, per Hamid — "the
+ * assistant still feels like a guided form... the free-text input before
+ * identifying the user is also meaningless"): the always-visible
+ * free-text composer is GONE from the unauthenticated opening view.
+ * Free-text now only exists inside `AiConversationStep`, reachable two
+ * ways: (1) `GeneralStep`'s deliberate "پرسیدن سؤال" action, or (2) the
+ * contextual "قبل از ادامه، سؤالی دارید؟" prompt shown on the actual
+ * booking-flow steps (`BOOKING_STEPS_WITH_ASK_PROMPT`, item 6 of the
+ * brief). Both funnel through `handleAskQuestionEntry`: already-verified
+ * with questions left → straight to `ai_conversation`; otherwise →
+ * `identify` (name+mobile, NOT the full `ContactCaptureStep` form) →
+ * `runGated` → OTP → `ai_conversation`. `questionsRemaining` is
+ * server-authoritative (`ask-assistant-question.ts` is the real check);
+ * this component only mirrors the count for display. `returnStep`
+ * remembers which booking step to jump back to after a mid-booking
+ * question — cleared once used, `null` when the conversation was opened
+ * from the main menu (nothing to "return" to).
  */
 export function AssistantDrawer() {
   const { isOpen, step, setStep, close, source, locale } = useAssistant();
@@ -94,7 +115,6 @@ export function AssistantDrawer() {
   const shouldReduceMotion = useReducedMotion();
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [submitError, setSubmitError] = useState<string | null>(null);
-  const [qaAnswer, setQaAnswer] = useState<string | null>(null);
   const panelRef = useRef<HTMLDivElement>(null);
   const closeButtonRef = useRef<HTMLButtonElement>(null);
 
@@ -102,11 +122,10 @@ export function AssistantDrawer() {
   const [sessionToken, setSessionToken] = useState<string | null>(null);
   const [pendingPurpose, setPendingPurpose] = useState<OtpPurpose>("assistant_access");
   const pendingActionRef = useRef<((token: string) => void) | null>(null);
-  const [freeTextMessage, setFreeTextMessage] = useState("");
-  const [isAskingFreeText, setIsAskingFreeText] = useState(false);
-  const [freeTextUnclear, setFreeTextUnclear] = useState(false);
-  /** Distinct from `freeTextUnclear` — AI transport failure/not-configured, not an ambiguous question. See `intent-detector.ts`'s `FreeTextResult` doc-comment. */
-  const [freeTextUnavailable, setFreeTextUnavailable] = useState(false);
+
+  // --- Post-OTP AI conversation (round 2026-07-17) — see doc-comment above. ---
+  const [questionsRemaining, setQuestionsRemaining] = useState(3);
+  const [returnStep, setReturnStep] = useState<AssistantStep | null>(null);
 
   useEffect(() => {
     if (!isOpen) return;
@@ -186,44 +205,40 @@ export function AssistantDrawer() {
     }
   };
 
-  /** Routes `interpretFreeText`'s result — see `general-step.tsx`'s doc-comment. */
-  const handleFreeTextResult = (result: FreeTextResult) => {
-    if (result.type === "intent") {
-      if (result.serviceId) {
-        handleServiceSelect(result.serviceId);
-        return;
-      }
-      setStep(result.step);
+  /**
+   * The one entry point into the post-OTP AI conversation — see this
+   * file's doc-comment. `fromStep` is remembered as `returnStep` so
+   * `AiConversationStep` can offer "ادامه رزرو" back to wherever the
+   * patient actually was; omitted when opened from the main menu (there's
+   * nowhere meaningful to "return" to).
+   */
+  const handleAskQuestionEntry = (fromStep?: AssistantStep) => {
+    if (fromStep) setReturnStep(fromStep);
+    if (sessionToken && questionsRemaining > 0) {
+      setStep("ai_conversation");
       return;
     }
-    if (result.type === "qa") {
-      setQaAnswer(result.answer);
-      setStep("qa_response");
-    }
+    setStep("identify");
   };
 
-  const handleAskFreeText = () => {
-    const trimmed = freeTextMessage.trim();
-    if (!trimmed || isAskingFreeText) return;
-    runGated((token) => {
-      void (async () => {
-        setIsAskingFreeText(true);
-        setFreeTextUnclear(false);
-        setFreeTextUnavailable(false);
-        const result = await interpretFreeText({ message: trimmed, locale, sessionToken: token });
-        setIsAskingFreeText(false);
-        if (result.type === "unclear") {
-          setFreeTextUnclear(true);
-          return;
-        }
-        if (result.type === "unavailable") {
-          setFreeTextUnavailable(true);
-          return;
-        }
-        setFreeTextMessage("");
-        handleFreeTextResult(result);
-      })();
-    }, "assistant_access");
+  const handleIdentifySubmit = (values: { fullName: string; mobile: string }) => {
+    dispatch({ type: "SET_LEAD_INFO", leadInfo: values });
+    runGated(() => setStep("ai_conversation"), "assistant_access");
+  };
+
+  const handleReturnToBooking = () => {
+    if (!returnStep) return;
+    setStep(returnStep);
+    setReturnStep(null);
+  };
+
+  /** See `AiConversationStep`'s `onNavigateToSuggested` doc-comment — a matched service always goes through `handleServiceSelect` (which picks the correct step itself), never the AI's raw suggested step name when a service is known. */
+  const handleNavigateToSuggested = (suggestedStep: AssistantStep, serviceId: ServiceId | null) => {
+    if (serviceId) {
+      handleServiceSelect(serviceId);
+      return;
+    }
+    setStep(suggestedStep);
   };
 
   const handleTriageComplete = (answers: TriageAnswer[]) => {
@@ -345,18 +360,7 @@ export function AssistantDrawer() {
                 </button>
               ) : null}
 
-              {step === "general" && (
-                <GeneralStep
-                  dict={dict}
-                  onNavigate={setStep}
-                  message={freeTextMessage}
-                  onMessageChange={setFreeTextMessage}
-                  isAsking={isAskingFreeText}
-                  unclearMessage={freeTextUnclear}
-                  unavailableMessage={freeTextUnavailable}
-                  onAsk={handleAskFreeText}
-                />
-              )}
+              {step === "general" && <GeneralStep dict={dict} onNavigate={setStep} onAskQuestion={() => handleAskQuestionEntry()} />}
 
               {step === "consultation_booking" && (
                 <InfoStep
@@ -376,6 +380,22 @@ export function AssistantDrawer() {
                   <ServiceSelectionStep dict={dict} onSelect={handleServiceSelect} />
                 ))}
 
+              {/* Round 2026-07-17 — the contextual "قبل از ادامه، سؤالی
+                  دارید؟" prompt (item 6 of the brief): only on the real
+                  booking-flow steps, never the earlier informational ones.
+                  Routes through the same `handleAskQuestionEntry` as the
+                  main menu's "پرسیدن سؤال" — verifies first if needed. */}
+              {BOOKING_STEPS_WITH_ASK_PROMPT.includes(step) && (
+                <button
+                  type="button"
+                  onClick={() => handleAskQuestionEntry(step)}
+                  className="mb-4 flex w-full items-center justify-between gap-2 rounded-xl bg-charcoal/[0.04] px-3.5 py-2.5 text-xs text-charcoal/60 transition-colors duration-200 hover:bg-gold/10 hover:text-gold"
+                >
+                  <span>{dict.contextualAsk.prompt}</span>
+                  <span className="font-semibold">{dict.contextualAsk.cta}</span>
+                </button>
+              )}
+
               {step === "contact_capture" && <ContactCaptureStep dict={dict} leadInfo={state.leadInfo} onSubmit={handleContactSubmit} />}
 
               {step === "appointment_selection" && <AppointmentSelectionStep dict={dict} locale={locale} onSubmit={handleAppointmentSubmit} />}
@@ -393,7 +413,18 @@ export function AssistantDrawer() {
                 </>
               )}
 
-              {step === "confirmation" && <ConfirmationStep dict={dict} onClose={close} />}
+              {step === "confirmation" && (
+                <ConfirmationStep
+                  dict={dict}
+                  serviceId={state.leadInfo.selectedService}
+                  preferredDay={state.appointment.preferredDay}
+                  preferredTimeRange={state.appointment.preferredTimeRange}
+                  canAskAnother={Boolean(sessionToken) && questionsRemaining > 0}
+                  onClose={close}
+                  onViewCare={() => setStep("care_guidance")}
+                  onAskAnother={() => handleAskQuestionEntry()}
+                />
+              )}
 
               {step === "cost_question" && (
                 <InfoStep
@@ -459,17 +490,32 @@ export function AssistantDrawer() {
                 />
               )}
 
-              {/* Reached only from `GeneralStep`'s free-text input when the
-                  message is classified as an open Q&A rather than one of
-                  the deterministic app screens — see AI_USAGE_NOTES.md.
-                  Reuses `InfoStep` (no new step component needed). */}
-              {step === "qa_response" && (
-                <InfoStep
-                  eyebrow={dict.ui.qaAnswerEyebrow}
-                  title={dict.ui.qaAnswerEyebrow}
-                  body={<p>{qaAnswer}</p>}
-                  primaryAction={{ label: dict.ui.chooseServiceCta, onClick: () => setStep("service_selection") }}
-                  secondaryAction={{ label: dict.ui.backToMenu, onClick: () => setStep("general") }}
+              {/* Round 2026-07-17 — collects name+mobile before the AI
+                  conversation's OTP step; see `identify-step.tsx`. */}
+              {step === "identify" && (
+                <IdentifyStep dict={dict} fullName={state.leadInfo.fullName} mobile={state.leadInfo.mobile} onSubmit={handleIdentifySubmit} />
+              )}
+
+              {/* Round 2026-07-17 — the post-OTP, up-to-3-question AI
+                  conversation; see `ai-conversation-step.tsx`. Only
+                  reachable with a real `sessionToken` (via `runGated`), so
+                  the `sessionToken!` below is safe — TypeScript can't see
+                  that invariant through `runGated`'s indirection, hence
+                  the assertion rather than a redundant runtime check. */}
+              {step === "ai_conversation" && (
+                <AiConversationStep
+                  dict={dict}
+                  locale={locale}
+                  sessionToken={sessionToken!}
+                  fullName={state.leadInfo.fullName}
+                  selectedService={state.leadInfo.selectedService}
+                  questionsRemaining={questionsRemaining}
+                  onQuestionsRemainingChange={setQuestionsRemaining}
+                  onNavigate={setStep}
+                  onNavigateToSuggested={handleNavigateToSuggested}
+                  canReturnToBooking={Boolean(returnStep)}
+                  onReturnToBooking={handleReturnToBooking}
+                  onClose={close}
                 />
               )}
 

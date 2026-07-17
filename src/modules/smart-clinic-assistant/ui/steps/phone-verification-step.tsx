@@ -56,6 +56,17 @@ const AUTO_VERIFY_DEBOUNCE_MS = 300;
  *   cooldown (seconds). Resend is disabled until its cooldown elapses;
  *   verifying is blocked once the code has expired, with a clear prompt
  *   to request a new one instead of a confusing "wrong code" error.
+ *
+ * Round 2026-07-20 (production UX fix, per Hamid — bug: "asks for the
+ * mobile number again in a second OTP request card"): when a valid
+ * `initialMobile` is supplied (the caller already collected it —
+ * `IdentifyStep` or `ContactCaptureStep`), this component now requests
+ * the code automatically on mount and lands directly on the code-entry
+ * screen with a compact recap ("کد تأیید به شماره ... ارسال شد.") —
+ * the mobile-entry screen is skipped entirely, not just pre-filled. It's
+ * still reachable via the explicit "تغییر شماره" action. `manualEntry`
+ * tracks which of the two states we're in; only a missing/invalid
+ * `initialMobile` (or an explicit "تغییر شماره" tap) shows the form.
  */
 export function PhoneVerificationStep({
   dict,
@@ -73,8 +84,10 @@ export function PhoneVerificationStep({
   onCancel: () => void;
 }) {
   const t = dict.phoneVerification;
+  const hasValidInitialMobile = Boolean(initialMobile && /^09\d{9}$/.test(normalizeDigits(initialMobile).trim()));
   const [phase, setPhase] = useState<Phase>("enter_mobile");
-  const [mobile, setMobile] = useState(initialMobile ?? "");
+  const [manualEntry, setManualEntry] = useState(!hasValidInitialMobile);
+  const [mobile, setMobile] = useState(initialMobile ? normalizeDigits(initialMobile).trim() : "");
   const [code, setCode] = useState("");
   const [otpLength, setOtpLength] = useState(6);
   const [isSending, setIsSending] = useState(false);
@@ -104,6 +117,16 @@ export function PhoneVerificationStep({
   useEffect(() => {
     if (phase === "enter_code") codeInputRef.current?.focus();
   }, [phase]);
+
+  // Round 2026-07-20 — auto-request the code once, on mount, when we
+  // already trust `initialMobile` — skips the redundant "ask for the
+  // mobile again" screen entirely. `void` since this only ever fires
+  // once (empty deps, guarded by `hasValidInitialMobile` itself never
+  // changing after mount).
+  useEffect(() => {
+    if (hasValidInitialMobile) void handleRequestCode();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   const runVerify = async (candidateCode: string) => {
     if (verifyingGuardRef.current || isExpired) return;
@@ -175,7 +198,15 @@ export function PhoneVerificationStep({
     setExpiresAt(new Date(result.expiresAt).getTime());
     setResendAvailableAt(new Date(result.resendAvailableAt).getTime());
     setDevHint(result.status === "dev_bypass" ? `${t.devBypassNotice} (${result.devCode})` : null);
+    setManualEntry(false);
     setPhase("enter_code");
+  };
+
+  const handleChangeMobile = () => {
+    setManualEntry(true);
+    setPhase("enter_mobile");
+    setError(null);
+    setSmsUnavailable(false);
   };
 
   return (
@@ -187,7 +218,7 @@ export function PhoneVerificationStep({
         <div className="mt-4 rounded-xl bg-gold/10 px-3.5 py-3 text-xs leading-6 text-charcoal/70">
           {purpose === "booking_request" ? t.smsUnavailableBookingMessage : t.smsUnavailableMessage}
         </div>
-      ) : phase === "enter_mobile" ? (
+      ) : phase === "enter_mobile" && manualEntry ? (
         <div className="mt-4 flex flex-col gap-3.5">
           <TextField
             label={t.mobileLabel}
@@ -208,8 +239,13 @@ export function PhoneVerificationStep({
             {isSending ? t.sendingLabel : t.requestCodeCta}
           </button>
         </div>
+      ) : phase === "enter_mobile" ? (
+        // Round 2026-07-20 — auto-requesting for an already-known mobile;
+        // never shows a second mobile-entry form (item 2).
+        <p className="mt-4 text-sm leading-7 text-charcoal/50">{t.sendingLabel}</p>
       ) : (
         <div className="mt-4 flex flex-col gap-2.5">
+          <p className="text-xs leading-6 text-charcoal/55">{t.codeSentRecap.replace("{mobile}", toLocaleDigits(mobile, locale))}</p>
           {devHint ? <p className="rounded-xl bg-charcoal/[0.04] px-3.5 py-3 text-xs leading-6 text-charcoal/60">{devHint}</p> : null}
 
           <label className="block">
@@ -245,7 +281,7 @@ export function PhoneVerificationStep({
           </OutlineButton>
 
           <div className="mt-1 flex items-center justify-between text-xs">
-            <button type="button" onClick={() => setPhase("enter_mobile")} className="whitespace-nowrap font-medium text-charcoal/50 hover:text-gold">
+            <button type="button" onClick={handleChangeMobile} className="whitespace-nowrap font-medium text-charcoal/50 hover:text-gold">
               {t.changeMobileCta}
             </button>
             {resendSecondsLeft > 0 ? (

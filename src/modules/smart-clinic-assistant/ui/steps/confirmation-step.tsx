@@ -16,12 +16,18 @@ import { Chip, OutlineButton, StepHeading } from "../drawer-controls";
  * non-medical tips. `onAskAnother` only renders when the patient is both
  * verified and still has AI questions left — asking is a bonus offered
  * here, never implied as available when it isn't.
+ *
+ * Round 2026-07-20 (production UX fix, item 7 — bug: dates showed as
+ * raw Gregorian ISO strings in the Persian UI): takes the already-
+ * locale-formatted `displayLabel` directly (from
+ * `AppointmentSelectionResult.displayLabel`, Jalali for `fa`) instead of
+ * reconstructing display text from raw `preferredDay`/`preferredTimeRange`
+ * ISO fields.
  */
 export function ConfirmationStep({
   dict,
   serviceId,
-  preferredDay,
-  preferredTimeRange,
+  displayLabel,
   canAskAnother,
   onClose,
   onViewCare,
@@ -29,16 +35,14 @@ export function ConfirmationStep({
 }: {
   dict: AssistantFlowDictionary;
   serviceId: ServiceId | null;
-  preferredDay: string | null;
-  preferredTimeRange: string | null;
+  displayLabel: string | null;
   canAskAnother: boolean;
   onClose: () => void;
   onViewCare: () => void;
   onAskAnother: () => void;
 }) {
   const serviceLabel = dict.services.find((service) => service.id === serviceId)?.label ?? null;
-  const timeParts = [preferredDay, preferredTimeRange].filter((part): part is string => Boolean(part && part.trim()));
-  const timeLabel = timeParts.length > 0 ? timeParts.join(" — ") : null;
+  const timeLabel = displayLabel && displayLabel.trim() ? displayLabel : null;
 
   return (
     <div className="text-center">

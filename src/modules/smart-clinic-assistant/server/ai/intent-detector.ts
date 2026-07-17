@@ -67,6 +67,13 @@ function toFreeTextResult(output: ClassifyAssistantMessageOutput): FreeTextResul
  * `selectedService` are now caller-supplied (defaulting to the previous
  * hardcoded values) so the AI gets real context instead of always being
  * told the user is on the landing menu.
+ *
+ * Round 2026-07-20 (production UX fix, item 6): `selectedService` is now
+ * ALSO passed into `matchLocally` as its `contextServiceId` — a
+ * follow-up question that doesn't re-name the service ("چند جلسه طول
+ * می‌کشه؟") can resolve against the session's last-discussed service
+ * instead of falling through to the AI Gateway (or an "unclear" dead
+ * end) every time.
  */
 export async function detectFreeTextIntent(
   message: string,
@@ -75,7 +82,7 @@ export async function detectFreeTextIntent(
   currentStep: string = "general",
   selectedService: string | null = null
 ): Promise<FreeTextResult> {
-  const localMatch = matchLocally(message, locale);
+  const localMatch = matchLocally(message, locale, isKnownServiceId(selectedService) ? selectedService : null);
   if (localMatch) {
     return { type: "intent", step: localMatch.step, serviceId: localMatch.serviceId, responseText: null };
   }

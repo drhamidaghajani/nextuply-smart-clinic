@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react";
 
 import type { AssistantFlowDictionary } from "@/i18n/dictionary-types";
+import { formatDateForLocale } from "@/i18n/format-jalali-date";
 import type { Locale } from "@/i18n/locales";
 
 import type { AvailableAppointmentOption } from "../../server/availability-scheduler";
@@ -15,6 +16,16 @@ export interface AppointmentSelectionResult {
   /** Set only when the patient picked a real availability option, not the manual fallback. */
   selectedSlotId: string | null;
   appointmentDate: string | null;
+  /**
+   * Round 2026-07-20 (production UX fix, item 7) — a ready-to-display,
+   * already-locale-formatted label (Jalali for `fa`, via the real-slot
+   * path's own `labelFa`/`labelEn`/`labelAr`, or `formatDateForLocale`
+   * for the manual-fallback path). Callers (the transcript recap,
+   * `ConfirmationStep`) show THIS instead of reconstructing display text
+   * from `preferredDay`'s raw ISO date string — the bug this fixes
+   * ("Bad: 2026-07-18 09:00–13:00" in a Persian UI).
+   */
+  displayLabel: string;
 }
 
 const LABEL_KEY_BY_LOCALE: Record<Locale, keyof Pick<AvailableAppointmentOption, "labelFa" | "labelEn" | "labelAr">> = {
@@ -115,6 +126,7 @@ export function AppointmentSelectionStep({
               preferredTimeRange: `${option.startTime}–${option.endTime}`,
               selectedSlotId: option.slotId,
               appointmentDate: option.date,
+              displayLabel: option[labelKey],
             });
           }}
         >
@@ -147,7 +159,15 @@ export function AppointmentSelectionStep({
         </SelectField>
         <PrimaryButton
           disabled={!preferredDay || !preferredTimeRange}
-          onClick={() => onSubmit({ preferredDay, preferredTimeRange, selectedSlotId: null, appointmentDate: null })}
+          onClick={() =>
+            onSubmit({
+              preferredDay,
+              preferredTimeRange,
+              selectedSlotId: null,
+              appointmentDate: null,
+              displayLabel: `${formatDateForLocale(preferredDay, locale)} — ${preferredTimeRange}`,
+            })
+          }
         >
           {dict.appointment.submitCta}
         </PrimaryButton>

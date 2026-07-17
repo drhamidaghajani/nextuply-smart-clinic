@@ -1242,6 +1242,22 @@ export const fa = {
       rhinoplasty: "بینی",
       general_consultation: "مشاوره عمومی",
     },
+    // Round 2026-07-20 (production UX fix, item 3) — "what's the best
+    // approach for me" answers, distinct from cost guidance.
+    // `advanced-dental-implant`'s text is his exact given example, used
+    // verbatim; rhinoplasty/facial-rejuvenation follow the same
+    // structure (explain what it depends on, name the standard path,
+    // then 2-3 concrete clarifying questions).
+    serviceGuidance: {
+      byService: {
+        "advanced-dental-implant":
+          "برای ایمپلنت، بهترین روش به وضعیت استخوان، تعداد دندان‌های از دست‌رفته، محل دندان، سلامت لثه و نتیجه عکس یا CBCT بستگی دارد. معمولاً مسیر استاندارد این است که ابتدا معاینه و بررسی عکس انجام شود، سپس مشخص می‌شود آیا ایمپلنت مستقیم ممکن است یا نیاز به آماده‌سازی مثل پیوند استخوان یا سینوس لیفت وجود دارد.\n\nبرای اینکه دقیق‌تر راهنمایی‌تان کنم، لطفاً بفرمایید:\n۱. چند دندان نیاز به ایمپلنت دارید؟\n۲. فک بالا است یا پایین؟\n۳. عکس یا CBCT جدید دارید؟",
+        rhinoplasty:
+          "برای جراحی بینی، بهترین روش به ساختار استخوان و غضروف بینی، هدف اصلی شما و سابقه جراحی قبلی بستگی دارد. مسیر استاندارد این است که ابتدا معاینه حضوری و بررسی ساختار بینی انجام شود تا مشخص شود کدام تکنیک و چه میزان اصلاح مناسب شماست.\n\nبرای اینکه دقیق‌تر راهنمایی‌تان کنم، لطفاً بفرمایید:\n۱. هدف اصلی‌تان زیبایی است، تنفس، یا هر دو؟\n۲. آیا پیش‌تر جراحی بینی داشته‌اید؟\n۳. مشکل تنفسی یا انحراف تیغه دارید؟",
+        "facial-rejuvenation":
+          "برای جوان‌سازی صورت، بهترین روش به نوع نگرانی شما (افتادگی پوست، چین‌وچروک یا افت حجم)، وضعیت پوست و نتیجه دلخواهتان بستگی دارد. مسیر استاندارد این است که ابتدا معاینه انجام شود تا مشخص شود تزریق، لیفت، یا ترکیبی از هر دو مناسب‌تر است.\n\nبرای اینکه دقیق‌تر راهنمایی‌تان کنم، لطفاً بفرمایید:\n۱. بیشترین نگرانی شما کدام ناحیه از صورت است؟\n۲. آیا پیش‌تر تزریق یا جراحی جوان‌سازی داشته‌اید؟\n۳. به دنبال نتیجه موقتی هستید یا ماندگارتر؟",
+      } as Record<string, string>,
+    },
     leadForm: {
       fullNameLabel: "نام و نام خانوادگی",
       mobileLabel: "شماره موبایل",
@@ -1358,11 +1374,19 @@ export const fa = {
       resumeBookingPrompt: "برگردیم به ادامه رزرو؟",
       changeServiceCta: "تغییر خدمت",
       // Round 2026-07-18 (item 8) — replaces the old vague "use the buttons above" fallback.
-      fallbackPrompt: "برای اینکه دقیق‌تر راهنمایی‌تان کنم، لطفاً بفرمایید سؤال شما درباره کدام مورد است: هزینه، مراقبت، انتخاب خدمت یا رزرو مشاوره؟",
+      // Round 2026-07-20 (item 5) — exact updated required copy (shorter — the 4 options are now separate chips, not enumerated inline).
+      fallbackPrompt: "برای اینکه دقیق‌تر راهنمایی‌تان کنم، لطفاً بفرمایید سؤال شما بیشتر درباره کدام مورد است؟",
       fallbackChips: { cost: "هزینه", service: "انتخاب خدمت", care: "مراقبت‌ها", booking: "رزرو مشاوره" },
       costEstimateCta: "برآورد اولیه هزینه",
       bookServiceTemplate: "رزرو مشاوره {service}",
       careForServiceTemplate: "مراقبت‌های {service}",
+      // Round 2026-07-20 (item 4) — پاسخ به عبارات نارضایتی/اصلاح.
+      correctionAcknowledgement: "حق با شماست، دقیق‌تر پاسخ می‌دهم.",
+      // Round 2026-07-20 (item 3) — چیپ‌های پیگیری وضعیت عکس/CBCT.
+      hasXrayCta: "دارم عکس / CBCT",
+      noXrayCta: "ندارم عکس",
+      hasXrayReply: "عالی است — لطفاً در جلسه مشاوره، عکس یا CBCT را همراه داشته باشید تا تیم کلینیک دقیق‌تر بررسی کند.",
+      noXrayReply: "مشکلی نیست — تیم کلینیک در جلسه مشاوره راهنمایی می‌کند که عکس یا CBCT از کجا و چگونه تهیه شود.",
     },
     contextualAsk: {
       prompt: "قبل از ادامه، سؤالی دارید؟",
@@ -1422,6 +1446,8 @@ export const fa = {
       resendCooldownLabel: "ارسال مجدد کد تا {time} ثانیه دیگر",
       codeExpiredNotice: "مهلت کد تمام شد. لطفاً کد جدید دریافت کنید.",
       autoVerifyingLabel: "در حال تأیید کد...",
+      // Round 2026-07-20 (item 2) — exact required copy; `{mobile}` replaced client-side.
+      codeSentRecap: "کد تأیید به شماره {mobile} ارسال شد.",
     },
   },
 

@@ -60,17 +60,33 @@ export type AskAssistantQuestionResult =
 /**
  * Steps that resolve to a real, content-grounded ANSWER (no AI-authored
  * `responseText` needed) rather than a structured card the client should
- * navigate to. `triage`/`contact_capture`/`service_selection` are
- * deliberately excluded here — those mean "the patient wants to look at
- * or start a specific booking step," which `AssistantDrawer` handles by
- * actually entering booking mode (`onNavigateToSuggested`), not by
- * answering in text.
+ * navigate to.
+ *
+ * Round 2026-07-20 (production UX fix, per Hamid — bug: "the assistant
+ * gives irrelevant fallback answers to clear implant questions"):
+ * `triage`/`contact_capture` used to fall straight through to `null` here
+ * (the doc-comment used to say they mean "start booking," handled by the
+ * client's `onNavigateToSuggested` instead) — but `local-intent-
+ * matcher.ts` returns exactly these two steps for ANY free-text service
+ * mention ("ایمپلنت برای من مناسبه؟", "برای ایمپلنت باید چی کار کنم؟"),
+ * which is virtually always a QUESTION, not a request to jump straight
+ * into a booking card. Answering `null` there meant every plain implant
+ * question fell all the way through to the generic fallback prompt —
+ * the actual bug. Now answered with `serviceGuidance` (a real, non-
+ * diagnostic "what does this involve" explanation, item 3) when curated
+ * content exists for that service, falling back to `costGuidance` (still
+ * genuinely useful — it explains the same variables) rather than the
+ * unrelated fallback prompt.
  */
 function buildGroundedAnswer(step: AssistantStep, serviceId: ServiceId | null, dict: ReturnType<typeof getDictionary>): string | null {
   const flow = dict.assistantFlow;
   switch (step) {
     case "cost_question":
       return (serviceId && flow.costGuidance.byService[serviceId]) || flow.costGuidance.generic;
+    case "triage":
+    case "contact_capture":
+      if (!serviceId) return null;
+      return flow.serviceGuidance.byService[serviceId] || flow.costGuidance.byService[serviceId] || flow.costGuidance.generic;
     case "care_guidance":
       return flow.steps.careGuidance.body;
     case "before_after":

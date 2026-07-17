@@ -196,6 +196,10 @@ export interface AssistantFlowDictionary {
   };
   /** Round 2026-07-18 — short, natural service names for chip labels ("رزرو مشاوره ایمپلنت") — `services[].label` is the full formal name and reads awkwardly inside a small chip. */
   serviceShortLabels: Record<string, string>;
+  /** Round 2026-07-20 (production UX fix, item 3) — "what does this involve / what's the best approach" answers for a plain service question ("ایمپلنت برای من مناسبه؟"), distinct from `costGuidance` (price-specific). Falls back to `costGuidance` for services without a curated entry here — see `ask-assistant-question.ts`'s `buildGroundedAnswer`. */
+  serviceGuidance: {
+    byService: Record<string, string>;
+  };
   leadForm: {
     fullNameLabel: string;
     mobileLabel: string;
@@ -287,6 +291,13 @@ export interface AssistantFlowDictionary {
     /** `"{service}"` placeholder templates for service-aware chip labels ("رزرو مشاوره ایمپلنت" / "مراقبت‌های ایمپلنت") — a template (not string concatenation) so word order stays grammatical in en/ar too. */
     bookServiceTemplate: string;
     careForServiceTemplate: string;
+    /** Round 2026-07-20 (production UX fix, item 4) — shown before retrying the last topic in response to a recognized dissatisfaction phrase ("این جواب من نیست"). */
+    correctionAcknowledgement: string;
+    /** Round 2026-07-20 (item 3) — the two imaging-status follow-up chips on a service-guidance answer, plus their deterministic (no question consumed) canned replies. */
+    hasXrayCta: string;
+    noXrayCta: string;
+    hasXrayReply: string;
+    noXrayReply: string;
   };
   /** Round 2026-07-17 — the "قبل از ادامه، سؤالی دارید؟" prompt shown on booking-flow steps (item 6 of the brief). */
   contextualAsk: {
@@ -339,6 +350,8 @@ export interface AssistantFlowDictionary {
     resendCooldownLabel: string;
     codeExpiredNotice: string;
     autoVerifyingLabel: string;
+    /** Round 2026-07-20 (item 2) — the compact recap shown instead of asking for the mobile a second time; `{mobile}` placeholder. */
+    codeSentRecap: string;
   };
 }
 

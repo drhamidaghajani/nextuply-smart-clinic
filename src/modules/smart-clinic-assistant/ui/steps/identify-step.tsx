@@ -4,6 +4,7 @@ import { useState } from "react";
 
 import type { AssistantFlowDictionary } from "@/i18n/dictionary-types";
 
+import { normalizeDigits } from "../../application/validation";
 import { PrimaryButton, StepHeading, TextField } from "../drawer-controls";
 
 /**
@@ -18,6 +19,14 @@ import { PrimaryButton, StepHeading, TextField } from "../drawer-controls";
  * form later, after a time preference exists); reusing that component
  * here would drag in city/ageRange/contactMethod/notes fields that don't
  * belong in a "let me ask a quick question" moment.
+ *
+ * Round 2026-07-20 (production UX fix, per Hamid — bug: "Persian/Arabic
+ * digits show validation errors"): the mobile field normalizes digits
+ * live as typed (`normalizeDigits`, the same utility `phone-
+ * verification-step.tsx`'s OTP fields and `mobileSchema` use), and
+ * `handleSubmit`'s own check normalizes again before testing — a number
+ * typed on a Persian (۰-۹) or Arabic (٠-٩) keyboard must never show a
+ * validation error just because of the digit script.
  */
 export function IdentifyStep({
   dict,
@@ -35,7 +44,7 @@ export function IdentifyStep({
 
   const handleSubmit = () => {
     const trimmedName = form.fullName.trim();
-    const trimmedMobile = form.mobile.trim();
+    const trimmedMobile = normalizeDigits(form.mobile).trim();
     if (!trimmedName) {
       setError(dict.validation.fullNameRequired);
       return;
@@ -61,7 +70,7 @@ export function IdentifyStep({
         <TextField
           label={dict.leadForm.mobileLabel}
           value={form.mobile}
-          onChange={(event) => setForm((prev) => ({ ...prev, mobile: event.target.value }))}
+          onChange={(event) => setForm((prev) => ({ ...prev, mobile: normalizeDigits(event.target.value) }))}
           dir="ltr"
           inputMode="tel"
           placeholder="09xxxxxxxxx"

@@ -32,6 +32,8 @@ interface FlowState {
     preferredTimeRange: string | null;
     selectedSlotId: string | null;
     appointmentDate: string | null;
+    /** Round 2026-07-20 (production UX fix, item 7) — the already-locale-formatted (Jalali for `fa`) label for this pick, from `AppointmentSelectionResult.displayLabel`. Recap lines and `ConfirmationStep` display THIS, never reconstruct from the raw ISO `preferredDay`/`appointmentDate`. */
+    displayLabel: string | null;
   };
   payment: PaymentDraft;
   submittedRequestId: string | null;
@@ -48,6 +50,7 @@ type FlowAction =
       preferredTimeRange: string | null;
       selectedSlotId?: string | null;
       appointmentDate?: string | null;
+      displayLabel?: string | null;
     }
   | { type: "SET_PAYMENT"; payment: Partial<PaymentDraft> }
   | { type: "SUBMITTED"; requestId: string }
@@ -67,7 +70,7 @@ const initialState: FlowState = {
   leadInfo: initialLeadInfo,
   triageAnswers: [],
   triageCompleted: false,
-  appointment: { preferredDay: null, preferredTimeRange: null, selectedSlotId: null, appointmentDate: null },
+  appointment: { preferredDay: null, preferredTimeRange: null, selectedSlotId: null, appointmentDate: null, displayLabel: null },
   payment: { amount: null, currency: "IRR", paymentType: "consultation_fee", paymentStatus: "pending", paymentProvider: "placeholder" },
   submittedRequestId: null,
 };
@@ -91,6 +94,7 @@ function reducer(state: FlowState, action: FlowAction): FlowState {
           preferredTimeRange: action.preferredTimeRange,
           selectedSlotId: action.selectedSlotId ?? null,
           appointmentDate: action.appointmentDate ?? null,
+          displayLabel: action.displayLabel ?? null,
         },
       };
     case "SET_PAYMENT":

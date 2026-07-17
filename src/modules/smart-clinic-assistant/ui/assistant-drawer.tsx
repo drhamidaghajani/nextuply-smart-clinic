@@ -5,7 +5,7 @@ import { useRouter } from "next/navigation";
 import { useEffect, useRef, useState } from "react";
 
 import { getDictionary } from "@/i18n/get-dictionary";
-import { LOCALE_DIRECTION } from "@/i18n/locales";
+import { LOCALE_DIRECTION, type Locale } from "@/i18n/locales";
 
 import { ACTION_STEP_MAP } from "../application/action-step-map";
 import type { AssistantIntent, AssistantStep, LeadInfo, PaymentCurrency, ServiceId, TriageAnswer } from "../application/types";
@@ -26,6 +26,20 @@ import { useAssistantFlow } from "./use-assistant-flow";
 
 /** The guided booking steps — anything else is a menu/informational/AI intent, not a card in "booking" mode. */
 const BOOKING_STEPS: readonly AssistantStep[] = ["service_selection", "triage", "appointment_selection", "contact_capture", "payment_preparation"];
+
+/**
+ * Round 2026-07-20 (production UX fix, item 4) — plain-substring
+ * "that's not my answer" phrases. Deliberately generic/service-blind
+ * (unlike `local-intent-matcher.ts`'s keyword groups) — a message that
+ * itself names a service ("سوال من درباره ایمپلنته") already resolves
+ * correctly through the normal free-text path and doesn't need this
+ * special case.
+ */
+const DISSATISFACTION_KEYWORDS: Record<Locale, string[]> = {
+  fa: ["این جواب من نیست", "جواب سوالم", "متوجه نشدی", "بی‌ربط", "نه منظورم", "درست جواب نده", "جوابمو ندادی", "جواب درست نبود"],
+  en: ["that's not my answer", "answer my question", "you didn't understand", "not relevant", "that's not what i meant", "wrong answer"],
+  ar: ["هذا ليس جوابي", "أجب عن سؤالي", "لم تفهم", "غير ذي صلة", "لم أقصد ذلك", "إجابة خاطئة"],
+};
 
 type AssistantMode = "menu" | "conversation" | "booking" | "identify" | "otp" | "confirmation";
 
@@ -102,6 +116,8 @@ export function AssistantDrawer() {
   const closeButtonRef = useRef<HTMLButtonElement>(null);
   const composerInputRef = useRef<HTMLInputElement>(null);
   const bottomRef = useRef<HTMLDivElement>(null);
+  /** Round 2026-07-20 (item 8) — the growing content wrapper, observed by `ResizeObserver` so ANY height change (a new entry, a booking card swapping in, an async-loaded option list, a timer label appearing) re-scrolls — not just the specific state changes a deps array would need enumerating. */
+  const contentRef = useRef<HTMLDivElement>(null);
   const entryIdRef = useRef(0);
   const seededForRef = useRef<string | null>(null);
   const shownIntroRef = useRef(false);
@@ -123,6 +139,8 @@ export function AssistantDrawer() {
   // --- Post-OTP AI conversation state + mid-booking detour memory (item 5) ---
   const [questionsRemaining, setQuestionsRemaining] = useState(3);
   const [returnStep, setReturnStep] = useState<AssistantStep | null>(null);
+  /** Round 2026-07-20 (production UX fix, item 6) — the session's last-discussed service, lightweight client-side memory (NOT a CRM concept): set whenever a service is picked via a card OR resolved from free text, read as a fallback so a short follow-up ("چند جلسه طول می‌کشه؟") or a correction ("این جواب من نیست") resolves against the right service without the patient repeating its name. */
+  const [lastServiceId, setLastServiceId] = useState<ServiceId | null>(null);
 
   useEffect(() => {
     if (!isOpen) return;
@@ -155,9 +173,42 @@ export function AssistantDrawer() {
     };
   }, [isOpen, close]);
 
+  /**
+   * Round 2026-07-20 (production UX fix, item 8 — bug: "new messages/
+   * cards do not auto-scroll into view"): a `ResizeObserver` on the
+   * growing content wrapper, not a `[entries, mode, step]` dependency
+   * effect — the old version missed height changes that happen WITHOUT
+   * one of those three changing (an async option list resolving inside
+   * an already-mounted booking card, a timer label appearing, the OTP
+   * card's phase flipping from "sending" to "enter code"). This catches
+   * every case the brief lists (user message, assistant response, OTP
+   * card, next booking card, confirmation, error, resume card)
+   * uniformly, since all of them are content-height changes.
+   */
   useEffect(() => {
-    bottomRef.current?.scrollIntoView({ behavior: "smooth", block: "end" });
-  }, [entries, mode, step]);
+    const node = contentRef.current;
+    if (!node || typeof ResizeObserver === "undefined") return;
+    const observer = new ResizeObserver(() => {
+      bottomRef.current?.scrollIntoView({ behavior: shouldReduceMotion ? "auto" : "smooth", block: "end" });
+    });
+    observer.observe(node);
+    return () => observer.disconnect();
+  }, [shouldReduceMotion]);
+
+  // On mobile, the on-screen keyboard opening resizes the visual
+  // viewport (not the document) — re-anchor to the bottom so the
+  // composer/active card stays visible instead of sliding under the
+  // keyboard. Instant, not smooth — this is a viewport correction, not a
+  // content-arrival animation.
+  useEffect(() => {
+    if (typeof window === "undefined" || !window.visualViewport) return;
+    const viewport = window.visualViewport;
+    const handleViewportResize = () => {
+      bottomRef.current?.scrollIntoView({ behavior: "auto", block: "end" });
+    };
+    viewport.addEventListener("resize", handleViewportResize);
+    return () => viewport.removeEventListener("resize", handleViewportResize);
+  }, []);
 
   const pushEntry = (entry: DistributiveOmit<ConversationEntry, "id">) => {
     entryIdRef.current += 1;
@@ -276,9 +327,52 @@ export function AssistantDrawer() {
   };
 
   const showCostGuidance = (serviceId: ServiceId | null) => {
+    if (serviceId) setLastServiceId(serviceId);
     const text = (serviceId && dict.costGuidance.byService[serviceId]) || dict.costGuidance.generic;
     pushEntry({ kind: "assistant", text, chips: serviceAwareChips(serviceId) });
   };
+
+  /**
+   * Round 2026-07-20 (production UX fix, item 3) — chips for a
+   * SERVICE-GUIDANCE answer ("ایمپلنت برای من مناسبه؟"), distinct from
+   * `serviceAwareChips` (used for cost/care answers): offers the two
+   * imaging-status replies the guidance text's own clarifying questions
+   * ask for, instead of a generic cost-estimate chip that doesn't fit
+   * the question just asked.
+   */
+  const implantAwareChips = (serviceId: ServiceId): ChipAction[] => {
+    const short = dict.serviceShortLabels[serviceId] ?? dict.services.find((service) => service.id === serviceId)?.label ?? "";
+    return [
+      { label: dict.aiConversation.bookServiceTemplate.replace("{service}", short), onClick: () => handleServiceSelect(serviceId), emphasized: true },
+      { label: dict.aiConversation.hasXrayCta, onClick: () => acknowledgeXrayAnswer(true, serviceId) },
+      { label: dict.aiConversation.noXrayCta, onClick: () => acknowledgeXrayAnswer(false, serviceId) },
+      { label: dict.aiConversation.careForServiceTemplate.replace("{service}", short), onClick: () => routeToStep("care_guidance") },
+      nextQuestionChip(),
+    ];
+  };
+
+  /** Deterministic, free (no server call, no question consumed) — a chip click acknowledging whether the patient already has imaging, then re-offers the standard next steps. */
+  const acknowledgeXrayAnswer = (hasXray: boolean, serviceId: ServiceId) => {
+    pushEntry({ kind: "choice", text: hasXray ? dict.aiConversation.hasXrayCta : dict.aiConversation.noXrayCta });
+    pushEntry({
+      kind: "assistant",
+      text: hasXray ? dict.aiConversation.hasXrayReply : dict.aiConversation.noXrayReply,
+      chips: serviceAwareChips(serviceId),
+    });
+  };
+
+  /**
+   * Round 2026-07-20 (production UX fix, item 3/6) — the real,
+   * non-diagnostic "what does this involve" answer for a plain service
+   * question, used both for a normal question AND for the dissatisfaction/
+   * correction path (item 4) — same content either way.
+   */
+  const showServiceGuidance = (serviceId: ServiceId) => {
+    const text = dict.serviceGuidance.byService[serviceId] || dict.costGuidance.byService[serviceId] || dict.costGuidance.generic;
+    pushEntry({ kind: "assistant", text, chips: implantAwareChips(serviceId) });
+  };
+
+  const isDissatisfactionPhrase = (text: string): boolean => DISSATISFACTION_KEYWORDS[locale].some((keyword) => text.includes(keyword));
 
   const fallbackChips = (): ChipAction[] => [
     { label: dict.aiConversation.fallbackChips.cost, onClick: () => routeToStep("cost_question") },
@@ -304,6 +398,12 @@ export function AssistantDrawer() {
   ];
 
   const answerChips = (suggestedStep: AssistantStep | null, suggestedServiceId: ServiceId | null): ChipAction[] => {
+    // A "triage"/"contact_capture" suggestion with a known service is the
+    // service-GUIDANCE case (item 3) — its own imaging-aware chip set,
+    // not the cost/care-flavored `serviceAwareChips`.
+    if (suggestedServiceId && (suggestedStep === "triage" || suggestedStep === "contact_capture")) {
+      return implantAwareChips(suggestedServiceId);
+    }
     if (suggestedServiceId) return serviceAwareChips(suggestedServiceId);
     if (suggestedStep === "cost_question" || suggestedStep === "care_guidance") return serviceAwareChips(null);
     const chips: ChipAction[] = [];
@@ -415,6 +515,7 @@ export function AssistantDrawer() {
 
   const handleServiceSelect = (serviceId: ServiceId) => {
     dispatch({ type: "SET_SERVICE", serviceId });
+    setLastServiceId(serviceId);
     const label = dict.services.find((service) => service.id === serviceId)?.label ?? serviceId;
     pushEntry({ kind: "choice", text: label });
     setMode("booking");
@@ -435,8 +536,11 @@ export function AssistantDrawer() {
       preferredTimeRange: result.preferredTimeRange,
       selectedSlotId: result.selectedSlotId,
       appointmentDate: result.appointmentDate,
+      displayLabel: result.displayLabel,
     });
-    pushEntry({ kind: "choice", text: `${result.preferredDay} · ${result.preferredTimeRange}` });
+    // Round 2026-07-20 (item 7) — the already-formatted (Jalali for fa)
+    // label, not the raw ISO `preferredDay`/`preferredTimeRange`.
+    pushEntry({ kind: "choice", text: result.displayLabel });
     setStep("contact_capture");
   };
 
@@ -483,6 +587,26 @@ export function AssistantDrawer() {
     if (!trimmed || isAsking) return;
     pushEntry({ kind: "user", text: trimmed });
     setComposerMessage("");
+
+    const contextServiceId = state.leadInfo.selectedService ?? lastServiceId;
+
+    // Round 2026-07-20 (production UX fix, item 4 — "when the user says
+    // the answer was not helpful, the assistant does not correct
+    // itself"): a recognized dissatisfaction phrase, WITH a remembered
+    // topic to retry, is answered entirely client-side — deterministic,
+    // free, no server round-trip, so it can never consume one of the
+    // patient's 3 questions (matches item 4's explicit "do not consume
+    // another question" requirement) — see `showServiceGuidance`.
+    if (isDissatisfactionPhrase(trimmed) && contextServiceId) {
+      setIsAsking(true);
+      setTimeout(() => {
+        setIsAsking(false);
+        pushEntry({ kind: "assistant", text: dict.aiConversation.correctionAcknowledgement });
+        showServiceGuidance(contextServiceId);
+      }, 400);
+      return;
+    }
+
     setIsAsking(true);
     void (async () => {
       const result = await askAssistantQuestion({
@@ -491,7 +615,7 @@ export function AssistantDrawer() {
         locale,
         currentStep: mode === "booking" ? step : "conversation",
         fullName: state.leadInfo.fullName || null,
-        serviceSlug: state.leadInfo.selectedService,
+        serviceSlug: contextServiceId,
       });
       setIsAsking(false);
 
@@ -519,6 +643,7 @@ export function AssistantDrawer() {
         return;
       }
       // "answer"
+      if (result.suggestedServiceId) setLastServiceId(result.suggestedServiceId);
       pushEntry({ kind: "assistant", text: result.answer, chips: returnStep ? undefined : answerChips(result.suggestedStep, result.suggestedServiceId) });
       setQuestionsRemaining(result.questionsRemaining);
       if (returnStep) {
@@ -624,8 +749,7 @@ export function AssistantDrawer() {
           <ConfirmationStep
             dict={dict}
             serviceId={state.leadInfo.selectedService}
-            preferredDay={state.appointment.preferredDay}
-            preferredTimeRange={state.appointment.preferredTimeRange}
+            displayLabel={state.appointment.displayLabel}
             canAskAnother={Boolean(sessionToken) && questionsRemaining > 0}
             onClose={close}
             onViewCare={() => routeToStep("care_guidance")}
@@ -701,47 +825,49 @@ export function AssistantDrawer() {
             </div>
 
             <div className="flex-1 overflow-y-auto px-5 py-6">
-              {showBack ? (
-                <button
-                  type="button"
-                  onClick={handleBackToMenu}
-                  className="mb-4 inline-flex items-center gap-1.5 text-xs font-medium text-charcoal/45 transition-colors duration-200 hover:text-gold"
-                >
-                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2} strokeLinecap="round" strokeLinejoin="round" className="h-3.5 w-3.5">
-                    <path d="M9 6l6 6-6 6" />
-                  </svg>
-                  {dict.ui.backToMenu}
-                </button>
-              ) : null}
-
-              <div className="flex flex-col gap-3">
-                {entries.map((entry) => {
-                  if (entry.kind === "user") return <UserBubble key={entry.id}>{entry.text}</UserBubble>;
-                  if (entry.kind === "choice") return <ChoiceRecap key={entry.id}>{entry.text}</ChoiceRecap>;
-                  if (entry.kind === "note") return <ChoiceRecap key={entry.id}>{entry.text}</ChoiceRecap>;
-                  return (
-                    <div key={entry.id} className="flex flex-col items-start gap-2">
-                      <AssistantBubble>{entry.text}</AssistantBubble>
-                      {entry.chips && entry.chips.length > 0 ? (
-                        <div className="flex flex-wrap gap-2 ps-1">
-                          {entry.chips.map((chip, index) => (
-                            <Chip key={index} emphasized={chip.emphasized} onClick={chip.onClick}>
-                              {chip.label}
-                            </Chip>
-                          ))}
-                        </div>
-                      ) : null}
-                    </div>
-                  );
-                })}
-                {isAsking ? (
-                  <div className="me-auto">
-                    <TypingIndicator />
-                  </div>
+              <div ref={contentRef}>
+                {showBack ? (
+                  <button
+                    type="button"
+                    onClick={handleBackToMenu}
+                    className="mb-4 inline-flex items-center gap-1.5 text-xs font-medium text-charcoal/45 transition-colors duration-200 hover:text-gold"
+                  >
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2} strokeLinecap="round" strokeLinejoin="round" className="h-3.5 w-3.5">
+                      <path d="M9 6l6 6-6 6" />
+                    </svg>
+                    {dict.ui.backToMenu}
+                  </button>
                 ) : null}
-              </div>
 
-              <div className="mt-4">{renderLiveArea()}</div>
+                <div className="flex flex-col gap-3">
+                  {entries.map((entry) => {
+                    if (entry.kind === "user") return <UserBubble key={entry.id}>{entry.text}</UserBubble>;
+                    if (entry.kind === "choice") return <ChoiceRecap key={entry.id}>{entry.text}</ChoiceRecap>;
+                    if (entry.kind === "note") return <ChoiceRecap key={entry.id}>{entry.text}</ChoiceRecap>;
+                    return (
+                      <div key={entry.id} className="flex flex-col items-start gap-2">
+                        <AssistantBubble>{entry.text}</AssistantBubble>
+                        {entry.chips && entry.chips.length > 0 ? (
+                          <div className="flex flex-wrap gap-2 ps-1">
+                            {entry.chips.map((chip, index) => (
+                              <Chip key={index} emphasized={chip.emphasized} onClick={chip.onClick}>
+                                {chip.label}
+                              </Chip>
+                            ))}
+                          </div>
+                        ) : null}
+                      </div>
+                    );
+                  })}
+                  {isAsking ? (
+                    <div className="me-auto">
+                      <TypingIndicator />
+                    </div>
+                  ) : null}
+                </div>
+
+                <div className="mt-4">{renderLiveArea()}</div>
+              </div>
               <div ref={bottomRef} />
             </div>
           </motion.div>

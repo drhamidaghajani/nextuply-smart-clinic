@@ -468,6 +468,17 @@ export const assistantFlow = {
     rhinoplasty: "Rhinoplasty",
     general_consultation: "General Consultation",
   },
+  // Round 2026-07-20 (production UX fix, item 3) — "what's the best approach for me" answers, distinct from cost guidance.
+  serviceGuidance: {
+    byService: {
+      "advanced-dental-implant":
+        "For implants, the best approach depends on your bone condition, the number of missing teeth, the location, gum health, and the result of an X-ray or CBCT scan. The standard path is usually an exam and imaging review first, which determines whether a direct implant is possible or whether preparation like a bone graft or sinus lift is needed.\n\nTo guide you more precisely, could you tell me:\n1. How many teeth need an implant?\n2. Is it the upper or lower jaw?\n3. Do you have a recent X-ray or CBCT scan?",
+      rhinoplasty:
+        "For rhinoplasty, the best approach depends on your nasal bone and cartilage structure, your main goal, and any previous surgery. The standard path is an in-person exam of your nasal structure first, which determines the right technique and how much correction suits you.\n\nTo guide you more precisely, could you tell me:\n1. Is your main goal appearance, breathing, or both?\n2. Have you had rhinoplasty before?\n3. Do you have breathing issues or a deviated septum?",
+      "facial-rejuvenation":
+        "For facial rejuvenation, the best approach depends on your main concern (sagging, wrinkles, or lost volume), your skin condition, and your desired outcome. The standard path is an exam first, which determines whether injectables, a lift, or a combination suits you better.\n\nTo guide you more precisely, could you tell me:\n1. Which area of your face concerns you most?\n2. Have you had injectables or a rejuvenation procedure before?\n3. Are you looking for a temporary or longer-lasting result?",
+    } as Record<string, string>,
+  },
   leadForm: {
     fullNameLabel: "Full Name",
     mobileLabel: "Mobile Number",
@@ -562,11 +573,16 @@ export const assistantFlow = {
     continueBookingCta: "Continue Booking",
     resumeBookingPrompt: "Shall we continue your booking?",
     changeServiceCta: "Change Service",
-    fallbackPrompt: "To guide you more precisely, could you tell me what your question is about: cost, care, choosing a service, or booking a consultation?",
+    fallbackPrompt: "To guide you more precisely, could you tell me what your question is mostly about?",
     fallbackChips: { cost: "Cost", service: "Choose a Service", care: "Care", booking: "Book a Consultation" },
     costEstimateCta: "Initial Cost Estimate",
     bookServiceTemplate: "Book a {service} Consultation",
     careForServiceTemplate: "{service} Care",
+    correctionAcknowledgement: "You're right — let me answer that more precisely.",
+    hasXrayCta: "I have an X-ray / CBCT",
+    noXrayCta: "I don't have one",
+    hasXrayReply: "Great — please bring the X-ray or CBCT scan to your consultation so our team can review it closely.",
+    noXrayReply: "No problem — our team will guide you at the consultation on where and how to get an X-ray or CBCT scan.",
   },
   contextualAsk: {
     prompt: "Have a question before continuing?",
@@ -619,6 +635,7 @@ export const assistantFlow = {
     resendCooldownLabel: "You can resend the code in {time}s",
     codeExpiredNotice: "This code has expired. Please request a new one.",
     autoVerifyingLabel: "Verifying code...",
+    codeSentRecap: "A verification code was sent to {mobile}.",
   },
 } satisfies AssistantFlowDictionary;
 

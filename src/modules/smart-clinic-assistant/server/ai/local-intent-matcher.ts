@@ -54,11 +54,27 @@ const ARTICLES_KEYWORDS: Record<Locale, string[]> = {
   ar: ["مقال", "مقالة", "اقرأ عن"],
 };
 
-/** Pain/recovery/preparation questions ("چند روز درد دارد", "دوران نقاهت چطوره", "عکس لازم دارم؟") route to the real care-instructions content — never answered with invented medical specifics. */
+/** Pain/recovery questions ("چند روز درد دارد", "دوران نقاهت چطوره") route to the real care-instructions content — never answered with invented medical specifics. */
 const CARE_RECOVERY_KEYWORDS: Record<Locale, string[]> = {
-  fa: ["درد", "دوران نقاهت", "ریکاوری", "بهبودی", "مراقبت", "چند روز", "عکس دارم", "عکس ندارم", "سی بی سی تی", "cbct"],
-  en: ["pain", "recovery", "healing", "aftercare", "how many days", "do i need an x-ray", "cbct"],
-  ar: ["ألم", "التعافي", "فترة النقاهة", "العناية", "كم يوم", "صورة أشعة", "cbct"],
+  fa: ["درد", "دوران نقاهت", "ریکاوری", "بهبودی", "مراقبت", "چند روز"],
+  en: ["pain", "recovery", "healing", "aftercare", "how many days"],
+  ar: ["ألم", "التعافي", "فترة النقاهة", "العناية", "كم يوم"],
+};
+
+/**
+ * Round 2026-07-20 (production UX fix, item 3) — "what do I need to do
+ * before/for this" questions (imaging, bone condition, next steps) that
+ * often DON'T re-name the service ("اول باید عکس بگیرم؟", "استخوان کم
+ * داشته باشم چی؟") — routes to the same service-info answer as a direct
+ * service mention (`step: "triage"`, see `ask-assistant-question.ts`'s
+ * `buildGroundedAnswer`), relying on `contextServiceId` (the session's
+ * last-discussed service — item 6) when the message itself doesn't name
+ * one.
+ */
+const PREPARATION_KEYWORDS: Record<Locale, string[]> = {
+  fa: ["عکس بگیرم", "عکس لازم", "نیاز به عکس", "عکس دارم", "عکس ندارم", "سی بی سی تی", "cbct", "استخوان کم", "استخوان ندارم", "پیوند استخوان", "سینوس لیفت", "چی کار کنم", "چیکار کنم", "باید چیکار", "چطوری انجام می‌شود", "چجوری انجام میشه"],
+  en: ["do i need an x-ray", "need an x-ray", "cbct", "not enough bone", "bone graft", "sinus lift", "what should i do", "what do i need to do"],
+  ar: ["هل أحتاج صورة", "أحتاج أشعة", "cbct", "عظم غير كافٍ", "ترقيع عظم", "رفع الجيب", "ماذا أفعل"],
 };
 
 /** "نمی‌دانم چه خدمتی مناسب است" / "کدام خدمت مناسب من است" — genuinely undecided, route to the service picker itself rather than guessing. */
@@ -118,24 +134,39 @@ function matchServiceId(normalized: string, locale: Locale): ServiceId | null {
  * "هزینه ایمپلنت چنده"), both come back together (`step: "cost_question"`,
  * `serviceId: "advanced-dental-implant"`) rather than the service being
  * silently dropped.
+ *
+ * Round 2026-07-20 (production UX fix, item 6 — "service-aware memory"):
+ * `contextServiceId` is the session's last-discussed service (threaded in
+ * by `intent-detector.ts` from whatever `ask-assistant-question.ts` was
+ * last given). Used ONLY as a fallback when the message itself doesn't
+ * name a service AND a cost/preparation/consultation keyword matched —
+ * lets a short follow-up ("چند جلسه طول می‌کشه؟", "اول باید عکس بگیرم؟")
+ * resolve against the right service without repeating its name. Never
+ * used to override an EXPLICITLY named different service, and never
+ * applied to `UNSURE_SERVICE_KEYWORDS` (which means "I don't know which
+ * service" — using a remembered one there would contradict the message).
  */
-export function matchLocally(message: string, locale: Locale): LocalMatch | null {
+export function matchLocally(message: string, locale: Locale, contextServiceId: ServiceId | null = null): LocalMatch | null {
   const normalized = message.trim().toLowerCase();
   if (!normalized) return null;
 
   const serviceId = matchServiceId(normalized, locale);
+  const effectiveServiceId = serviceId ?? contextServiceId;
 
   if (includesAny(normalized, COST_KEYWORDS[locale])) {
-    return { step: "cost_question", serviceId };
+    return { step: "cost_question", serviceId: effectiveServiceId };
+  }
+  if (includesAny(normalized, PREPARATION_KEYWORDS[locale])) {
+    return effectiveServiceId ? { step: "triage", serviceId: effectiveServiceId } : { step: "care_guidance", serviceId: null };
   }
   if (includesAny(normalized, CARE_RECOVERY_KEYWORDS[locale])) {
-    return { step: "care_guidance", serviceId };
+    return { step: "care_guidance", serviceId: effectiveServiceId };
   }
   if (includesAny(normalized, UNSURE_SERVICE_KEYWORDS[locale])) {
     return { step: "service_selection", serviceId: null };
   }
   if (includesAny(normalized, CONSULTATION_KEYWORDS[locale])) {
-    return serviceId ? { step: "triage", serviceId } : { step: "consultation_booking", serviceId: null };
+    return effectiveServiceId ? { step: "triage", serviceId: effectiveServiceId } : { step: "consultation_booking", serviceId: null };
   }
   if (serviceId) {
     return { step: serviceId === "general_consultation" ? "contact_capture" : "triage", serviceId };

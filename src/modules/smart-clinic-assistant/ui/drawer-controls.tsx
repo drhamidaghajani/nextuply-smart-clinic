@@ -139,9 +139,20 @@ export function TypingIndicator() {
  * swapping between separate full-screen "form" views.
  */
 
-/** An assistant-authored line — left-aligned (logical `me-auto`, so it's the visual left under RTL and right under LTR — matches this drawer's existing RTL-safe convention). */
+/**
+ * An assistant-authored line — left-aligned (logical `me-auto`, so it's
+ * the visual left under RTL and right under LTR — matches this drawer's
+ * existing RTL-safe convention). `whitespace-pre-line` (round 2026-07-20)
+ * — service-guidance/cost-guidance answers include real `\n` line breaks
+ * (a short paragraph + a numbered clarifying-question list), which a
+ * plain `<div>` would otherwise collapse into one run-on line.
+ */
 export function AssistantBubble({ children }: { children: ReactNode }) {
-  return <div className="me-auto max-w-[90%] rounded-2xl rounded-ss-sm border border-charcoal/10 bg-white px-3.5 py-2.5 text-sm leading-6 text-charcoal/85">{children}</div>;
+  return (
+    <div className="me-auto max-w-[90%] whitespace-pre-line rounded-2xl rounded-ss-sm border border-charcoal/10 bg-white px-3.5 py-2.5 text-sm leading-6 text-charcoal/85">
+      {children}
+    </div>
+  );
 }
 
 /** A patient-authored line — the mirror of `AssistantBubble`. */

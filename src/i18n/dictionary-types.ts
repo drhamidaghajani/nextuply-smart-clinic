@@ -212,10 +212,11 @@ export interface AssistantFlowDictionary {
    * extended to all 6 without an equivalent example for each.
    */
   jawConcernChips: {
-    frontBack: { label: string; reply: string };
-    deviation: { label: string; reply: string };
-    bite: { label: string; reply: string };
-    aesthetics: { label: string; reply: string };
+    /** Round 2026-07-22 (V2.2, item 5/6) — `contextLabel` is the short topic phrase used in the compact public context summary ("… · رابطه فک بالا و پایین"), distinct from `label` (the chip's own clickable text) and `reply` (the full imaging-question answer). */
+    frontBack: { label: string; reply: string; contextLabel: string };
+    deviation: { label: string; reply: string; contextLabel: string };
+    bite: { label: string; reply: string; contextLabel: string };
+    aesthetics: { label: string; reply: string; contextLabel: string };
   };
   leadForm: {
     fullNameLabel: string;
@@ -330,6 +331,12 @@ export interface AssistantFlowDictionary {
     requestCallCta: string;
     /** Round 2026-07-22 (item 3) — the persistent decision card shown INSTEAD of the free-text composer once a verified session has used all its questions (`questionsRemaining <= 0`), distinct from the one-time `limitReachedNotice` transcript entry shown the moment the limit is first reached. */
     composerLocked: { prompt: string; careCta: string };
+    /** Round 2026-07-22 (V2.2 — focused full-screen assistant, item 5/6) — the "ask about recovery" chip shown after a jaw-surgery imaging question, functionally identical to `preparationQuestionCta` (opens the composer) but topic-labeled for that specific follow-up. */
+    recoveryQuestionCta: string;
+    /** Round 2026-07-22 (V2.2, item 7) — the compact public context-summary line's "verified" fragment ("شماره تأیید شده · …"), replacing the old growing stack of "✓ …" recap rows. */
+    verifiedContextLabel: string;
+    /** Round 2026-07-22 (V2.2, item 2) — label for the optional, collapsed-by-default `<details>` that reveals the rest of the conversation path on request; never expanded by default. */
+    viewJourneySummaryCta: string;
   };
   /** Round 2026-07-17 — the "قبل از ادامه، سؤالی دارید؟" prompt shown on booking-flow steps (item 6 of the brief). */
   contextualAsk: {

@@ -497,23 +497,27 @@ export const assistantFlow = {
   jawConcernChips: {
     frontBack: {
       label: "Protruding / receding jaw",
+      contextLabel: "upper/lower jaw relationship",
       reply:
-        "A protruding or receding jaw is usually about the relationship between your upper and lower jaw, assessed more precisely with radiographic (cephalometric) imaging. At the consultation, our team reviews whether jaw surgery is needed or a more limited approach is enough.",
+        "Understood. Your concern relates to a mismatch in the upper and lower jaw relationship. Cases like this usually need radiographic imaging, a review of your teeth, and your bite relationship to determine whether orthodontics alone, jaw surgery, or a combination of both is the right path.\n\nTo continue, do you have a recent X-ray or CBCT scan?",
     },
     deviation: {
       label: "Jaw asymmetry",
+      contextLabel: "jaw asymmetry",
       reply:
-        "Jaw asymmetry (deviation) usually needs a 3D facial assessment and sometimes a CBCT scan to determine its extent and cause. This evaluation happens at an in-person consultation.",
+        "Understood. Your concern relates to jaw asymmetry (deviation). This usually needs a 3D facial assessment and sometimes a CBCT scan to determine its extent and cause.\n\nTo continue, do you have a recent X-ray or CBCT scan?",
     },
     bite: {
       label: "Chewing / bite issue",
+      contextLabel: "chewing and bite issue",
       reply:
-        "Trouble chewing or your teeth not closing correctly (occlusion) is an important sign for a jaw surgery review, usually assessed together with an orthodontic evaluation.",
+        "Understood. Your concern relates to trouble chewing or your teeth not closing correctly (occlusion). Signs like this are usually assessed together with an orthodontic evaluation and radiographic imaging.\n\nTo continue, do you have a recent X-ray or CBCT scan?",
     },
     aesthetics: {
       label: "Chin / facial shape aesthetics",
+      contextLabel: "chin and facial shape aesthetics",
       reply:
-        "If your main concern is just chin shape or facial aesthetics, a more limited procedure (like chin surgery) may be enough rather than full jaw surgery — this is determined at the exam.",
+        "Understood. Your concern is mostly about chin shape or facial aesthetics. Depending on the exam, a more limited procedure like chin surgery may be enough, or a fuller jaw review may be needed.\n\nTo continue, do you have a recent X-ray or CBCT scan?",
     },
   },
   leadForm: {
@@ -603,7 +607,8 @@ export const assistantFlow = {
       "1": "For more precise guidance, you have 1 main question left.",
     },
     // Round 2026-07-22 (focused-conversation UX fix, item 8) — exact required copy.
-    limitReachedNotice: "Your 3 main questions have been answered. For a closer review, let's continue through the consultation booking or service-selection path.",
+    // Round 2026-07-22 (V2.2, item 9) — exact required copy (supersedes the previous round's near-identical wording).
+    limitReachedNotice: "Your 3 main questions have been answered. For a closer review, let's continue with one of the paths below.",
     safetyNotice: "This guidance does not replace an in-person examination or a doctor's opinion; the final decision is made after review by our clinic team.",
     viewSuggestedStepCta: "View",
     askAnotherCta: "Next Question",
@@ -636,6 +641,9 @@ export const assistantFlow = {
       prompt: "To continue, please choose one of the paths below.",
       careCta: "View Related Care",
     },
+    recoveryQuestionCta: "Ask about recovery",
+    verifiedContextLabel: "Number verified",
+    viewJourneySummaryCta: "View conversation summary",
   },
   contextualAsk: {
     prompt: "Have a question before continuing?",

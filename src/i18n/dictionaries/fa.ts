@@ -1274,28 +1274,38 @@ export const fa = {
       } as Record<string, string>,
     },
     // Round 2026-07-21 (Smart Clinic Assistant V2, item 4) — his exact
-    // given jaw-surgery concern chips, each with its own real,
-    // non-diagnostic reply (not a generic "tell me more" bounce-back).
+    // given jaw-surgery concern chips.
+    // Round 2026-07-22 (V2.2, item 5 — jaw state-machine fix): `reply` now
+    // ends with the imaging/CBCT question (his exact given text for
+    // `frontBack`) instead of a bare explanation, so the concern-selected
+    // stage always advances to a concrete next question (`jawImagingChips`
+    // in assistant-drawer.tsx) instead of the old dead-end explanation.
+    // `contextLabel` is new — the short topic phrase for the compact
+    // public context summary, distinct from the chip's own `label`.
     jawConcernChips: {
       frontBack: {
         label: "جلو یا عقب بودن فک",
+        contextLabel: "رابطه فک بالا و پایین",
         reply:
-          "مشکلات جلو یا عقب بودن فک معمولاً به رابطه فک بالا و پایین مربوط است و با بررسی عکس رادیولوژی (سفالومتری) دقیق‌تر ارزیابی می‌شود. در جلسه مشاوره، تیم کلینیک بررسی می‌کند که اصلاح جراحی فک لازم است یا راهکار محدودتری کافی است.",
+          "متوجه شدم. مسئله شما به ناهماهنگی رابطه فک بالا و پایین مربوط است. در چنین مواردی معمولاً بررسی عکس‌های رادیولوژی، وضعیت دندان‌ها و رابطه بایت لازم است تا مشخص شود اصلاح فقط با ارتودنسی، جراحی فک، یا ترکیب هر دو مسیر مناسب‌تر است.\n\nبرای ادامه، آیا عکس یا CBCT / رادیوگرافی جدید دارید؟",
       },
       deviation: {
         label: "انحراف فک",
+        contextLabel: "انحراف فک",
         reply:
-          "انحراف فک (عدم تقارن) معمولاً نیاز به بررسی سه‌بعدی صورت و گاهی عکس CBCT دارد تا میزان و علت انحراف مشخص شود. این ارزیابی در جلسه مشاوره حضوری انجام می‌شود.",
+          "متوجه شدم. مسئله شما به انحراف (عدم تقارن) فک مربوط است. این موضوع معمولاً نیاز به بررسی سه‌بعدی صورت و گاهی عکس CBCT دارد تا میزان و علت انحراف مشخص شود.\n\nبرای ادامه، آیا عکس یا CBCT / رادیوگرافی جدید دارید؟",
       },
       bite: {
         label: "مشکل جویدن یا بستن دندان‌ها",
+        contextLabel: "مشکل جویدن و بایت دندان‌ها",
         reply:
-          "مشکل در جویدن یا بسته‌شدن صحیح دندان‌ها (اکلوژن) از نشانه‌های مهم برای بررسی جراحی فک است و معمولاً همراه با ارزیابی ارتودنسی بررسی می‌شود.",
+          "متوجه شدم. مسئله شما به مشکل جویدن یا بسته‌شدن صحیح دندان‌ها (اکلوژن) مربوط است. این نشانه‌ها معمولاً همراه با ارزیابی ارتودنسی و بررسی عکس‌های رادیولوژی بررسی می‌شوند.\n\nبرای ادامه، آیا عکس یا CBCT / رادیوگرافی جدید دارید؟",
       },
       aesthetics: {
         label: "زیبایی چانه یا فرم صورت",
+        contextLabel: "زیبایی چانه و فرم صورت",
         reply:
-          "اگر نگرانی اصلی شما فقط فرم چانه یا زیبایی صورت است، ممکن است روش محدودتری (مثل جراحی چانه) کافی باشد، نه لزوماً جراحی کامل فک — این موضوع در معاینه مشخص می‌شود.",
+          "متوجه شدم. مسئله شما بیشتر به زیبایی چانه یا فرم صورت مربوط است. بسته به بررسی، ممکن است روش محدودتری مثل جراحی چانه کافی باشد یا نیاز به بررسی کامل‌تر فک وجود داشته باشد.\n\nبرای ادامه، آیا عکس یا CBCT / رادیوگرافی جدید دارید؟",
       },
     },
     leadForm: {
@@ -1404,8 +1414,8 @@ export const fa = {
         "2": "برای راهنمایی دقیق‌تر، ۲ سؤال اصلی دیگر باقی مانده است.",
         "1": "برای راهنمایی دقیق‌تر، ۱ سؤال اصلی دیگر باقی مانده است.",
       },
-      // Round 2026-07-22 (focused-conversation UX fix, item 8) — exact required copy.
-      limitReachedNotice: "۳ سؤال اصلی شما پاسخ داده شد. برای بررسی دقیق‌تر، بهتر است مسیر مشاوره یا انتخاب خدمت را ادامه دهیم.",
+      // Round 2026-07-22 (V2.2, item 9) — exact required copy (supersedes the previous round's near-identical wording).
+      limitReachedNotice: "۳ سؤال اصلی شما پاسخ داده شد. برای بررسی دقیق‌تر، بهتر است یکی از مسیرهای زیر را ادامه دهیم.",
       safetyNotice: "این راهنمایی جایگزین معاینه و نظر پزشک نیست؛ تصمیم نهایی پس از بررسی توسط تیم کلینیک انجام می‌شود.",
       viewSuggestedStepCta: "مشاهده",
       askAnotherCta: "سؤال بعدی",
@@ -1445,6 +1455,10 @@ export const fa = {
         prompt: "برای ادامه، یکی از مسیرهای زیر را انتخاب کنید.",
         careCta: "مشاهده مراقبت‌های مرتبط",
       },
+      // Round 2026-07-22 (V2.2 — focused full-screen assistant): jaw-imaging follow-up chip (item 5/6), compact context-summary "verified" fragment (item 7), optional journey-summary disclosure label (item 2).
+      recoveryQuestionCta: "سؤال درباره دوران نقاهت",
+      verifiedContextLabel: "شماره تأیید شده",
+      viewJourneySummaryCta: "مشاهده خلاصه مسیر",
     },
     contextualAsk: {
       prompt: "قبل از ادامه، سؤالی دارید؟",

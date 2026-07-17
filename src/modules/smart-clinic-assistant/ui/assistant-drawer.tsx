@@ -192,6 +192,24 @@ export function AssistantDrawer() {
   const [consecutiveDissatisfaction, setConsecutiveDissatisfaction] = useState(0);
   const [consecutiveUnclear, setConsecutiveUnclear] = useState(0);
 
+  /**
+   * Round 2026-07-22 (V2.2 — focused full-screen assistant, item 5/6 —
+   * jaw-surgery state-machine fix): the real bug wasn't the concern
+   * CHIP itself (that always called `handleJawConcern` deterministically)
+   * — it was that a FOLLOW-UP free-text message mentioning "فک" (very
+   * natural after picking a concern, e.g. "آره همون جلو بودنش") re-matches
+   * `orthognathic-surgery` in `local-intent-matcher.ts` and returns
+   * `step: "triage"` again, which `implantAwareChips` used to answer with
+   * the SAME 4 concern chips a second time — indistinguishable from "the
+   * assistant asked the same question again." `jawStage` makes that
+   * structurally impossible: once a concern is selected, `implantAwareChips`
+   * can never re-show `jawConcernChipsList()` for this service again this
+   * session, no matter what triggers it.
+   */
+  const [jawStage, setJawStage] = useState<"intro" | "concern_selected" | "imaging_question" | "booking_offer" | "booking_flow">("intro");
+  /** The short topic phrase for the compact public context summary ("… · رابطه فک بالا و پایین") — item 7. Not service-specific by construction (any future concern-style state could set it), but only the jaw flow populates it today. */
+  const [activeConcern, setActiveConcern] = useState<string | null>(null);
+
   useEffect(() => {
     if (!isOpen) return;
     const previousOverflow = document.body.style.overflow;
@@ -444,9 +462,18 @@ export function AssistantDrawer() {
    * example: "جلو یا عقب بودن فک" / "انحراف فک" / etc., each with a real
    * reply) — a generic "do you have an X-ray" chip doesn't fit a jaw
    * question the way it fits an implant question.
+   *
+   * Round 2026-07-22 (V2.2, item 5/6 — state-machine fix): the concern
+   * question (`jawConcernChipsList`) is offered ONLY while `jawStage ===
+   * "intro"`. Once a concern has been picked, ANY later call here for
+   * orthognathic-surgery (a fresh AI answer that re-matched the service
+   * from free text, a stale chip, whatever) falls through to
+   * `jawImagingChips` instead — idempotently re-offering the imaging
+   * question/booking options rather than ever re-asking "what's your
+   * main concern?" a second time.
    */
   const implantAwareChips = (serviceId: ServiceId): ChipAction[] => {
-    if (serviceId === "orthognathic-surgery") return jawConcernChipsList();
+    if (serviceId === "orthognathic-surgery") return jawStage === "intro" ? jawConcernChipsList() : jawImagingChips();
     const short = dict.serviceShortLabels[serviceId] ?? dict.services.find((service) => service.id === serviceId)?.label ?? "";
     return [
       { label: dict.aiConversation.bookServiceTemplate.replace("{service}", short), onClick: () => handleServiceSelect(serviceId), emphasized: true },
@@ -486,9 +513,11 @@ export function AssistantDrawer() {
       text: hasXray ? dict.aiConversation.hasXrayReply : dict.aiConversation.noXrayReply,
       chips: xrayFollowUpChips(serviceId),
     });
+    // Round 2026-07-22 (V2.2, item 6) — jaw_imaging_question → jaw_booking_offer.
+    if (serviceId === "orthognathic-surgery") setJawStage("booking_offer");
   };
 
-  /** Round 2026-07-21 (V2, item 4) — the 4 jaw-surgery concern chips + a direct booking chip. */
+  /** Round 2026-07-21 (V2, item 4) — the 4 jaw-surgery concern chips + a direct booking chip. Only ever shown while `jawStage === "intro"` — see `implantAwareChips`. */
   const jawConcernChipsList = (): ChipAction[] => {
     const short = dict.serviceShortLabels["orthognathic-surgery"] ?? "";
     return [
@@ -500,19 +529,47 @@ export function AssistantDrawer() {
     ];
   };
 
-  /** Deterministic, free — a real reply per concern (never a generic bounce-back), then the standard book/care/ask-again follow-up. */
+  /**
+   * Round 2026-07-22 (V2.2, item 5/6) — the jaw_imaging_question stage's
+   * chip set: exactly دارم عکس/CBCT, ندارم عکس, رزرو مشاوره جراحی فک,
+   * سؤال درباره دوران نقاهت. Reuses the existing generic
+   * `acknowledgeXrayAnswer`/`xrayFollowUpChips` mechanism for the imaging
+   * answer (no need for a jaw-specific duplicate) — only the entry chips
+   * offered right after a concern is picked are jaw-specific. Also the
+   * fallback `implantAwareChips` returns once `jawStage` has moved past
+   * "intro", so a stray re-match never re-asks the concern question.
+   */
+  const jawImagingChips = (): ChipAction[] => {
+    const short = dict.serviceShortLabels["orthognathic-surgery"] ?? "";
+    return [
+      { label: dict.aiConversation.hasXrayCta, onClick: () => acknowledgeXrayAnswer(true, "orthognathic-surgery") },
+      { label: dict.aiConversation.noXrayCta, onClick: () => acknowledgeXrayAnswer(false, "orthognathic-surgery") },
+      { label: dict.aiConversation.bookServiceTemplate.replace("{service}", short), onClick: () => handleServiceSelect("orthognathic-surgery"), emphasized: true },
+      { label: dict.aiConversation.recoveryQuestionCta, onClick: focusComposer },
+    ];
+  };
+
+  /**
+   * Round 2026-07-22 (V2.2, item 5/6 — the actual fix): a real,
+   * concern-specific explanation ENDING in the imaging/CBCT question
+   * (his exact given text for `frontBack`), with `jawImagingChips` —
+   * never the old book/care/ask-again set, which had no forward
+   * momentum and (combined with the old unconditional `jawConcernChipsList`
+   * in `implantAwareChips`) is what let the concern question resurface.
+   * Advances `jawStage` to "imaging_question" and records `activeConcern`
+   * for the compact context summary (item 7) — both are what make the
+   * "don't ask again" guard above actually hold.
+   */
   const handleJawConcern = (key: "frontBack" | "deviation" | "bite" | "aesthetics") => {
     const concern = dict.jawConcernChips[key];
     pushEntry({ kind: "choice", text: concern.label });
-    const short = dict.serviceShortLabels["orthognathic-surgery"] ?? "";
+    setLastServiceId("orthognathic-surgery");
+    setActiveConcern(concern.contextLabel);
+    setJawStage("imaging_question");
     pushEntry({
       kind: "assistant",
       text: concern.reply,
-      chips: [
-        { label: dict.aiConversation.bookServiceTemplate.replace("{service}", short), onClick: () => handleServiceSelect("orthognathic-surgery"), emphasized: true },
-        { label: dict.aiConversation.careForServiceTemplate.replace("{service}", short), onClick: () => routeToStep("care_guidance") },
-        nextQuestionChip(),
-      ],
+      chips: jawImagingChips(),
     });
   };
 
@@ -695,6 +752,8 @@ export function AssistantDrawer() {
     setEntries([]);
     entryIdRef.current = 0;
     setReturnStep(null);
+    setJawStage("intro");
+    setActiveConcern(null);
     if (startIntent === "general") {
       setMode("menu");
       setStep("general");
@@ -717,6 +776,16 @@ export function AssistantDrawer() {
   const handleServiceSelect = (serviceId: ServiceId) => {
     dispatch({ type: "SET_SERVICE", serviceId });
     setLastServiceId(serviceId);
+    // Round 2026-07-22 (V2.2, item 6) — entering the real booking flow for
+    // jaw surgery is the "jaw_booking_flow" stage; picking a DIFFERENT
+    // service clears the jaw concern context entirely (starting fresh if
+    // the patient ever returns to orthognathic-surgery later).
+    if (serviceId === "orthognathic-surgery") {
+      setJawStage("booking_flow");
+    } else if (jawStage !== "intro") {
+      setJawStage("intro");
+      setActiveConcern(null);
+    }
     const label = dict.services.find((service) => service.id === serviceId)?.label ?? serviceId;
     pushEntry({ kind: "choice", text: `✓ ${dict.aiConversation.serviceSelectedPrefix}${label}` });
     setMode("booking");
@@ -974,8 +1043,46 @@ export function AssistantDrawer() {
     { label: dict.aiConversation.requestCallCta, onClick: () => triggerHandoff("درخواست تماس از کلینیک") },
   ];
 
+  /**
+   * Round 2026-07-22 (V2.2, item 1) — pulled out of `renderLiveArea` so
+   * it can render in a genuinely FIXED bottom bar outside the scrolling
+   * stage (per the brief's "fixed bottom composer/CTA area"), instead of
+   * being just the last thing inside the scrollable content.
+   */
+  const renderComposerBar = () => (
+    <div className="flex items-center gap-2">
+      <input
+        ref={composerInputRef}
+        type="text"
+        value={composerMessage}
+        onChange={(event) => setComposerMessage(event.target.value)}
+        onKeyDown={(event) => {
+          if (event.key === "Enter") {
+            event.preventDefault();
+            handleAskFreeText();
+          }
+        }}
+        placeholder={dict.ui.freeTextPlaceholder}
+        disabled={isAsking}
+        className="w-full flex-1 rounded-xl border border-charcoal/15 bg-white px-3.5 py-2.5 text-sm text-charcoal placeholder:text-charcoal/30 focus:border-gold focus:outline-none focus:ring-1 focus:ring-gold/40"
+      />
+      <button
+        type="button"
+        onClick={handleAskFreeText}
+        disabled={isAsking || !composerMessage.trim()}
+        className="shrink-0 rounded-full bg-gradient-to-b from-gold to-gold-hover px-4 py-2.5 text-sm font-semibold text-deep-navy transition-[filter] duration-200 hover:brightness-105 disabled:pointer-events-none disabled:opacity-50"
+      >
+        {isAsking ? dict.ui.freeTextThinkingLabel : dict.ui.freeTextSubmitCta}
+      </button>
+    </div>
+  );
+
   const renderLiveArea = () => {
     if (mode === "conversation") {
+      // Round 2026-07-22 (V2.2, item 3) — the composer itself now renders
+      // in the fixed footer (`isComposerActive`, see the JSX below); this
+      // branch only ever needs to handle the LOCKED case, which stays a
+      // normal stage card (short, chip-driven, not a text input).
       if (isVerified && questionsRemaining <= 0) {
         return (
           <div className="flex flex-col items-start gap-2">
@@ -990,33 +1097,7 @@ export function AssistantDrawer() {
           </div>
         );
       }
-      return (
-        <div className="flex items-center gap-2">
-          <input
-            ref={composerInputRef}
-            type="text"
-            value={composerMessage}
-            onChange={(event) => setComposerMessage(event.target.value)}
-            onKeyDown={(event) => {
-              if (event.key === "Enter") {
-                event.preventDefault();
-                handleAskFreeText();
-              }
-            }}
-            placeholder={dict.ui.freeTextPlaceholder}
-            disabled={isAsking}
-            className="w-full flex-1 rounded-xl border border-charcoal/15 bg-white px-3.5 py-2.5 text-sm text-charcoal placeholder:text-charcoal/30 focus:border-gold focus:outline-none focus:ring-1 focus:ring-gold/40"
-          />
-          <button
-            type="button"
-            onClick={handleAskFreeText}
-            disabled={isAsking || !composerMessage.trim()}
-            className="shrink-0 rounded-full bg-gradient-to-b from-gold to-gold-hover px-4 py-2.5 text-sm font-semibold text-deep-navy transition-[filter] duration-200 hover:brightness-105 disabled:pointer-events-none disabled:opacity-50"
-          >
-            {isAsking ? dict.ui.freeTextThinkingLabel : dict.ui.freeTextSubmitCta}
-          </button>
-        </div>
-      );
+      return null;
     }
     if (mode === "identify") {
       return (
@@ -1076,27 +1157,24 @@ export function AssistantDrawer() {
   const showBack = mode !== "menu";
 
   /**
-   * Round 2026-07-22 (focused-conversation UX fix, item 1/7 — "the UI
-   * behaves like an infinite transcript... show only the focused current
-   * interaction"): a pure, render-time reduction of `entries` — the full
-   * array itself is never mutated or truncated, so DB persistence
+   * Round 2026-07-22 (V2.2 — focused full-screen assistant, item 1/2/4):
+   * `entries` (the full log) is NEVER rendered wholesale in the public
+   * UI anymore, and it's never mutated/truncated either — DB persistence
    * (`askAssistantQuestion`/`logHandoffEvent`) and the internal
-   * dashboard's `ConversationTranscript` (which reads straight from the
-   * database, not this component's state) are completely unaffected.
+   * dashboard's `ConversationTranscript` read from the database
+   * independently of this array, so both stay completely unaffected.
    *
-   * A "turn" starts at any `choice` or `user` entry (both are always
-   * something the patient just did) and runs through the `assistant`/
-   * `note` entries that follow, until the next `choice`/`user`. Only the
-   * LAST turn — from the last `choice`/`user` entry to the end — stays
-   * expanded; every earlier turn collapses to one compact recap line
-   * (item 7's exact examples: "✓ شماره تأیید شد" / "✓ سؤال درباره جراحی
-   * فک" / "✓ خدمت انتخاب شد: …" / "✓ زمان انتخاب شد: …"). `choice`
-   * entries already double as their own recap line (unchanged); a
-   * collapsed `user` entry recaps via `recapLabel` (the service-topic
-   * label captured at ask-time) or a truncation of the raw text; `note`
-   * entries (the soft "2 questions left" aside) are dropped once
-   * collapsed — a stale counter from an old turn is noise, not a record
-   * worth keeping visible.
+   * The public render is derived from it in two pieces: `activeEntries`
+   * (the current stage — everything from the last `choice`/`user` entry
+   * onward, i.e. since the last thing the patient actually did) is the
+   * ONLY thing shown expanded; `collapsedEntries` (everything before
+   * that) is NOT rendered as a visible line-by-line log at all anymore —
+   * it only feeds the one-line `contextSummaryLine` below and the
+   * optional, collapsed-by-default "مشاهده خلاصه مسیر" detail. Each
+   * meaningful interaction REPLACES the active stage (the old entry
+   * simply falls out of `activeEntries` once a newer `choice`/`user`
+   * lands) rather than appending forever — item 4's "replace, don't
+   * append" requirement.
    */
   const activeTurnStart = (() => {
     for (let i = entries.length - 1; i >= 0; i--) {
@@ -1107,17 +1185,34 @@ export function AssistantDrawer() {
   })();
   const collapsedEntries = entries.slice(0, activeTurnStart);
   const activeEntries = entries.slice(activeTurnStart);
-  const truncateForRecap = (text: string, max = 26) => (text.length > max ? `${text.slice(0, max)}…` : text);
-  const recapRows = collapsedEntries.flatMap((entry) => {
-    if (entry.kind === "choice") return [{ key: entry.id, text: entry.text }];
-    if (entry.kind === "user") return [{ key: entry.id, text: `✓ ${entry.recapLabel ?? truncateForRecap(entry.text)}` }];
-    return [];
-  });
+
+  /**
+   * Round 2026-07-22 (V2.2, item 7) — ONE compact, subtle line replacing
+   * the old growing stack of "✓ …" recap rows entirely (e.g. "شماره
+   * تأیید شده · جراحی فک و چانه · رابطه فک بالا و پایین"). Built from
+   * structured facts (`isVerified`/`lastServiceId`/`activeConcern`), not
+   * from `entries` — so it never grows unbounded and always reflects the
+   * CURRENT state, not a history of past ones.
+   */
+  const contextSummaryLine = [
+    isVerified ? dict.aiConversation.verifiedContextLabel : null,
+    lastServiceId ? (dict.services.find((service) => service.id === lastServiceId)?.label ?? null) : null,
+    activeConcern,
+  ]
+    .filter((part): part is string => Boolean(part))
+    .join(" · ");
+
+  /** Round 2026-07-22 (V2.2, item 3) — a composer stays "active" only while asking is genuinely still possible; once locked, its bar disappears entirely rather than sitting there disabled. */
+  const isComposerActive = mode === "conversation" && !(isVerified && questionsRemaining <= 0);
 
   return (
     <AnimatePresence>
       {isOpen && (
-        <div className="fixed inset-0 z-[60]" role="dialog" aria-modal="true" aria-label={localeDict.aiConcierge.eyebrow}>
+        // Round 2026-07-22 (V2.2, item 1) — `h-[100dvh]` explicitly, not
+        // just `inset-0` on `fixed` (which on mobile Safari can compute
+        // against the LARGE viewport, leaving content under the browser
+        // chrome) — the dynamic viewport unit tracks the real visible area.
+        <div className="fixed inset-0 z-[60] h-[100dvh]" role="dialog" aria-modal="true" aria-label={localeDict.aiConcierge.eyebrow}>
           <motion.div
             aria-hidden
             onClick={close}
@@ -1134,9 +1229,13 @@ export function AssistantDrawer() {
             animate={{ x: 0 }}
             exit={{ x: isRtl ? "100%" : "-100%" }}
             transition={{ duration: shouldReduceMotion ? 0.01 : 0.35, ease: [0.22, 1, 0.36, 1] }}
-            className={`absolute inset-y-0 start-0 flex w-full flex-col bg-warm-white sm:w-[420px] ${isRtl ? "shadow-[-20px_0_60px_rgba(0,0,0,0.25)]" : "shadow-[20px_0_60px_rgba(0,0,0,0.25)]"}`}
+            // `overflow-hidden` here is what confines scrolling to the
+            // stage region below (item 1 — "avoid body-level scrolling
+            // inside assistant") — header and composer footer are `shrink-0`
+            // flex children that never scroll, only the stage between them does.
+            className={`absolute inset-y-0 start-0 flex h-full w-full flex-col overflow-hidden bg-warm-white sm:w-[420px] ${isRtl ? "shadow-[-20px_0_60px_rgba(0,0,0,0.25)]" : "shadow-[20px_0_60px_rgba(0,0,0,0.25)]"}`}
           >
-            <div className="flex items-center justify-between gap-3 border-b border-warm-white/10 bg-gradient-to-br from-deep-navy to-[#1a2540] px-5 py-4">
+            <div className="flex shrink-0 items-center justify-between gap-3 border-b border-warm-white/10 bg-gradient-to-br from-deep-navy to-[#1a2540] px-5 py-4">
               <div className="flex items-center gap-2.5">
                 <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full border border-gold/40 bg-deep-navy/60">
                   <SparkMark className="h-4 w-4 text-gold" />
@@ -1159,13 +1258,14 @@ export function AssistantDrawer() {
               </button>
             </div>
 
-            <div className="flex-1 overflow-y-auto px-5 py-6">
+            {/* Round 2026-07-22 (V2.2, item 1) — the STAGE: the only region that scrolls, and only if its own content overflows. */}
+            <div className="min-h-0 flex-1 overflow-y-auto px-5 py-5">
               <div ref={contentRef}>
                 {showBack ? (
                   <button
                     type="button"
                     onClick={handleBackToMenu}
-                    className="mb-4 inline-flex items-center gap-1.5 text-xs font-medium text-charcoal/45 transition-colors duration-200 hover:text-gold"
+                    className="mb-3 inline-flex items-center gap-1.5 text-xs font-medium text-charcoal/45 transition-colors duration-200 hover:text-gold"
                   >
                     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2} strokeLinecap="round" strokeLinejoin="round" className="h-3.5 w-3.5">
                       <path d="M9 6l6 6-6 6" />
@@ -1174,15 +1274,26 @@ export function AssistantDrawer() {
                   </button>
                 ) : null}
 
-                {recapRows.length > 0 ? (
-                  <div className="flex flex-col gap-1.5">
-                    {recapRows.map((row) => (
-                      <ChoiceRecap key={row.key}>{row.text}</ChoiceRecap>
-                    ))}
-                  </div>
+                {/* Round 2026-07-22 (V2.2, item 7) — one subtle, compact context line instead of a growing "✓ …" stack. */}
+                {contextSummaryLine ? <p className="mb-2 truncate text-xs text-charcoal/40">{contextSummaryLine}</p> : null}
+
+                {/* Round 2026-07-22 (V2.2, item 2) — the full path is still reachable, just opt-in and collapsed by default; never rendered open. */}
+                {collapsedEntries.length > 0 ? (
+                  <details className="mb-3">
+                    <summary className="cursor-pointer list-none text-xs font-medium text-charcoal/40 underline decoration-dotted underline-offset-2 marker:content-none hover:text-gold">
+                      {dict.aiConversation.viewJourneySummaryCta}
+                    </summary>
+                    <div className="mt-2 flex max-h-40 flex-col gap-1.5 overflow-y-auto rounded-lg border border-charcoal/10 bg-charcoal/[0.02] p-3">
+                      {collapsedEntries.map((entry) => (
+                        <p key={entry.id} className="text-xs leading-6 text-charcoal/55">
+                          {entry.text}
+                        </p>
+                      ))}
+                    </div>
+                  </details>
                 ) : null}
 
-                <div ref={activeTurnRef} className="mt-3 flex flex-col gap-3">
+                <div ref={activeTurnRef} className="flex flex-col gap-3">
                   {activeEntries.map((entry) => {
                     if (entry.kind === "user") return <UserBubble key={entry.id}>{entry.text}</UserBubble>;
                     if (entry.kind === "choice") return <ChoiceRecap key={entry.id}>{entry.text}</ChoiceRecap>;
@@ -1213,6 +1324,9 @@ export function AssistantDrawer() {
               </div>
               <div ref={bottomRef} />
             </div>
+
+            {/* Round 2026-07-22 (V2.2, item 1/3) — the fixed bottom composer bar, OUTSIDE the scrolling stage, shown only while genuinely askable. */}
+            {isComposerActive ? <div className="shrink-0 border-t border-charcoal/10 bg-warm-white px-5 py-3">{renderComposerBar()}</div> : null}
           </motion.div>
         </div>
       )}

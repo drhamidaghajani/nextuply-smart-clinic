@@ -10,6 +10,7 @@ import { LOCALE_DIRECTION, type Locale } from "@/i18n/locales";
 import { ACTION_STEP_MAP } from "../application/action-step-map";
 import type { AssistantIntent, AssistantStep, LeadInfo, PaymentCurrency, ServiceId, TriageAnswer } from "../application/types";
 import { askAssistantQuestion } from "../server/ai/ask-assistant-question";
+import { logHandoffEvent } from "../server/ai/log-handoff";
 import type { OtpPurpose } from "../server/request-otp";
 import { submitBookingRequest } from "../server/submit-booking-request";
 import { useAssistant } from "./assistant-provider";
@@ -35,8 +36,33 @@ const BOOKING_STEPS: readonly AssistantStep[] = ["service_selection", "triage", 
  * correctly through the normal free-text path and doesn't need this
  * special case.
  */
+/**
+ * Round 2026-07-21 (Smart Clinic Assistant V2, item 13 — "human handoff
+ * ready"): an explicit, low-false-positive request to talk to a person
+ * — one of the three concrete handoff triggers actually wired this
+ * round (see `triggerHandoff`'s doc-comment for why "cost sensitivity"/
+ * "complex surgery question" were deliberately NOT auto-detected).
+ */
+const HUMAN_REQUEST_KEYWORDS: Record<Locale, string[]> = {
+  fa: ["صحبت با انسان", "با اپراتور", "با یک نفر صحبت", "با همکار شما", "با پرسنل", "با منشی", "با یک نفر واقعی"],
+  en: ["talk to a human", "speak to someone", "talk to a person", "human agent", "speak to a human"],
+  ar: ["التحدث مع إنسان", "مع موظف", "مع شخص", "التحدث مع شخص حقيقي"],
+};
+
 const DISSATISFACTION_KEYWORDS: Record<Locale, string[]> = {
-  fa: ["این جواب من نیست", "جواب سوالم", "متوجه نشدی", "بی‌ربط", "نه منظورم", "درست جواب نده", "جوابمو ندادی", "جواب درست نبود"],
+  fa: [
+    "این جواب من نیست",
+    "جواب سوالم",
+    "سوالم رو جواب",
+    "سوالم را جواب",
+    "متوجه نشدی",
+    "بی‌ربط",
+    "نه منظورم",
+    "منظورم این نبود",
+    "درست جواب نده",
+    "جوابمو ندادی",
+    "جواب درست نبود",
+  ],
   en: ["that's not my answer", "answer my question", "you didn't understand", "not relevant", "that's not what i meant", "wrong answer"],
   ar: ["هذا ليس جوابي", "أجب عن سؤالي", "لم تفهم", "غير ذي صلة", "لم أقصد ذلك", "إجابة خاطئة"],
 };
@@ -141,6 +167,9 @@ export function AssistantDrawer() {
   const [returnStep, setReturnStep] = useState<AssistantStep | null>(null);
   /** Round 2026-07-20 (production UX fix, item 6) — the session's last-discussed service, lightweight client-side memory (NOT a CRM concept): set whenever a service is picked via a card OR resolved from free text, read as a fallback so a short follow-up ("چند جلسه طول می‌کشه؟") or a correction ("این جواب من نیست") resolves against the right service without the patient repeating its name. */
   const [lastServiceId, setLastServiceId] = useState<ServiceId | null>(null);
+  /** Round 2026-07-21 (Smart Clinic Assistant V2, item 13) — how many DISSATISFACTION corrections / "unclear" results have happened BACK TO BACK (reset to 0 the moment a real answer lands) — the two repeated-failure handoff triggers. Not persisted, not a CRM field, just enough memory to notice "this isn't working" within one session. */
+  const [consecutiveDissatisfaction, setConsecutiveDissatisfaction] = useState(0);
+  const [consecutiveUnclear, setConsecutiveUnclear] = useState(0);
 
   useEffect(() => {
     if (!isOpen) return;
@@ -339,8 +368,15 @@ export function AssistantDrawer() {
    * imaging-status replies the guidance text's own clarifying questions
    * ask for, instead of a generic cost-estimate chip that doesn't fit
    * the question just asked.
+   *
+   * Round 2026-07-21 (V2, item 4) — `orthognathic-surgery` gets its own
+   * CONCERN-specific chip set instead (his exact given jaw-surgery
+   * example: "جلو یا عقب بودن فک" / "انحراف فک" / etc., each with a real
+   * reply) — a generic "do you have an X-ray" chip doesn't fit a jaw
+   * question the way it fits an implant question.
    */
   const implantAwareChips = (serviceId: ServiceId): ChipAction[] => {
+    if (serviceId === "orthognathic-surgery") return jawConcernChipsList();
     const short = dict.serviceShortLabels[serviceId] ?? dict.services.find((service) => service.id === serviceId)?.label ?? "";
     return [
       { label: dict.aiConversation.bookServiceTemplate.replace("{service}", short), onClick: () => handleServiceSelect(serviceId), emphasized: true },
@@ -351,13 +387,62 @@ export function AssistantDrawer() {
     ];
   };
 
-  /** Deterministic, free (no server call, no question consumed) — a chip click acknowledging whether the patient already has imaging, then re-offers the standard next steps. */
+  /**
+   * Round 2026-07-21 (V2, item 7) — the follow-up chips after an
+   * imaging-status reply: exactly رزرو مشاوره / سؤال درباره آماده‌سازی /
+   * مراقبت‌های مرتبط, never a dead end. "سؤال درباره آماده‌سازی" opens
+   * the composer, same mechanism as "سؤال بعدی" but topic-labeled to
+   * match what was just discussed.
+   */
+  const xrayFollowUpChips = (serviceId: ServiceId): ChipAction[] => {
+    const short = dict.serviceShortLabels[serviceId] ?? dict.services.find((service) => service.id === serviceId)?.label ?? "";
+    return [
+      { label: dict.aiConversation.bookServiceTemplate.replace("{service}", short), onClick: () => handleServiceSelect(serviceId), emphasized: true },
+      { label: dict.aiConversation.preparationQuestionCta, onClick: focusComposer },
+      { label: dict.aiConversation.careForServiceTemplate.replace("{service}", short), onClick: () => routeToStep("care_guidance") },
+    ];
+  };
+
+  /**
+   * Deterministic, free (no server call, no question consumed) — a chip
+   * click acknowledging whether the patient already has imaging, then
+   * ALWAYS gives a concrete next step (item 7 — never a dead end like
+   * "bring it to the clinic" and stop).
+   */
   const acknowledgeXrayAnswer = (hasXray: boolean, serviceId: ServiceId) => {
     pushEntry({ kind: "choice", text: hasXray ? dict.aiConversation.hasXrayCta : dict.aiConversation.noXrayCta });
     pushEntry({
       kind: "assistant",
       text: hasXray ? dict.aiConversation.hasXrayReply : dict.aiConversation.noXrayReply,
-      chips: serviceAwareChips(serviceId),
+      chips: xrayFollowUpChips(serviceId),
+    });
+  };
+
+  /** Round 2026-07-21 (V2, item 4) — the 4 jaw-surgery concern chips + a direct booking chip. */
+  const jawConcernChipsList = (): ChipAction[] => {
+    const short = dict.serviceShortLabels["orthognathic-surgery"] ?? "";
+    return [
+      { label: dict.jawConcernChips.frontBack.label, onClick: () => handleJawConcern("frontBack") },
+      { label: dict.jawConcernChips.deviation.label, onClick: () => handleJawConcern("deviation") },
+      { label: dict.jawConcernChips.bite.label, onClick: () => handleJawConcern("bite") },
+      { label: dict.jawConcernChips.aesthetics.label, onClick: () => handleJawConcern("aesthetics") },
+      { label: dict.aiConversation.bookServiceTemplate.replace("{service}", short), onClick: () => handleServiceSelect("orthognathic-surgery"), emphasized: true },
+    ];
+  };
+
+  /** Deterministic, free — a real reply per concern (never a generic bounce-back), then the standard book/care/ask-again follow-up. */
+  const handleJawConcern = (key: "frontBack" | "deviation" | "bite" | "aesthetics") => {
+    const concern = dict.jawConcernChips[key];
+    pushEntry({ kind: "choice", text: concern.label });
+    const short = dict.serviceShortLabels["orthognathic-surgery"] ?? "";
+    pushEntry({
+      kind: "assistant",
+      text: concern.reply,
+      chips: [
+        { label: dict.aiConversation.bookServiceTemplate.replace("{service}", short), onClick: () => handleServiceSelect("orthognathic-surgery"), emphasized: true },
+        { label: dict.aiConversation.careForServiceTemplate.replace("{service}", short), onClick: () => routeToStep("care_guidance") },
+        nextQuestionChip(),
+      ],
     });
   };
 
@@ -373,6 +458,34 @@ export function AssistantDrawer() {
   };
 
   const isDissatisfactionPhrase = (text: string): boolean => DISSATISFACTION_KEYWORDS[locale].some((keyword) => text.includes(keyword));
+  const isHumanRequestPhrase = (text: string): boolean => HUMAN_REQUEST_KEYWORDS[locale].some((keyword) => text.includes(keyword));
+
+  /**
+   * Round 2026-07-21 (Smart Clinic Assistant V2, item 13 — "human
+   * handoff ready"): NOT a full handoff/ticketing system — shows the
+   * exact required public notice + a direct booking offer (booking is
+   * the one concrete action that actually gets a human clinic team
+   * member involved in this codebase today), and best-effort logs WHY
+   * as a `role: "system"` message via `logHandoffEvent` (reuses the
+   * existing `AssistantMessage` log, no new table/migration). `reason`
+   * is a short staff-facing phrase, never raw patient text. `triggeringMessage`
+   * is passed only when the patient's own message that caused this
+   * hasn't already been logged through the normal `askAssistantQuestion`
+   * path (the human-request and dissatisfaction triggers both short-
+   * circuit BEFORE that call, so they'd otherwise never reach the DB —
+   * see `log-handoff.ts`'s doc-comment).
+   */
+  const triggerHandoff = (reason: string, triggeringMessage?: string) => {
+    const short = lastServiceId ? (dict.serviceShortLabels[lastServiceId] ?? "") : "";
+    pushEntry({
+      kind: "assistant",
+      text: dict.aiConversation.handoffNotice,
+      chips: lastServiceId
+        ? [{ label: dict.aiConversation.bookServiceTemplate.replace("{service}", short), onClick: () => handleServiceSelect(lastServiceId), emphasized: true }]
+        : [{ label: mainActionLabel("consultation_booking"), onClick: () => routeToStep("consultation_booking"), emphasized: true }],
+    });
+    void logHandoffEvent(sessionToken, reason, locale, triggeringMessage);
+  };
 
   const fallbackChips = (): ChipAction[] => [
     { label: dict.aiConversation.fallbackChips.cost, onClick: () => routeToStep("cost_question") },
@@ -590,19 +703,35 @@ export function AssistantDrawer() {
 
     const contextServiceId = state.leadInfo.selectedService ?? lastServiceId;
 
+    // Round 2026-07-21 (V2, item 13) — an explicit request for a human
+    // is answered immediately, client-side, no question consumed —
+    // checked BEFORE dissatisfaction/AI, since it's the clearest,
+    // lowest-false-positive of the three handoff triggers.
+    if (isHumanRequestPhrase(trimmed)) {
+      triggerHandoff("درخواست صریح کاربر برای صحبت با انسان", trimmed);
+      return;
+    }
+
     // Round 2026-07-20 (production UX fix, item 4 — "when the user says
     // the answer was not helpful, the assistant does not correct
     // itself"): a recognized dissatisfaction phrase, WITH a remembered
     // topic to retry, is answered entirely client-side — deterministic,
     // free, no server round-trip, so it can never consume one of the
     // patient's 3 questions (matches item 4's explicit "do not consume
-    // another question" requirement) — see `showServiceGuidance`.
+    // another question" requirement) — see `showServiceGuidance`. Round
+    // 2026-07-21 (V2, item 13) — a SECOND dissatisfaction in a row also
+    // offers a human handoff (repeated dissatisfaction is one of the
+    // explicit trigger conditions), appended after the correction.
     if (isDissatisfactionPhrase(trimmed) && contextServiceId) {
+      const repeatCount = consecutiveDissatisfaction + 1;
+      setConsecutiveDissatisfaction(repeatCount);
+      setConsecutiveUnclear(0);
       setIsAsking(true);
       setTimeout(() => {
         setIsAsking(false);
         pushEntry({ kind: "assistant", text: dict.aiConversation.correctionAcknowledgement });
         showServiceGuidance(contextServiceId);
+        if (repeatCount >= 2) triggerHandoff("نارضایتی مکرر از پاسخ‌های دستیار", trimmed);
       }, 400);
       return;
     }
@@ -633,16 +762,26 @@ export function AssistantDrawer() {
         return;
       }
       if (result.type === "unclear") {
+        // Round 2026-07-21 (V2, item 13) — a SECOND "the assistant
+        // couldn't tell what was meant" in a row is treated as "AI
+        // cannot answer safely" and offers a human handoff too.
+        const repeatCount = consecutiveUnclear + 1;
+        setConsecutiveUnclear(repeatCount);
+        setConsecutiveDissatisfaction(0);
         pushEntry({ kind: "assistant", text: dict.aiConversation.fallbackPrompt, chips: returnStep ? undefined : fallbackChips() });
         setQuestionsRemaining(result.questionsRemaining);
         if (returnStep) {
           pushEntry({ kind: "assistant", text: dict.aiConversation.resumeBookingPrompt, chips: resumeChips() });
+        } else if (repeatCount >= 2) {
+          triggerHandoff("عدم تشخیص مکرر منظور کاربر توسط دستیار");
         } else if (result.questionsRemaining > 0) {
           pushEntry({ kind: "note", text: dict.aiConversation.questionsRemainingLabels[String(result.questionsRemaining) as "1" | "2" | "3"] });
         }
         return;
       }
-      // "answer"
+      // "answer" — a real answer landed, so the repeated-failure streaks reset.
+      setConsecutiveDissatisfaction(0);
+      setConsecutiveUnclear(0);
       if (result.suggestedServiceId) setLastServiceId(result.suggestedServiceId);
       pushEntry({ kind: "assistant", text: result.answer, chips: returnStep ? undefined : answerChips(result.suggestedStep, result.suggestedServiceId) });
       setQuestionsRemaining(result.questionsRemaining);

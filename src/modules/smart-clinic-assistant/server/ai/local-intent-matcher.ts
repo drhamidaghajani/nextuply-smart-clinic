@@ -54,11 +54,11 @@ const ARTICLES_KEYWORDS: Record<Locale, string[]> = {
   ar: ["مقال", "مقالة", "اقرأ عن"],
 };
 
-/** Pain/recovery questions ("چند روز درد دارد", "دوران نقاهت چطوره") route to the real care-instructions content — never answered with invented medical specifics. */
+/** Pain/recovery questions ("چند روز درد دارد", "دوران نقاهت چطوره", "بعدش چقدر استراحت می‌خواد؟") route to the real care-instructions content — never answered with invented medical specifics. */
 const CARE_RECOVERY_KEYWORDS: Record<Locale, string[]> = {
-  fa: ["درد", "دوران نقاهت", "ریکاوری", "بهبودی", "مراقبت", "چند روز"],
-  en: ["pain", "recovery", "healing", "aftercare", "how many days"],
-  ar: ["ألم", "التعافي", "فترة النقاهة", "العناية", "كم يوم"],
+  fa: ["درد", "دوران نقاهت", "ریکاوری", "بهبودی", "مراقبت", "چند روز", "استراحت"],
+  en: ["pain", "recovery", "healing", "aftercare", "how many days", "rest"],
+  ar: ["ألم", "التعافي", "فترة النقاهة", "العناية", "كم يوم", "راحة"],
 };
 
 /**
@@ -70,11 +70,39 @@ const CARE_RECOVERY_KEYWORDS: Record<Locale, string[]> = {
  * `buildGroundedAnswer`), relying on `contextServiceId` (the session's
  * last-discussed service — item 6) when the message itself doesn't name
  * one.
+ *
+ * Round 2026-07-21 (Smart Clinic Assistant V2, item 5) — also covers
+ * plain "what should I do" / "what's the best approach" / "is this
+ * right for me" phrasing (activeTopic "suitability"), which is exactly
+ * what `serviceGuidance` answers — "برای من مناسبه؟"/"بهترین روش چیه"
+ * asked about an already-named or remembered service both land here.
  */
 const PREPARATION_KEYWORDS: Record<Locale, string[]> = {
-  fa: ["عکس بگیرم", "عکس لازم", "نیاز به عکس", "عکس دارم", "عکس ندارم", "سی بی سی تی", "cbct", "استخوان کم", "استخوان ندارم", "پیوند استخوان", "سینوس لیفت", "چی کار کنم", "چیکار کنم", "باید چیکار", "چطوری انجام می‌شود", "چجوری انجام میشه"],
-  en: ["do i need an x-ray", "need an x-ray", "cbct", "not enough bone", "bone graft", "sinus lift", "what should i do", "what do i need to do"],
-  ar: ["هل أحتاج صورة", "أحتاج أشعة", "cbct", "عظم غير كافٍ", "ترقيع عظم", "رفع الجيب", "ماذا أفعل"],
+  fa: [
+    "عکس بگیرم",
+    "عکس لازم",
+    "نیاز به عکس",
+    "عکس دارم",
+    "عکس ندارم",
+    "سی بی سی تی",
+    "cbct",
+    "استخوان کم",
+    "استخوان ندارم",
+    "پیوند استخوان",
+    "سینوس لیفت",
+    "چی کار کنم",
+    "چیکار کنم",
+    "چکار",
+    "باید چیکار",
+    "چطوری انجام می‌شود",
+    "چجوری انجام میشه",
+    "بهترین روش",
+    "مناسبه",
+    "مناسب است",
+    "مناسب من",
+  ],
+  en: ["do i need an x-ray", "need an x-ray", "cbct", "not enough bone", "bone graft", "sinus lift", "what should i do", "what do i need to do", "best approach", "right for me", "best option"],
+  ar: ["هل أحتاج صورة", "أحتاج أشعة", "cbct", "عظم غير كافٍ", "ترقيع عظم", "رفع الجيب", "ماذا أفعل", "أفضل طريقة", "مناسب لي"],
 };
 
 /** "نمی‌دانم چه خدمتی مناسب است" / "کدام خدمت مناسب من است" — genuinely undecided, route to the service picker itself rather than guessing. */

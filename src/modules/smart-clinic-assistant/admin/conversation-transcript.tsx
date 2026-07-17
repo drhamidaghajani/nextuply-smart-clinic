@@ -11,6 +11,16 @@ import type { Locale } from "@/i18n/locales";
  * the useful part). A `Lead` can theoretically have more than one
  * `AssistantSession` (e.g. re-verified later) — all of them with any
  * messages are shown, oldest conversation first, newest last.
+ *
+ * Round 2026-07-21 (Smart Clinic Assistant V2, item 13 — "human handoff
+ * ready"): a `role: "system"` message prefixed `"handoff: "`
+ * (`log-handoff.ts`) is rendered as a distinct amber badge line instead
+ * of blending into the plain "سیستم:" role label — staff should be able
+ * to spot "this patient needs a human" at a glance, not read every line.
+ * The summary badge's visibility check now counts ANY message, not just
+ * `role: "user"` ones — a handoff that fires on a patient's very first
+ * message (e.g. an explicit "صحبت با انسان" before any other question)
+ * has a `questionCount` of 0 but must still show up here, not be hidden.
  */
 
 type ConversationMessage = { role: "user" | "assistant" | "system"; content: string; createdAt: Date };
@@ -21,6 +31,8 @@ const ROLE_LABEL: Record<ConversationMessage["role"], string> = {
   assistant: "دستیار",
   system: "سیستم",
 };
+
+const HANDOFF_PREFIX = "handoff: ";
 
 export function ConversationTranscript({
   sessions,
@@ -34,15 +46,19 @@ export function ConversationTranscript({
 }) {
   const sessionsWithMessages = sessions.filter((session) => session.messages.length > 0).sort((a, b) => a.createdAt.getTime() - b.createdAt.getTime());
   const totalQuestions = sessionsWithMessages.reduce((sum, session) => sum + session.messages.filter((m) => m.role === "user").length, 0);
+  const hasHandoff = sessionsWithMessages.some((session) => session.messages.some((m) => m.role === "system" && m.content.startsWith(HANDOFF_PREFIX)));
 
-  if (totalQuestions === 0) {
+  if (sessionsWithMessages.length === 0) {
     return <span className="text-charcoal/40">—</span>;
   }
 
   return (
     <details className="group">
-      <summary className="inline-flex cursor-pointer list-none items-center gap-1 rounded-full bg-gold/10 px-2.5 py-0.5 text-xs text-deep-navy underline decoration-dotted decoration-charcoal/30 marker:content-none">
-        {totalQuestions} سؤال از دستیار
+      <summary className="inline-flex cursor-pointer list-none flex-wrap items-center gap-1.5 marker:content-none">
+        {totalQuestions > 0 ? (
+          <span className="rounded-full bg-gold/10 px-2.5 py-0.5 text-xs text-deep-navy underline decoration-dotted decoration-charcoal/30">{totalQuestions} سؤال از دستیار</span>
+        ) : null}
+        {hasHandoff ? <span className="rounded-full bg-amber-100 px-2.5 py-0.5 text-xs font-medium text-amber-800">⚑ نیاز به پیگیری انسانی</span> : null}
       </summary>
       <div className="mt-2 flex max-w-sm flex-col gap-3 rounded-lg border border-charcoal/10 bg-charcoal/[0.02] p-3">
         {sessionsWithMessages.map((session, sessionIndex) => (
@@ -50,13 +66,23 @@ export function ConversationTranscript({
             {session.serviceSlug && serviceLabels[session.serviceSlug] ? (
               <p className="text-[11px] font-medium text-charcoal/50">خدمت مرتبط: {serviceLabels[session.serviceSlug]}</p>
             ) : null}
-            {session.messages.map((message, messageIndex) => (
-              <p key={messageIndex} className="text-xs leading-6 text-charcoal/80">
-                <span className={message.role === "user" ? "font-semibold text-deep-navy" : "font-semibold text-gold"}>{ROLE_LABEL[message.role]}:</span>{" "}
-                {message.content}
-                <span className="ms-1.5 whitespace-nowrap text-[10px] text-charcoal/35">{formatDateTimeForLocale(message.createdAt, locale)}</span>
-              </p>
-            ))}
+            {session.messages.map((message, messageIndex) => {
+              if (message.role === "system" && message.content.startsWith(HANDOFF_PREFIX)) {
+                return (
+                  <p key={messageIndex} className="rounded-md bg-amber-50 px-2 py-1 text-xs leading-6 text-amber-800">
+                    <span className="font-semibold">⚑ نیاز به پیگیری انسانی:</span> {message.content.slice(HANDOFF_PREFIX.length)}
+                    <span className="ms-1.5 whitespace-nowrap text-[10px] text-amber-700/60">{formatDateTimeForLocale(message.createdAt, locale)}</span>
+                  </p>
+                );
+              }
+              return (
+                <p key={messageIndex} className="text-xs leading-6 text-charcoal/80">
+                  <span className={message.role === "user" ? "font-semibold text-deep-navy" : "font-semibold text-gold"}>{ROLE_LABEL[message.role]}:</span>{" "}
+                  {message.content}
+                  <span className="ms-1.5 whitespace-nowrap text-[10px] text-charcoal/35">{formatDateTimeForLocale(message.createdAt, locale)}</span>
+                </p>
+              );
+            })}
           </div>
         ))}
       </div>

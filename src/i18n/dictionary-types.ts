@@ -200,6 +200,23 @@ export interface AssistantFlowDictionary {
   serviceGuidance: {
     byService: Record<string, string>;
   };
+  /**
+   * Round 2026-07-21 (Smart Clinic Assistant V2, per Hamid — item 4's
+   * explicit jaw-surgery example): concern-specific follow-up chips,
+   * each with its own deterministic (no question consumed) reply —
+   * "جلو یا عقب بودن فک" ≠ "انحراف فک" ≠ a generic "tell me more" chip.
+   * Only populated for `orthognathic-surgery` this round (the one
+   * service with a fully-specified example); other services keep using
+   * the general-purpose `serviceAwareChips`/`implantAwareChips`
+   * patterns already built — see the final report for why this wasn't
+   * extended to all 6 without an equivalent example for each.
+   */
+  jawConcernChips: {
+    frontBack: { label: string; reply: string };
+    deviation: { label: string; reply: string };
+    bite: { label: string; reply: string };
+    aesthetics: { label: string; reply: string };
+  };
   leadForm: {
     fullNameLabel: string;
     mobileLabel: string;
@@ -293,11 +310,15 @@ export interface AssistantFlowDictionary {
     careForServiceTemplate: string;
     /** Round 2026-07-20 (production UX fix, item 4) — shown before retrying the last topic in response to a recognized dissatisfaction phrase ("این جواب من نیست"). */
     correctionAcknowledgement: string;
-    /** Round 2026-07-20 (item 3) — the two imaging-status follow-up chips on a service-guidance answer, plus their deterministic (no question consumed) canned replies. */
+    /** Round 2026-07-20 (item 3) — the two imaging-status follow-up chips on a service-guidance answer, plus their deterministic (no question consumed) canned replies. Round 2026-07-21 (V2) — copy updated to the new exact spec: never a dead end, always ends with a concrete next step + offer. */
     hasXrayCta: string;
     noXrayCta: string;
     hasXrayReply: string;
     noXrayReply: string;
+    /** Round 2026-07-21 (V2, item 7) — the "سؤال درباره آماده‌سازی" chip shown after an imaging-status reply; functions the same as `askAnotherCta` (opens the composer) but topic-labeled to match what was just discussed. */
+    preparationQuestionCta: string;
+    /** Round 2026-07-21 (V2, item 13) — "human handoff ready": exact required public copy, shown when a handoff is recommended (explicit request, repeated dissatisfaction, or the question limit reached while still engaged). Never a full handoff system — just this notice + a booking offer, and a `role: "system"` log entry for staff (see `log-handoff.ts`). */
+    handoffNotice: string;
   };
   /** Round 2026-07-17 — the "قبل از ادامه، سؤالی دارید؟" prompt shown on booking-flow steps (item 6 of the brief). */
   contextualAsk: {

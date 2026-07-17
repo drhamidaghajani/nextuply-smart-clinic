@@ -456,6 +456,13 @@ export const assistantFlow = {
         "Rhinoplasty cost depends on your nose type, any previous surgery, how much correction is needed, and an in-person examination — we can't give an exact number without a visit. For an initial estimate, have you had rhinoplasty before, and is your main goal appearance, breathing, or both?",
       "facial-rejuvenation":
         "Facial rejuvenation cost depends on the chosen method (injectables, a lift, or a combination), your skin condition and sagging, and how long results last / how many sessions are needed. For an initial estimate, which area of your face concerns you most, and have you had a similar procedure before?",
+      // Round 2026-07-21 (Smart Clinic Assistant V2) — completing coverage to all 6 services.
+      "impacted-tooth-surgery":
+        "Impacted tooth surgery cost depends on the tooth's position and depth, how complex the surgery is, and whether additional imaging is needed — we can't give a firm number without reviewing an X-ray. For an initial estimate, which impacted tooth is concerning you, and do you have a recent dental X-ray?",
+      "facial-cosmetic-surgery":
+        "Facial cosmetic surgery cost depends on the area involved, how much correction is needed, and whether it's combined with other procedures — we can't give an exact number without an in-person exam. For an initial estimate, which part of your face would you like to address?",
+      "orthognathic-surgery":
+        "Jaw surgery cost depends on how much correction is needed (upper jaw, lower jaw, or both), whether orthodontic coordination is required, and the result of radiographic imaging — we can't give an exact number without a specialist exam. For an initial estimate, is your main concern a protruding/receding jaw, asymmetry, or a bite/chewing issue?",
     } as Record<string, string>,
   },
   // Round 2026-07-18 — short, colloquial service names for chip labels.
@@ -477,7 +484,37 @@ export const assistantFlow = {
         "For rhinoplasty, the best approach depends on your nasal bone and cartilage structure, your main goal, and any previous surgery. The standard path is an in-person exam of your nasal structure first, which determines the right technique and how much correction suits you.\n\nTo guide you more precisely, could you tell me:\n1. Is your main goal appearance, breathing, or both?\n2. Have you had rhinoplasty before?\n3. Do you have breathing issues or a deviated septum?",
       "facial-rejuvenation":
         "For facial rejuvenation, the best approach depends on your main concern (sagging, wrinkles, or lost volume), your skin condition, and your desired outcome. The standard path is an exam first, which determines whether injectables, a lift, or a combination suits you better.\n\nTo guide you more precisely, could you tell me:\n1. Which area of your face concerns you most?\n2. Have you had injectables or a rejuvenation procedure before?\n3. Are you looking for a temporary or longer-lasting result?",
+      // Round 2026-07-21 (Smart Clinic Assistant V2) — completing coverage to all 6 services.
+      "impacted-tooth-surgery":
+        "For impacted tooth surgery, the best approach depends on the tooth's exact position (near a nerve or sinus), its orientation, and what an X-ray shows. The standard path is reviewing an X-ray (panoramic or CBCT) first, which determines whether it's a straightforward extraction or needs more preparation.\n\nTo guide you more precisely, do you have pain or swelling, and do you have a recent dental X-ray?",
+      "facial-cosmetic-surgery":
+        "For facial cosmetic surgery, the best approach depends on the area involved (eyelids, cheeks, jawline, or a combination), your skin and underlying tissue condition, and your desired outcome. The standard path is an in-person exam first, which determines the right technique for your facial structure.\n\nTo guide you more precisely, which part of your face would you like to address?",
+      "orthognathic-surgery":
+        "For jaw surgery, the usual path starts with reviewing the relationship between your jaws, your teeth, radiographic imaging, and your treatment goal. In some cases only a chin or facial-shape correction is needed, while others require a full assessment of the upper and lower jaw.\n\nTo guide you more precisely, what's your main concern?",
     } as Record<string, string>,
+  },
+  // Round 2026-07-21 (Smart Clinic Assistant V2, item 4) — jaw-surgery concern chips, each with a real, non-diagnostic reply.
+  jawConcernChips: {
+    frontBack: {
+      label: "Protruding / receding jaw",
+      reply:
+        "A protruding or receding jaw is usually about the relationship between your upper and lower jaw, assessed more precisely with radiographic (cephalometric) imaging. At the consultation, our team reviews whether jaw surgery is needed or a more limited approach is enough.",
+    },
+    deviation: {
+      label: "Jaw asymmetry",
+      reply:
+        "Jaw asymmetry (deviation) usually needs a 3D facial assessment and sometimes a CBCT scan to determine its extent and cause. This evaluation happens at an in-person consultation.",
+    },
+    bite: {
+      label: "Chewing / bite issue",
+      reply:
+        "Trouble chewing or your teeth not closing correctly (occlusion) is an important sign for a jaw surgery review, usually assessed together with an orthodontic evaluation.",
+    },
+    aesthetics: {
+      label: "Chin / facial shape aesthetics",
+      reply:
+        "If your main concern is just chin shape or facial aesthetics, a more limited procedure (like chin surgery) may be enough rather than full jaw surgery — this is determined at the exam.",
+    },
   },
   leadForm: {
     fullNameLabel: "Full Name",
@@ -581,8 +618,13 @@ export const assistantFlow = {
     correctionAcknowledgement: "You're right — let me answer that more precisely.",
     hasXrayCta: "I have an X-ray / CBCT",
     noXrayCta: "I don't have one",
-    hasXrayReply: "Great — please bring the X-ray or CBCT scan to your consultation so our team can review it closely.",
-    noXrayReply: "No problem — our team will guide you at the consultation on where and how to get an X-ray or CBCT scan.",
+    hasXrayReply:
+      "Great. Direct photo/scan upload isn't available in this version yet, but please bring the X-ray or CBCT scan to your consultation so our team can review it closely. Would you like to pick a time for an in-person exam/consultation?",
+    noXrayReply:
+      "No problem. Our team will guide you at the consultation on where and how to get an X-ray or CBCT scan — you don't need one ready now. Would you like to pick a time for an in-person exam/consultation?",
+    preparationQuestionCta: "Ask about preparation",
+    handoffNotice:
+      "For a closer review, our clinic team needs to look at your case. Your request is saved along with a summary of this conversation, so our staff can follow up with the full context.",
   },
   contextualAsk: {
     prompt: "Have a question before continuing?",

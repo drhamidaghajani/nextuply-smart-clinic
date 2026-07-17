@@ -7,123 +7,118 @@ import { useEffect, useRef, useState } from "react";
 import { getDictionary } from "@/i18n/get-dictionary";
 import { LOCALE_DIRECTION } from "@/i18n/locales";
 
-import type { AssistantStep, LeadInfo, PaymentCurrency, ServiceId, TriageAnswer } from "../application/types";
+import { ACTION_STEP_MAP } from "../application/action-step-map";
+import type { AssistantIntent, AssistantStep, LeadInfo, PaymentCurrency, ServiceId, TriageAnswer } from "../application/types";
+import { askAssistantQuestion } from "../server/ai/ask-assistant-question";
 import type { OtpPurpose } from "../server/request-otp";
 import { submitBookingRequest } from "../server/submit-booking-request";
 import { useAssistant } from "./assistant-provider";
-import { AiConversationStep } from "./steps/ai-conversation-step";
 import { AppointmentSelectionStep, type AppointmentSelectionResult } from "./steps/appointment-selection-step";
 import { ConfirmationStep } from "./steps/confirmation-step";
 import { ContactCaptureStep } from "./steps/contact-capture-step";
-import { GeneralStep } from "./steps/general-step";
 import { IdentifyStep } from "./steps/identify-step";
-import { InfoStep } from "./steps/info-step";
 import { PaymentPreparationStep } from "./steps/payment-preparation-step";
 import { PhoneVerificationStep } from "./steps/phone-verification-step";
 import { ServiceSelectionStep } from "./steps/service-selection-step";
 import { TriageStep } from "./steps/triage-step";
+import { AssistantBubble, Chip, ChoiceRecap, GuidedCard, TypingIndicator, UserBubble } from "./drawer-controls";
 import { useAssistantFlow } from "./use-assistant-flow";
 
-/** Booking-flow steps the contextual "قبل از ادامه، سؤالی دارید؟" prompt (item 6) can interrupt — never shown on the earlier, pre-service steps. */
-const BOOKING_STEPS_WITH_ASK_PROMPT: readonly AssistantStep[] = ["appointment_selection", "contact_capture", "payment_preparation"];
+/** The guided booking steps — anything else is a menu/informational/AI intent, not a card in "booking" mode. */
+const BOOKING_STEPS: readonly AssistantStep[] = ["service_selection", "triage", "appointment_selection", "contact_capture", "payment_preparation"];
+
+type AssistantMode = "menu" | "conversation" | "booking" | "identify" | "otp" | "confirmation";
+
+interface ChipAction {
+  label: string;
+  onClick: () => void;
+  emphasized?: boolean;
+}
+
+type ConversationEntry =
+  /** An assistant-authored line, optionally with follow-up quick replies. */
+  | { id: string; kind: "assistant"; text: string; chips?: ChipAction[] }
+  /** A patient-typed free-text question. */
+  | { id: string; kind: "user"; text: string }
+  /** A compact recap of a completed guided card (service picked, triage done, time chosen, OTP verified, …) — deliberately not a full bubble pair, since the card itself already showed the question. */
+  | { id: string; kind: "choice"; text: string }
+  /** A small muted aside — the softened question-counter, a transport-failure notice. */
+  | { id: string; kind: "note"; text: string };
+
+/** Plain `Omit` collapses a discriminated union down to its common keys only (`keyof (A|B)` is the intersection of each member's keys) — this distributes `Omit` over each member instead, so `pushEntry` can still accept e.g. `{ kind: "assistant", text, chips }` without losing `chips` to the union collapse. */
+type DistributiveOmit<T, K extends keyof T> = T extends unknown ? Omit<T, K> : never;
 
 /**
  * The real assistant panel this module's earlier `TODO(assistant)` was
  * pointing at (see `assistant-provider.tsx`) — built per Hamid's
- * 2026-07-12 contract-driven brief. A structured, editorial multi-step
- * flow (each step replaces the last, wizard-style), not a chat-bubble
- * transcript — his explicit "no generic chatbot UI, no blue plugin
- * style" ruled out the obvious default.
+ * 2026-07-12 contract-driven brief. Docks to `start-0` (logical) — under
+ * this site's `dir="rtl"` that's the physical right edge. Focus
+ * management: focuses the close button on open, traps Tab, Escape closes,
+ * body scroll locked while open (same pattern as `mobile-menu.tsx`).
  *
- * Docks to `start-0` (logical) — under this site's `dir="rtl"` that's
- * the physical right edge, satisfying his literal "opens from right"
- * without hardcoding a physical side (same reasoning already applied to
- * the floating trigger and Header CTA elsewhere in this project). Slides
- * in via a physical `translateX` (transform has no logical form), from
- * further right (off-screen) to resting position.
+ * Round 2026-07-18 (conversation-first UX pass, per Hamid — "it still
+ * feels like a form with a chat attached to it"): rebuilt as ONE
+ * continuous, persistent conversation transcript (`entries`) instead of
+ * a wizard that swaps between separate full-screen views. Every
+ * interaction — the opening message, quick actions, free-text questions/
+ * answers, and every guided booking step — now renders inside the SAME
+ * scrolling feed: completed guided steps collapse into a compact
+ * `ChoiceRecap` line, while the CURRENTLY active step (a real booking
+ * card, the identify form, OTP, or the free-text composer) stays "live"
+ * at the end of the transcript. This is a refactor of the container, not
+ * a rewrite of the flow: every step component (`ServiceSelectionStep`,
+ * `TriageStep`, `AppointmentSelectionStep`, `ContactCaptureStep`,
+ * `PaymentPreparationStep`, `PhoneVerificationStep`, `IdentifyStep`,
+ * `ConfirmationStep`) keeps its exact previous props/validation/server
+ * calls — only wrapped in `GuidedCard` instead of filling the whole
+ * panel. `GeneralStep`/`AiConversationStep` (the old separate landing
+ * screen and separate AI-conversation screen) are retired — their roles
+ * are now just entries/chips and the `mode === "conversation"` composer
+ * in this same file.
  *
- * Focus management: focuses the close button on open, restores nothing
- * elaborate on close (no prior-trigger-ref tracking — kept to the
- * minimal real requirement: trap Tab within the panel, Escape closes,
- * body scroll locked while open — same pattern already established in
- * `mobile-menu.tsx`, not a new mechanism).
+ * `AssistantMode` (menu/conversation/booking/identify/otp/confirmation)
+ * drives what the "live" area at the end of the transcript shows;
+ * `useAssistant()`'s `step` (unchanged external contract — every other
+ * CTA on the site still just calls `open(intent)`) still tracks WHICH
+ * booking card is active while `mode === "booking"`. `returnStep`
+ * remembers which booking card to resume after a mid-booking detour to
+ * ask a question (item 4) — never cleared just by asking another
+ * question, only by actually resuming, changing service, or leaving.
  *
- * Session data (lead info, triage answers, appointment/payment drafts)
- * lives in `useAssistantFlow`'s local reducer, reset each time this
- * component mounts — see that file's doc-comment for why it isn't in
- * the global `AssistantProvider`.
- *
- * Round 2026-07-13 (docs/adr/0006): locale-aware. `dict` now comes from
- * `getDictionary(locale).assistantFlow` (`locale` read off
- * `useAssistant()`, set once at `AssistantProvider` mount time in
- * `layout.tsx`) instead of always `fa.assistantFlow`. `dir`, the slide-in
- * direction, and the drop shadow's side were all hardcoded for a
- * right-docked RTL panel — under `en` (LTR) the panel docks to the
- * visual LEFT instead (via the existing logical `start-0`), so the slide
- * animation and shadow now flip with it rather than sliding the full
- * width of the screen to reach the wrong-looking rest position.
- *
- * Round 2026-07-14 (docs/adr/0007, mobile-verification pass): actions
- * gated behind a verified mobile via `runGated`, the one chokepoint: if
- * `sessionToken` is already set, the action runs immediately; otherwise
- * it's stashed in `pendingActionRef` and `PhoneVerificationStep` is
- * shown, resuming the EXACT stashed action (called with the freshly-
- * issued token, never a stale closure-captured one) on success —
- * "resume the previous action," never a flow restart.
- *
- * Round 2026-07-16 (contract-alignment pass, per Hamid — real UX bug:
- * "many assistant paths ask for mobile verification too early"):
- * completing triage and choosing "general consultation" are NO LONGER
- * gated — verified against his explicit brief, OTP must only block (a)
- * the final booking submit and (b) free-text AI questions, never
- * service selection, triage, cost/care guidance, or seeing availability
- * options. The booking flow's step ORDER also changed to match his
- * literal spec: triage → appointment/time selection → contact capture
- * (name/mobile) → payment prep → OTP (only now, at final submit) →
- * submit. Previously contact capture came BEFORE appointment selection
- * and was itself gated — both reversed here. Since name/mobile is
- * collected in `ContactCaptureStep` before OTP is ever shown,
- * `PhoneVerificationStep` now receives that mobile as a pre-fill
- * (`initialMobile`) instead of the old reverse direction ("the verified
- * mobile pre-fills leadInfo.mobile").
- *
- * Round 2026-07-17 (Smart Assistant product redesign, per Hamid — "the
- * assistant still feels like a guided form... the free-text input before
- * identifying the user is also meaningless"): the always-visible
- * free-text composer is GONE from the unauthenticated opening view.
- * Free-text now only exists inside `AiConversationStep`, reachable two
- * ways: (1) `GeneralStep`'s deliberate "پرسیدن سؤال" action, or (2) the
- * contextual "قبل از ادامه، سؤالی دارید؟" prompt shown on the actual
- * booking-flow steps (`BOOKING_STEPS_WITH_ASK_PROMPT`, item 6 of the
- * brief). Both funnel through `handleAskQuestionEntry`: already-verified
- * with questions left → straight to `ai_conversation`; otherwise →
- * `identify` (name+mobile, NOT the full `ContactCaptureStep` form) →
- * `runGated` → OTP → `ai_conversation`. `questionsRemaining` is
- * server-authoritative (`ask-assistant-question.ts` is the real check);
- * this component only mirrors the count for display. `returnStep`
- * remembers which booking step to jump back to after a mid-booking
- * question — cleared once used, `null` when the conversation was opened
- * from the main menu (nothing to "return" to).
+ * `sessionToken`/`questionsRemaining` (docs/adr/0007, and the 3-question
+ * conversation limit) are preserved from the previous rounds exactly —
+ * `runGated` is still the one gate, `askAssistantQuestion` is still the
+ * one server entry point enforcing the real limit.
  */
 export function AssistantDrawer() {
-  const { isOpen, step, setStep, close, source, locale } = useAssistant();
+  const { isOpen, step, setStep, close, source, locale, intent } = useAssistant();
   const router = useRouter();
   const localeDict = getDictionary(locale);
   const dict = localeDict.assistantFlow;
   const isRtl = LOCALE_DIRECTION[locale] === "rtl";
   const { state, dispatch } = useAssistantFlow();
   const shouldReduceMotion = useReducedMotion();
-  const [isSubmitting, setIsSubmitting] = useState(false);
-  const [submitError, setSubmitError] = useState<string | null>(null);
   const panelRef = useRef<HTMLDivElement>(null);
   const closeButtonRef = useRef<HTMLButtonElement>(null);
+  const composerInputRef = useRef<HTMLInputElement>(null);
+  const bottomRef = useRef<HTMLDivElement>(null);
+  const entryIdRef = useRef(0);
+  const seededForRef = useRef<string | null>(null);
+  const shownIntroRef = useRef(false);
+
+  const [mode, setMode] = useState<AssistantMode>("menu");
+  const [entries, setEntries] = useState<ConversationEntry[]>([]);
+  const [composerMessage, setComposerMessage] = useState("");
+  const [isAsking, setIsAsking] = useState(false);
+  const [isSubmittingBooking, setIsSubmittingBooking] = useState(false);
+  const [submitError, setSubmitError] = useState<string | null>(null);
 
   // --- Mobile verification (docs/adr/0007) ---
   const [sessionToken, setSessionToken] = useState<string | null>(null);
   const [pendingPurpose, setPendingPurpose] = useState<OtpPurpose>("assistant_access");
   const pendingActionRef = useRef<((token: string) => void) | null>(null);
 
-  // --- Post-OTP AI conversation (round 2026-07-17) — see doc-comment above. ---
+  // --- Post-OTP AI conversation state + mid-booking detour memory (item 5) ---
   const [questionsRemaining, setQuestionsRemaining] = useState(3);
   const [returnStep, setReturnStep] = useState<AssistantStep | null>(null);
 
@@ -158,12 +153,26 @@ export function AssistantDrawer() {
     };
   }, [isOpen, close]);
 
+  useEffect(() => {
+    bottomRef.current?.scrollIntoView({ behavior: "smooth", block: "end" });
+  }, [entries, mode, step]);
+
+  const pushEntry = (entry: DistributiveOmit<ConversationEntry, "id">) => {
+    entryIdRef.current += 1;
+    setEntries((prev) => [...prev, { id: `e${entryIdRef.current}`, ...entry } as ConversationEntry]);
+  };
+
+  const mainActionLabel = (id: string) => dict.mainActions.find((action) => action.id === id)?.label ?? id;
+
+  const scrollToSection = (id: string) => {
+    document.getElementById(id)?.scrollIntoView({ behavior: "smooth" });
+  };
+
   /**
    * The one gate. `action` receives the verified session token directly
    * as a parameter (never reads `sessionToken` from closure scope) so a
    * pending action created BEFORE verification still gets the FRESH
-   * token when it's replayed after — a plain closure over the `useState`
-   * value would otherwise capture the pre-verification `null`.
+   * token when it's replayed after.
    */
   const runGated = (action: (token: string) => void, purpose: OtpPurpose = "assistant_access") => {
     if (sessionToken) {
@@ -172,80 +181,247 @@ export function AssistantDrawer() {
     }
     setPendingPurpose(purpose);
     pendingActionRef.current = action;
-    setStep("phone_verification");
+    setMode("otp");
   };
+
+  const modeForStep = (target: AssistantStep): AssistantMode => (BOOKING_STEPS.includes(target) ? "booking" : "menu");
 
   const handleVerified = (token: string, mobile: string) => {
     setSessionToken(token);
     dispatch({ type: "SET_LEAD_INFO", leadInfo: { mobile } });
+    pushEntry({ kind: "choice", text: `${dict.phoneVerification.eyebrow} ✓` });
     const action = pendingActionRef.current;
     pendingActionRef.current = null;
     if (action) {
       action(token);
     } else {
-      setStep("general");
+      setMode(modeForStep(step));
     }
   };
 
   const handleVerificationCancel = () => {
     pendingActionRef.current = null;
-    setStep("general");
+    setMode(modeForStep(step));
   };
 
-  const handleServiceSelect = (serviceId: ServiceId) => {
-    dispatch({ type: "SET_SERVICE", serviceId });
-    if (serviceId === "general_consultation") {
-      // No per-service triage questions for a general consultation — goes
-      // straight to real availability, same as every other service does
-      // once its triage is done. Ungated, per the contract: OTP only
-      // gates the final submit.
-      setStep("appointment_selection");
-    } else {
-      setStep("triage");
+  const focusComposer = () => {
+    setMode("conversation");
+    requestAnimationFrame(() => composerInputRef.current?.focus());
+  };
+
+  const enterConversationMode = () => {
+    if (!shownIntroRef.current) {
+      shownIntroRef.current = true;
+      pushEntry({ kind: "assistant", text: dict.aiConversation.verifiedIntro });
+      pushEntry({ kind: "note", text: dict.aiConversation.safetyNotice });
     }
+    setMode("conversation");
+    requestAnimationFrame(() => composerInputRef.current?.focus());
   };
 
-  /**
-   * The one entry point into the post-OTP AI conversation — see this
-   * file's doc-comment. `fromStep` is remembered as `returnStep` so
-   * `AiConversationStep` can offer "ادامه رزرو" back to wherever the
-   * patient actually was; omitted when opened from the main menu (there's
-   * nowhere meaningful to "return" to).
-   */
   const handleAskQuestionEntry = (fromStep?: AssistantStep) => {
     if (fromStep) setReturnStep(fromStep);
     if (sessionToken && questionsRemaining > 0) {
-      setStep("ai_conversation");
+      enterConversationMode();
       return;
     }
-    setStep("identify");
+    setMode("identify");
   };
 
   const handleIdentifySubmit = (values: { fullName: string; mobile: string }) => {
     dispatch({ type: "SET_LEAD_INFO", leadInfo: values });
-    runGated(() => setStep("ai_conversation"), "assistant_access");
+    pushEntry({ kind: "choice", text: `${values.fullName} · ${values.mobile}` });
+    runGated(() => enterConversationMode(), "assistant_access");
   };
 
   const handleReturnToBooking = () => {
     if (!returnStep) return;
+    pushEntry({ kind: "choice", text: dict.aiConversation.continueBookingCta });
+    setMode("booking");
     setStep(returnStep);
     setReturnStep(null);
   };
 
-  /** See `AiConversationStep`'s `onNavigateToSuggested` doc-comment — a matched service always goes through `handleServiceSelect` (which picks the correct step itself), never the AI's raw suggested step name when a service is known. */
-  const handleNavigateToSuggested = (suggestedStep: AssistantStep, serviceId: ServiceId | null) => {
+  const handleChangeService = () => {
+    setReturnStep(null);
+    pushEntry({ kind: "choice", text: dict.aiConversation.changeServiceCta });
+    setMode("booking");
+    setStep("service_selection");
+  };
+
+  const nextQuestionChip = (): ChipAction =>
+    sessionToken && questionsRemaining > 0
+      ? { label: dict.aiConversation.askAnotherCta, onClick: focusComposer }
+      : { label: dict.ui.askQuestionCta, onClick: () => handleAskQuestionEntry() };
+
+  const serviceAwareChips = (serviceId: ServiceId | null): ChipAction[] => {
     if (serviceId) {
-      handleServiceSelect(serviceId);
+      const short = dict.serviceShortLabels[serviceId] ?? dict.services.find((service) => service.id === serviceId)?.label ?? "";
+      return [
+        { label: dict.aiConversation.bookServiceTemplate.replace("{service}", short), onClick: () => handleServiceSelect(serviceId), emphasized: true },
+        { label: dict.aiConversation.costEstimateCta, onClick: () => showCostGuidance(serviceId) },
+        { label: dict.aiConversation.careForServiceTemplate.replace("{service}", short), onClick: () => routeToStep("care_guidance") },
+        nextQuestionChip(),
+      ];
+    }
+    return [
+      { label: mainActionLabel("consultation_booking"), onClick: () => routeToStep("consultation_booking"), emphasized: true },
+      { label: mainActionLabel("service_selection"), onClick: () => routeToStep("service_selection") },
+      { label: dict.aiConversation.relatedCareCta, onClick: () => routeToStep("care_guidance") },
+      nextQuestionChip(),
+    ];
+  };
+
+  const showCostGuidance = (serviceId: ServiceId | null) => {
+    const text = (serviceId && dict.costGuidance.byService[serviceId]) || dict.costGuidance.generic;
+    pushEntry({ kind: "assistant", text, chips: serviceAwareChips(serviceId) });
+  };
+
+  const fallbackChips = (): ChipAction[] => [
+    { label: dict.aiConversation.fallbackChips.cost, onClick: () => routeToStep("cost_question") },
+    { label: dict.aiConversation.fallbackChips.service, onClick: () => routeToStep("service_selection") },
+    { label: dict.aiConversation.fallbackChips.care, onClick: () => routeToStep("care_guidance") },
+    { label: dict.aiConversation.fallbackChips.booking, onClick: () => routeToStep("consultation_booking") },
+  ];
+
+  const limitReachedChips = (): ChipAction[] => {
+    const chips: ChipAction[] = [];
+    if (returnStep) chips.push({ label: dict.aiConversation.continueBookingCta, onClick: handleReturnToBooking, emphasized: true });
+    chips.push({ label: mainActionLabel("consultation_booking"), onClick: () => routeToStep("consultation_booking") });
+    chips.push({ label: mainActionLabel("service_selection"), onClick: () => routeToStep("service_selection") });
+    chips.push({ label: dict.ui.closeCta, onClick: close });
+    return chips;
+  };
+
+  const resumeChips = (): ChipAction[] => [
+    { label: dict.aiConversation.continueBookingCta, onClick: handleReturnToBooking, emphasized: true },
+    { label: dict.aiConversation.askAnotherCta, onClick: focusComposer },
+    { label: dict.aiConversation.changeServiceCta, onClick: handleChangeService },
+    { label: dict.ui.closeCta, onClick: close },
+  ];
+
+  const answerChips = (suggestedStep: AssistantStep | null, suggestedServiceId: ServiceId | null): ChipAction[] => {
+    if (suggestedServiceId) return serviceAwareChips(suggestedServiceId);
+    if (suggestedStep === "cost_question" || suggestedStep === "care_guidance") return serviceAwareChips(null);
+    const chips: ChipAction[] = [];
+    if (suggestedStep) chips.push({ label: dict.aiConversation.viewSuggestedStepCta, onClick: () => routeToStep(suggestedStep), emphasized: true });
+    chips.push({ label: mainActionLabel("consultation_booking"), onClick: () => routeToStep("consultation_booking") });
+    chips.push({ label: mainActionLabel("service_selection"), onClick: () => routeToStep("service_selection") });
+    chips.push(nextQuestionChip());
+    return chips;
+  };
+
+  /** Central router for every non-service-specific intent/step — the main menu, an AI-suggested step, or a chip. Service-specific navigation goes through `handleServiceSelect` instead, which also decides triage vs. straight-to-availability. */
+  const routeToStep = (target: AssistantStep) => {
+    if (BOOKING_STEPS.includes(target)) {
+      setMode("booking");
+      setStep(target);
       return;
     }
-    setStep(suggestedStep);
+    switch (target) {
+      case "cost_question":
+        showCostGuidance(state.leadInfo.selectedService);
+        return;
+      case "care_guidance":
+        pushEntry({
+          kind: "assistant",
+          text: dict.steps.careGuidance.body,
+          chips: [
+            {
+              label: dict.steps.careGuidance.cta,
+              onClick: () => {
+                close();
+                router.push(`/${locale}/care-instructions`);
+              },
+              emphasized: true,
+            },
+            nextQuestionChip(),
+          ],
+        });
+        return;
+      case "before_after":
+        pushEntry({
+          kind: "assistant",
+          text: dict.steps.beforeAfter.body,
+          chips: [{ label: dict.steps.beforeAfter.cta, onClick: () => { close(); scrollToSection("before-after"); }, emphasized: true }, nextQuestionChip()],
+        });
+        return;
+      case "articles":
+        pushEntry({
+          kind: "assistant",
+          text: dict.steps.articles.body,
+          chips: [{ label: dict.steps.articles.cta, onClick: () => { close(); scrollToSection("knowledge-center"); }, emphasized: true }, nextQuestionChip()],
+        });
+        return;
+      case "consultation_booking":
+        pushEntry({
+          kind: "assistant",
+          text: dict.steps.consultationBooking.intro,
+          chips: [{ label: dict.ui.chooseServiceCta, onClick: () => routeToStep("service_selection"), emphasized: true }],
+        });
+        return;
+      case "image_upload_future":
+        pushEntry({
+          kind: "assistant",
+          text: dict.steps.imageUploadFuture.notice,
+          chips: [{ label: dict.ui.chooseServiceCta, onClick: () => routeToStep("service_selection"), emphasized: true }],
+        });
+        return;
+      case "confirmation":
+        setMode("confirmation");
+        setStep("confirmation");
+        return;
+      default:
+        setMode("menu");
+        setStep("general");
+    }
+  };
+
+  const mainMenuChips = (): ChipAction[] => [
+    ...dict.mainActions.map((action, index) => ({ label: action.label, onClick: () => handleMainAction(action.id), emphasized: index === 0 })),
+    { label: dict.ui.askQuestionCta, onClick: () => handleAskQuestionEntry() },
+  ];
+
+  const handleMainAction = (actionId: string) => {
+    pushEntry({ kind: "choice", text: mainActionLabel(actionId) });
+    routeToStep(ACTION_STEP_MAP[actionId] ?? "general");
+  };
+
+  const seedConversation = (startIntent: AssistantIntent) => {
+    setEntries([]);
+    entryIdRef.current = 0;
+    setReturnStep(null);
+    if (startIntent === "general") {
+      setMode("menu");
+      setStep("general");
+      pushEntry({ kind: "assistant", text: dict.openingMessage, chips: mainMenuChips() });
+      return;
+    }
+    routeToStep(startIntent);
+  };
+
+  useEffect(() => {
+    if (!isOpen) return;
+    if (seededForRef.current === intent && entries.length > 0) return;
+    seededForRef.current = intent;
+    seedConversation(intent);
+    // Deliberately narrow deps — only re-seeds on a genuinely new external
+    // intent while open, never on the drawer's own internal navigation.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [isOpen, intent]);
+
+  const handleServiceSelect = (serviceId: ServiceId) => {
+    dispatch({ type: "SET_SERVICE", serviceId });
+    const label = dict.services.find((service) => service.id === serviceId)?.label ?? serviceId;
+    pushEntry({ kind: "choice", text: label });
+    setMode("booking");
+    setStep(serviceId === "general_consultation" ? "appointment_selection" : "triage");
   };
 
   const handleTriageComplete = (answers: TriageAnswer[]) => {
     dispatch({ type: "SET_TRIAGE_ANSWERS", answers });
     dispatch({ type: "COMPLETE_TRIAGE" });
-    // Ungated — availability is not patient-specific data, showing real
-    // open time options requires no verified mobile.
+    pushEntry({ kind: "choice", text: `${dict.ui.triageEyebrow} ✓` });
     setStep("appointment_selection");
   };
 
@@ -257,14 +433,13 @@ export function AssistantDrawer() {
       selectedSlotId: result.selectedSlotId,
       appointmentDate: result.appointmentDate,
     });
-    // Name/mobile is asked only now, AFTER a time preference exists —
-    // per the contract's explicit step order. Still ungated: OTP happens
-    // once, at the final submit below, not here.
+    pushEntry({ kind: "choice", text: `${result.preferredDay} · ${result.preferredTimeRange}` });
     setStep("contact_capture");
   };
 
   const handleContactSubmit = (leadInfo: LeadInfo) => {
     dispatch({ type: "SET_LEAD_INFO", leadInfo });
+    pushEntry({ kind: "choice", text: `${leadInfo.fullName} · ${leadInfo.mobile}` });
     setStep("payment_preparation");
   };
 
@@ -273,7 +448,7 @@ export function AssistantDrawer() {
     if (!serviceId) return;
     runGated((token) => {
       void (async () => {
-        setIsSubmitting(true);
+        setIsSubmittingBooking(true);
         setSubmitError(null);
         const result = await submitBookingRequest({
           leadInfo: state.leadInfo,
@@ -288,9 +463,10 @@ export function AssistantDrawer() {
           locale,
           sessionToken: token,
         });
-        setIsSubmitting(false);
+        setIsSubmittingBooking(false);
         if (result.ok) {
           dispatch({ type: "SUBMITTED", requestId: result.leadId ?? result.request.requestedAt });
+          setMode("confirmation");
           setStep("confirmation");
         } else {
           setSubmitError(result.error);
@@ -299,7 +475,182 @@ export function AssistantDrawer() {
     }, "booking_request");
   };
 
-  const showBack = step !== "general" && step !== "confirmation";
+  const handleAskFreeText = () => {
+    const trimmed = composerMessage.trim();
+    if (!trimmed || isAsking) return;
+    pushEntry({ kind: "user", text: trimmed });
+    setComposerMessage("");
+    setIsAsking(true);
+    void (async () => {
+      const result = await askAssistantQuestion({
+        sessionToken,
+        message: trimmed,
+        locale,
+        currentStep: mode === "booking" ? step : "conversation",
+        fullName: state.leadInfo.fullName || null,
+        serviceSlug: state.leadInfo.selectedService,
+      });
+      setIsAsking(false);
+
+      if (result.type === "unavailable") {
+        // Nothing was persisted server-side for this turn — drop the
+        // optimistic user bubble too, so the transcript never shows a
+        // question with no answer under it.
+        setEntries((prev) => prev.slice(0, -1));
+        pushEntry({ kind: "note", text: dict.ui.freeTextUnavailableMessage });
+        return;
+      }
+      if (result.type === "not_verified" || result.type === "limit_reached") {
+        setQuestionsRemaining(0);
+        pushEntry({ kind: "assistant", text: dict.aiConversation.limitReachedNotice, chips: limitReachedChips() });
+        return;
+      }
+      if (result.type === "unclear") {
+        pushEntry({ kind: "assistant", text: dict.aiConversation.fallbackPrompt, chips: returnStep ? undefined : fallbackChips() });
+        setQuestionsRemaining(result.questionsRemaining);
+        if (returnStep) {
+          pushEntry({ kind: "assistant", text: dict.aiConversation.resumeBookingPrompt, chips: resumeChips() });
+        } else if (result.questionsRemaining > 0) {
+          pushEntry({ kind: "note", text: dict.aiConversation.questionsRemainingLabels[String(result.questionsRemaining) as "1" | "2" | "3"] });
+        }
+        return;
+      }
+      // "answer"
+      pushEntry({ kind: "assistant", text: result.answer, chips: returnStep ? undefined : answerChips(result.suggestedStep, result.suggestedServiceId) });
+      setQuestionsRemaining(result.questionsRemaining);
+      if (returnStep) {
+        pushEntry({ kind: "assistant", text: dict.aiConversation.resumeBookingPrompt, chips: resumeChips() });
+      } else if (result.questionsRemaining > 0) {
+        pushEntry({ kind: "note", text: dict.aiConversation.questionsRemainingLabels[String(result.questionsRemaining) as "1" | "2" | "3"] });
+      }
+    })();
+  };
+
+  const handleBackToMenu = () => {
+    setMode("menu");
+    setStep("general");
+    setReturnStep(null);
+  };
+
+  const renderBookingCard = () => {
+    switch (step) {
+      case "service_selection":
+        return <ServiceSelectionStep dict={dict} onSelect={handleServiceSelect} />;
+      case "triage":
+        return state.leadInfo.selectedService ? (
+          <TriageStep dict={dict} serviceId={state.leadInfo.selectedService} onComplete={handleTriageComplete} />
+        ) : (
+          <ServiceSelectionStep dict={dict} onSelect={handleServiceSelect} />
+        );
+      case "appointment_selection":
+        return <AppointmentSelectionStep dict={dict} locale={locale} onSubmit={handleAppointmentSubmit} />;
+      case "contact_capture":
+        return <ContactCaptureStep dict={dict} leadInfo={state.leadInfo} onSubmit={handleContactSubmit} />;
+      case "payment_preparation":
+        return (
+          <>
+            <PaymentPreparationStep
+              dict={dict}
+              payment={state.payment}
+              onCurrencyChange={(currency: PaymentCurrency) => dispatch({ type: "SET_PAYMENT", payment: { currency } })}
+              onSubmit={handleFinalSubmit}
+              isSubmitting={isSubmittingBooking}
+            />
+            {submitError ? <p className="mt-3 text-xs text-red-600">{submitError}</p> : null}
+          </>
+        );
+      default:
+        return <ServiceSelectionStep dict={dict} onSelect={handleServiceSelect} />;
+    }
+  };
+
+  const renderLiveArea = () => {
+    if (mode === "conversation") {
+      return (
+        <div className="flex items-center gap-2">
+          <input
+            ref={composerInputRef}
+            type="text"
+            value={composerMessage}
+            onChange={(event) => setComposerMessage(event.target.value)}
+            onKeyDown={(event) => {
+              if (event.key === "Enter") {
+                event.preventDefault();
+                handleAskFreeText();
+              }
+            }}
+            placeholder={dict.ui.freeTextPlaceholder}
+            disabled={isAsking}
+            className="w-full flex-1 rounded-xl border border-charcoal/15 bg-white px-3.5 py-2.5 text-sm text-charcoal placeholder:text-charcoal/30 focus:border-gold focus:outline-none focus:ring-1 focus:ring-gold/40"
+          />
+          <button
+            type="button"
+            onClick={handleAskFreeText}
+            disabled={isAsking || !composerMessage.trim()}
+            className="shrink-0 rounded-full bg-gradient-to-b from-gold to-gold-hover px-4 py-2.5 text-sm font-semibold text-deep-navy transition-[filter] duration-200 hover:brightness-105 disabled:pointer-events-none disabled:opacity-50"
+          >
+            {isAsking ? dict.ui.freeTextThinkingLabel : dict.ui.freeTextSubmitCta}
+          </button>
+        </div>
+      );
+    }
+    if (mode === "identify") {
+      return (
+        <GuidedCard>
+          <IdentifyStep dict={dict} fullName={state.leadInfo.fullName} mobile={state.leadInfo.mobile} onSubmit={handleIdentifySubmit} />
+        </GuidedCard>
+      );
+    }
+    if (mode === "otp") {
+      return (
+        <GuidedCard>
+          <PhoneVerificationStep
+            dict={dict}
+            locale={locale}
+            purpose={pendingPurpose}
+            initialMobile={state.leadInfo.mobile}
+            onVerified={handleVerified}
+            onCancel={handleVerificationCancel}
+          />
+        </GuidedCard>
+      );
+    }
+    if (mode === "confirmation") {
+      return (
+        <GuidedCard>
+          <ConfirmationStep
+            dict={dict}
+            serviceId={state.leadInfo.selectedService}
+            preferredDay={state.appointment.preferredDay}
+            preferredTimeRange={state.appointment.preferredTimeRange}
+            canAskAnother={Boolean(sessionToken) && questionsRemaining > 0}
+            onClose={close}
+            onViewCare={() => routeToStep("care_guidance")}
+            onAskAnother={() => handleAskQuestionEntry()}
+          />
+        </GuidedCard>
+      );
+    }
+    if (mode === "booking") {
+      return (
+        <div className="flex flex-col gap-2">
+          <GuidedCard>{renderBookingCard()}</GuidedCard>
+          {step !== "service_selection" ? (
+            <button
+              type="button"
+              onClick={() => handleAskQuestionEntry(step)}
+              className="self-start text-xs font-medium text-charcoal/50 underline decoration-dotted underline-offset-2 transition-colors duration-200 hover:text-gold"
+            >
+              {dict.contextualAsk.prompt} {dict.contextualAsk.cta}
+            </button>
+          ) : null}
+        </div>
+      );
+    }
+    return null;
+  };
+
+  const showBack = mode !== "menu";
 
   return (
     <AnimatePresence>
@@ -350,7 +701,7 @@ export function AssistantDrawer() {
               {showBack ? (
                 <button
                   type="button"
-                  onClick={() => setStep("general")}
+                  onClick={handleBackToMenu}
                   className="mb-4 inline-flex items-center gap-1.5 text-xs font-medium text-charcoal/45 transition-colors duration-200 hover:text-gold"
                 >
                   <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2} strokeLinecap="round" strokeLinejoin="round" className="h-3.5 w-3.5">
@@ -360,177 +711,35 @@ export function AssistantDrawer() {
                 </button>
               ) : null}
 
-              {step === "general" && <GeneralStep dict={dict} onNavigate={setStep} onAskQuestion={() => handleAskQuestionEntry()} />}
+              <div className="flex flex-col gap-3">
+                {entries.map((entry) => {
+                  if (entry.kind === "user") return <UserBubble key={entry.id}>{entry.text}</UserBubble>;
+                  if (entry.kind === "choice") return <ChoiceRecap key={entry.id}>{entry.text}</ChoiceRecap>;
+                  if (entry.kind === "note") return <ChoiceRecap key={entry.id}>{entry.text}</ChoiceRecap>;
+                  return (
+                    <div key={entry.id} className="flex flex-col items-start gap-2">
+                      <AssistantBubble>{entry.text}</AssistantBubble>
+                      {entry.chips && entry.chips.length > 0 ? (
+                        <div className="flex flex-wrap gap-2 ps-1">
+                          {entry.chips.map((chip, index) => (
+                            <Chip key={index} emphasized={chip.emphasized} onClick={chip.onClick}>
+                              {chip.label}
+                            </Chip>
+                          ))}
+                        </div>
+                      ) : null}
+                    </div>
+                  );
+                })}
+                {isAsking ? (
+                  <div className="me-auto">
+                    <TypingIndicator />
+                  </div>
+                ) : null}
+              </div>
 
-              {step === "consultation_booking" && (
-                <InfoStep
-                  eyebrow={dict.ui.consultationBookingEyebrow}
-                  title={dict.ui.consultationBookingEyebrow}
-                  body={<p>{dict.steps.consultationBooking.intro}</p>}
-                  primaryAction={{ label: dict.ui.chooseServiceCta, onClick: () => setStep("service_selection") }}
-                />
-              )}
-
-              {step === "service_selection" && <ServiceSelectionStep dict={dict} onSelect={handleServiceSelect} />}
-
-              {step === "triage" &&
-                (state.leadInfo.selectedService ? (
-                  <TriageStep dict={dict} serviceId={state.leadInfo.selectedService} onComplete={handleTriageComplete} />
-                ) : (
-                  <ServiceSelectionStep dict={dict} onSelect={handleServiceSelect} />
-                ))}
-
-              {/* Round 2026-07-17 — the contextual "قبل از ادامه، سؤالی
-                  دارید؟" prompt (item 6 of the brief): only on the real
-                  booking-flow steps, never the earlier informational ones.
-                  Routes through the same `handleAskQuestionEntry` as the
-                  main menu's "پرسیدن سؤال" — verifies first if needed. */}
-              {BOOKING_STEPS_WITH_ASK_PROMPT.includes(step) && (
-                <button
-                  type="button"
-                  onClick={() => handleAskQuestionEntry(step)}
-                  className="mb-4 flex w-full items-center justify-between gap-2 rounded-xl bg-charcoal/[0.04] px-3.5 py-2.5 text-xs text-charcoal/60 transition-colors duration-200 hover:bg-gold/10 hover:text-gold"
-                >
-                  <span>{dict.contextualAsk.prompt}</span>
-                  <span className="font-semibold">{dict.contextualAsk.cta}</span>
-                </button>
-              )}
-
-              {step === "contact_capture" && <ContactCaptureStep dict={dict} leadInfo={state.leadInfo} onSubmit={handleContactSubmit} />}
-
-              {step === "appointment_selection" && <AppointmentSelectionStep dict={dict} locale={locale} onSubmit={handleAppointmentSubmit} />}
-
-              {step === "payment_preparation" && (
-                <>
-                  <PaymentPreparationStep
-                    dict={dict}
-                    payment={state.payment}
-                    onCurrencyChange={(currency: PaymentCurrency) => dispatch({ type: "SET_PAYMENT", payment: { currency } })}
-                    onSubmit={handleFinalSubmit}
-                    isSubmitting={isSubmitting}
-                  />
-                  {submitError ? <p className="mt-3 text-xs text-red-600">{submitError}</p> : null}
-                </>
-              )}
-
-              {step === "confirmation" && (
-                <ConfirmationStep
-                  dict={dict}
-                  serviceId={state.leadInfo.selectedService}
-                  preferredDay={state.appointment.preferredDay}
-                  preferredTimeRange={state.appointment.preferredTimeRange}
-                  canAskAnother={Boolean(sessionToken) && questionsRemaining > 0}
-                  onClose={close}
-                  onViewCare={() => setStep("care_guidance")}
-                  onAskAnother={() => handleAskQuestionEntry()}
-                />
-              )}
-
-              {step === "cost_question" && (
-                <InfoStep
-                  eyebrow={dict.ui.costQuestionEyebrow}
-                  title={dict.ui.costQuestionTitle}
-                  body={<p>{dict.steps.costQuestion.intro}</p>}
-                  primaryAction={{ label: dict.ui.chooseServiceCta, onClick: () => setStep("service_selection") }}
-                />
-              )}
-
-              {step === "before_after" && (
-                <InfoStep
-                  title={dict.ui.beforeAfterTitle}
-                  body={<p>{dict.steps.beforeAfter.body}</p>}
-                  primaryAction={{
-                    label: dict.steps.beforeAfter.cta,
-                    onClick: () => {
-                      close();
-                      document.getElementById("before-after")?.scrollIntoView({ behavior: "smooth" });
-                    },
-                  }}
-                />
-              )}
-
-              {step === "articles" && (
-                <InfoStep
-                  title={dict.ui.articlesTitle}
-                  body={<p>{dict.steps.articles.body}</p>}
-                  primaryAction={{
-                    label: dict.steps.articles.cta,
-                    onClick: () => {
-                      close();
-                      document.getElementById("knowledge-center")?.scrollIntoView({ behavior: "smooth" });
-                    },
-                  }}
-                />
-              )}
-
-              {/* Round 2026-07-13 (patient-care hub) — deterministic, no
-                  AI call, same pattern as `before_after`/`articles`
-                  above: a short message + a CTA that routes to a real
-                  page. Uses `router.push` (not `scrollIntoView`) since
-                  the care hub is its own route, not a homepage anchor. */}
-              {step === "care_guidance" && (
-                <InfoStep
-                  title={dict.ui.careGuidanceTitle}
-                  body={<p>{dict.steps.careGuidance.body}</p>}
-                  primaryAction={{
-                    label: dict.steps.careGuidance.cta,
-                    onClick: () => {
-                      close();
-                      router.push(`/${locale}/care-instructions`);
-                    },
-                  }}
-                />
-              )}
-
-              {step === "image_upload_future" && (
-                <InfoStep
-                  title={dict.ui.imageUploadTitle}
-                  body={<p>{dict.steps.imageUploadFuture.notice}</p>}
-                  primaryAction={{ label: dict.ui.chooseServiceCta, onClick: () => setStep("service_selection") }}
-                />
-              )}
-
-              {/* Round 2026-07-17 — collects name+mobile before the AI
-                  conversation's OTP step; see `identify-step.tsx`. */}
-              {step === "identify" && (
-                <IdentifyStep dict={dict} fullName={state.leadInfo.fullName} mobile={state.leadInfo.mobile} onSubmit={handleIdentifySubmit} />
-              )}
-
-              {/* Round 2026-07-17 — the post-OTP, up-to-3-question AI
-                  conversation; see `ai-conversation-step.tsx`. Only
-                  reachable with a real `sessionToken` (via `runGated`), so
-                  the `sessionToken!` below is safe — TypeScript can't see
-                  that invariant through `runGated`'s indirection, hence
-                  the assertion rather than a redundant runtime check. */}
-              {step === "ai_conversation" && (
-                <AiConversationStep
-                  dict={dict}
-                  locale={locale}
-                  sessionToken={sessionToken!}
-                  fullName={state.leadInfo.fullName}
-                  selectedService={state.leadInfo.selectedService}
-                  questionsRemaining={questionsRemaining}
-                  onQuestionsRemainingChange={setQuestionsRemaining}
-                  onNavigate={setStep}
-                  onNavigateToSuggested={handleNavigateToSuggested}
-                  canReturnToBooking={Boolean(returnStep)}
-                  onReturnToBooking={handleReturnToBooking}
-                  onClose={close}
-                />
-              )}
-
-              {/* docs/adr/0007 — see this file's own doc-comment for the
-                  gating/resume mechanism. */}
-              {step === "phone_verification" && (
-                <PhoneVerificationStep
-                  dict={dict}
-                  locale={locale}
-                  purpose={pendingPurpose}
-                  initialMobile={state.leadInfo.mobile}
-                  onVerified={handleVerified}
-                  onCancel={handleVerificationCancel}
-                />
-              )}
+              <div className="mt-4">{renderLiveArea()}</div>
+              <div ref={bottomRef} />
             </div>
           </motion.div>
         </div>

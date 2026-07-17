@@ -1213,6 +1213,35 @@ export const fa = {
       ],
     },
     safetyNotice: "این اطلاعات فقط برای غربالگری اولیه و راهنمایی مسیر مشاوره است. تصمیم نهایی پس از بررسی پزشک انجام می‌شود.",
+    // Round 2026-07-18 (conversation-first UX pass, per Hamid — item 9):
+    // explains what actually drives the price for each service instead of
+    // a vague "it depends" or an invented number, and always ends with a
+    // clarifying question + the booking path. `advanced-dental-implant`'s
+    // text is his exact given example, used verbatim.
+    costGuidance: {
+      generic:
+        "هزینه دقیق به نوع خدمت، بررسی بالینی و گاهی نیاز به عکس‌برداری بستگی دارد و بدون معاینه نمی‌توان عدد قطعی اعلام کرد. برای اینکه بتوانم دقیق‌تر راهنمایی‌تان کنم، بفرمایید کدام خدمت مدنظرتان است تا برآورد اولیه‌ای بر همان اساس ارائه کنم.",
+      byService: {
+        "advanced-dental-implant":
+          "هزینه ایمپلنت به تعداد واحد، وضعیت استخوان، نیاز احتمالی به سینوس لیفت یا پیوند استخوان، نوع پایه و بررسی عکس بستگی دارد. بدون بررسی عدد قطعی نمی‌شود گفت، اما برای برآورد اولیه لطفاً بفرمایید چند دندان مدنظر شماست و آیا عکس یا CBCT جدید دارید؟",
+        rhinoplasty:
+          "هزینه جراحی بینی به نوع بینی، سابقه جراحی قبلی، میزان اصلاح موردنیاز و نتیجه معاینه حضوری بستگی دارد و بدون ویزیت نمی‌توان عدد دقیقی گفت. برای برآورد اولیه بفرمایید آیا پیش‌تر جراحی بینی داشته‌اید و هدف اصلی‌تان زیبایی، تنفس یا هر دو است؟",
+        "facial-rejuvenation":
+          "هزینه جوان‌سازی صورت به نوع روش انتخابی (تزریق، لیفت یا ترکیبی)، وضعیت پوست و افتادگی، و ماندگاری و تعداد جلسات موردنیاز بستگی دارد. برای برآورد اولیه بفرمایید بیشترین نگرانی شما کدام ناحیه از صورت است و آیا پیش‌تر روش مشابهی انجام داده‌اید؟",
+      } as Record<string, string>,
+    },
+    // Round 2026-07-18 — short, colloquial names used in chip labels
+    // ("رزرو مشاوره ایمپلنت") — `services[].label` is the full formal name
+    // and would read awkwardly in a small chip.
+    serviceShortLabels: {
+      "advanced-dental-implant": "ایمپلنت",
+      "impacted-tooth-surgery": "دندان نهفته",
+      "facial-rejuvenation": "جوان‌سازی صورت",
+      "facial-cosmetic-surgery": "جراحی زیبایی صورت",
+      "orthognathic-surgery": "جراحی فک",
+      rhinoplasty: "بینی",
+      general_consultation: "مشاوره عمومی",
+    },
     leadForm: {
       fullNameLabel: "نام و نام خانوادگی",
       mobileLabel: "شماره موبایل",
@@ -1244,8 +1273,6 @@ export const fa = {
       triageEyebrow: "بررسی شرایط اولیه",
       triageAnswerPlaceholder: "پاسخ شما...",
       consultationBookingEyebrow: "رزرو مشاوره",
-      costQuestionEyebrow: "سؤال درباره هزینه",
-      costQuestionTitle: "برآورد اولیه هزینه",
       beforeAfterTitle: "نمونه‌کارها",
       articlesTitle: "مقالات",
       imageUploadTitle: "ارسال تصویر",
@@ -1255,12 +1282,14 @@ export const fa = {
       selectPlaceholder: "انتخاب کنید",
       paymentStepEyebrow: "مرحله پرداخت",
       // Added 2026-07-14 (AI free-text pass, see AI_USAGE_NOTES.md). Round
-      // 2026-07-17: this copy now lives in `ai-conversation-step.tsx`
-      // (post-OTP only), not the old always-open landing composer.
+      // 2026-07-17: this copy now lives in the drawer's own composer
+      // (post-OTP only), not the old always-open landing composer. Round
+      // 2026-07-18: the old `freeTextUnclearMessage` ("use the buttons
+      // above / rephrase your question") is retired — see
+      // `aiConversation.fallbackPrompt` below for its real replacement.
       freeTextPlaceholder: "سؤال خود را اینجا بنویسید...",
       freeTextSubmitCta: "پرسیدن",
       freeTextThinkingLabel: "در حال بررسی...",
-      freeTextUnclearMessage: "متوجه نشدم — لطفاً از گزینه‌های بالا استفاده کنید یا سؤال را واضح‌تر بنویسید.",
       freeTextUnavailableMessage: "در حال حاضر پاسخ‌گویی هوشمند موقتاً در دسترس نیست. می‌توانید از مسیرهای راهنمایی سریع استفاده کنید یا برای هماهنگی با کلینیک تماس بگیرید.",
       // Round 2026-07-17 — the deliberate "ask a question" action replacing the old always-open composer.
       askQuestionCta: "پرسیدن سؤال",
@@ -1270,9 +1299,6 @@ export const fa = {
     steps: {
       consultationBooking: {
         intro: "برای رزرو مشاوره، لطفاً نوع خدمت موردنظرتان را انتخاب کنید. تیم کلینیک پس از بررسی اولیه، شما را برای ادامه مسیر راهنمایی می‌کند.",
-      },
-      costQuestion: {
-        intro: "هزینه دقیق پس از معاینه و بررسی شرایط مشخص می‌شود. برای دریافت برآورد دقیق‌تر، می‌توانید مسیر رزرو مشاوره را ادامه دهید.",
       },
       imageUploadFuture: {
         notice: "ارسال تصویر برای بررسی اولیه در مرحله بعدی فعال می‌شود.",
@@ -1316,13 +1342,27 @@ export const fa = {
     },
     aiConversation: {
       verifiedIntro: "شماره شما تأیید شد. اکنون می‌توانید ۳ سؤال اصلی خود را درباره درمان، آمادگی، مراقبت یا مسیر رزرو بپرسید.",
-      questionsRemainingLabels: { "3": "۳ سؤال باقی مانده", "2": "۲ سؤال باقی مانده", "1": "۱ سؤال باقی مانده" },
+      // Round 2026-07-18 (item 7) — softer phrasing than a bare counter.
+      questionsRemainingLabels: {
+        "3": "برای راهنمایی دقیق‌تر، ۳ سؤال اصلی دیگر باقی مانده است.",
+        "2": "برای راهنمایی دقیق‌تر، ۲ سؤال اصلی دیگر باقی مانده است.",
+        "1": "برای راهنمایی دقیق‌تر، ۱ سؤال اصلی دیگر باقی مانده است.",
+      },
       limitReachedNotice: "برای بررسی دقیق‌تر، ادامه مسیر از طریق رزرو مشاوره انجام می‌شود.",
       safetyNotice: "این راهنمایی جایگزین معاینه و نظر پزشک نیست؛ تصمیم نهایی پس از بررسی توسط تیم کلینیک انجام می‌شود.",
       viewSuggestedStepCta: "مشاهده",
       askAnotherCta: "سؤال بعدی",
       relatedCareCta: "مراقبت‌های مرتبط",
       continueBookingCta: "ادامه رزرو",
+      // Round 2026-07-18 (item 4) — exact required resume prompt.
+      resumeBookingPrompt: "برگردیم به ادامه رزرو؟",
+      changeServiceCta: "تغییر خدمت",
+      // Round 2026-07-18 (item 8) — replaces the old vague "use the buttons above" fallback.
+      fallbackPrompt: "برای اینکه دقیق‌تر راهنمایی‌تان کنم، لطفاً بفرمایید سؤال شما درباره کدام مورد است: هزینه، مراقبت، انتخاب خدمت یا رزرو مشاوره؟",
+      fallbackChips: { cost: "هزینه", service: "انتخاب خدمت", care: "مراقبت‌ها", booking: "رزرو مشاوره" },
+      costEstimateCta: "برآورد اولیه هزینه",
+      bookServiceTemplate: "رزرو مشاوره {service}",
+      careForServiceTemplate: "مراقبت‌های {service}",
     },
     contextualAsk: {
       prompt: "قبل از ادامه، سؤالی دارید؟",

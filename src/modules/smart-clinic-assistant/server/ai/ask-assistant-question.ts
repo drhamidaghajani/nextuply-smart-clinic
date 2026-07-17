@@ -17,10 +17,22 @@ import { extractDevBypassMobile, isDevBypassToken, isValidDevBypassToken } from 
 
 /**
  * Round 2026-07-17 (Smart Assistant product redesign, per Hamid): the one
- * entry point for the post-OTP, up-to-3-question AI conversation
- * (`AiConversationStep` — see that file). Reuses `interpretFreeText`
- * unchanged (does NOT touch `ai-gateway-client.ts`/`ai/config.ts`) — this
- * file is a caller of the existing AI boundary, not a new one.
+ * entry point for the post-OTP, up-to-3-question AI conversation. Reuses
+ * `interpretFreeText` unchanged (does NOT touch `ai-gateway-client.ts`/
+ * `ai/config.ts`) — this file is a caller of the existing AI boundary,
+ * not a new one.
+ *
+ * Round 2026-07-18 (conversation-first UX pass, per Hamid — free-text
+ * answers were falling back to weak generic copy like "use the buttons
+ * above" even for obvious questions): `buildGroundedAnswer` below now
+ * answers deterministic-content intents (cost, care, before/after,
+ * articles, consultation intro) with the REAL grounded copy from the
+ * dictionary instead of a bare step title — this is content lookup, not
+ * reasoning, so it doesn't need (and doesn't use) the AI Gateway. Cost
+ * questions specifically are tailored per service (item 9) when a
+ * service was recognized (either by the local keyword matcher or the AI
+ * classification) — see `local-intent-matcher.ts`'s doc-comment for why
+ * the old matcher lost that service context.
  *
  * The 3-question limit is enforced here, server-side, against
  * `AssistantSession.questionCount`/`questionLimit` — the authoritative
@@ -28,7 +40,8 @@ import { extractDevBypassMobile, isDevBypassToken, isValidDevBypassToken } from 
  * (`"unavailable"`) never consumes a question — that's this system's
  * fault, not the patient using up their 3 questions. An ambiguous/
  * low-confidence answer (`"unclear"`) DOES consume one — the assistant
- * genuinely attempted an answer.
+ * genuinely attempted an answer, now with a real clarifying fallback
+ * (item 8) instead of a dead end.
  *
  * Every question and every answer shown to the patient is persisted via
  * `createAssistantMessage` — best-effort (wrapped so a logging failure
@@ -38,21 +51,40 @@ import { extractDevBypassMobile, isDevBypassToken, isValidDevBypassToken } from 
  */
 
 export type AskAssistantQuestionResult =
-  /** `suggestedServiceId` — round 2026-07-17 fix: when the intent classification (local keyword match or AI) resolved to a specific service, the "مشاهده" chip must go through the SAME service-selection path a manual click would (`handleServiceSelect`, which picks the correct step — `triage` vs `appointment_selection` — itself), never trust `suggestedStep` blindly when a service is known. */
-  | { type: "answer"; answer: string; suggestedStep: AssistantStep | null; suggestedStepLabel: string | null; suggestedServiceId: ServiceId | null; questionsRemaining: number }
+  | { type: "answer"; answer: string; suggestedStep: AssistantStep | null; suggestedServiceId: ServiceId | null; questionsRemaining: number }
   | { type: "unclear"; questionsRemaining: number }
   | { type: "unavailable" }
   | { type: "limit_reached" }
   | { type: "not_verified" };
 
-const STEP_LABEL_KEYS: Partial<Record<AssistantStep, (dict: ReturnType<typeof getDictionary>) => string>> = {
-  consultation_booking: (dict) => dict.assistantFlow.ui.consultationBookingEyebrow,
-  service_selection: (dict) => dict.assistantFlow.ui.serviceSelectionTitle,
-  cost_question: (dict) => dict.assistantFlow.ui.costQuestionTitle,
-  before_after: (dict) => dict.assistantFlow.ui.beforeAfterTitle,
-  articles: (dict) => dict.assistantFlow.ui.articlesTitle,
-  care_guidance: (dict) => dict.assistantFlow.ui.careGuidanceTitle,
-};
+/**
+ * Steps that resolve to a real, content-grounded ANSWER (no AI-authored
+ * `responseText` needed) rather than a structured card the client should
+ * navigate to. `triage`/`contact_capture`/`service_selection` are
+ * deliberately excluded here — those mean "the patient wants to look at
+ * or start a specific booking step," which `AssistantDrawer` handles by
+ * actually entering booking mode (`onNavigateToSuggested`), not by
+ * answering in text.
+ */
+function buildGroundedAnswer(step: AssistantStep, serviceId: ServiceId | null, dict: ReturnType<typeof getDictionary>): string | null {
+  const flow = dict.assistantFlow;
+  switch (step) {
+    case "cost_question":
+      return (serviceId && flow.costGuidance.byService[serviceId]) || flow.costGuidance.generic;
+    case "care_guidance":
+      return flow.steps.careGuidance.body;
+    case "before_after":
+      return flow.steps.beforeAfter.body;
+    case "articles":
+      return flow.steps.articles.body;
+    case "consultation_booking":
+      return flow.steps.consultationBooking.intro;
+    case "image_upload_future":
+      return flow.steps.imageUploadFuture.notice;
+    default:
+      return null;
+  }
+}
 
 async function logMessageSafely(args: { sessionId: string; role: "user" | "assistant"; content: string }): Promise<void> {
   try {
@@ -103,7 +135,7 @@ export async function askAssistantQuestion(rawInput: {
     message,
     locale,
     sessionToken: rawInput.sessionToken,
-    currentStep: rawInput.currentStep ?? "ai_conversation",
+    currentStep: rawInput.currentStep ?? "conversation",
     selectedService: rawInput.serviceSlug ?? session.serviceSlug ?? null,
   });
 
@@ -122,31 +154,32 @@ export async function askAssistantQuestion(rawInput: {
       type: "answer",
       answer: result.answer,
       suggestedStep: null,
-      suggestedStepLabel: null,
       suggestedServiceId: null,
       questionsRemaining: Math.max(0, updated.questionLimit - updated.questionCount),
     };
   }
 
   if (result.type === "intent") {
-    const serviceLabel = result.serviceId ? dict.assistantFlow.services.find((service) => service.id === result.serviceId)?.label ?? null : null;
-    const labelFn = STEP_LABEL_KEYS[result.step];
-    const label = serviceLabel ?? (labelFn ? labelFn(dict) : null);
-    const answer = result.responseText ?? label ?? dict.assistantFlow.ui.freeTextUnclearMessage;
+    const grounded = buildGroundedAnswer(result.step, result.serviceId, dict);
+    // A "triage"/"contact_capture"/"service_selection" suggestion has no
+    // grounded text by design (see `buildGroundedAnswer`'s doc-comment) —
+    // give the patient a short, honest transition line instead of
+    // silence, and let the client's "مشاهده"/service chip do the actual
+    // navigation into that booking step.
+    const answer = grounded ?? result.responseText ?? dict.assistantFlow.aiConversation.fallbackPrompt;
     await logMessageSafely({ sessionId: session.id, role: "assistant", content: answer });
     const updated = await incrementAssistantSessionQuestionCount(session.id);
     return {
       type: "answer",
       answer,
       suggestedStep: result.step,
-      suggestedStepLabel: label,
       suggestedServiceId: result.serviceId,
       questionsRemaining: Math.max(0, updated.questionLimit - updated.questionCount),
     };
   }
 
-  // "unclear"
-  await logMessageSafely({ sessionId: session.id, role: "assistant", content: dict.assistantFlow.ui.freeTextUnclearMessage });
+  // "unclear" — item 8: a real clarifying fallback, not a dead end.
+  await logMessageSafely({ sessionId: session.id, role: "assistant", content: dict.assistantFlow.aiConversation.fallbackPrompt });
   const updated = await incrementAssistantSessionQuestionCount(session.id);
   return { type: "unclear", questionsRemaining: Math.max(0, updated.questionLimit - updated.questionCount) };
 }

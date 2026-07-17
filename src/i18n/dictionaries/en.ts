@@ -445,6 +445,29 @@ export const assistantFlow = {
     ],
   },
   safetyNotice: "This information is used only for initial screening and consultation guidance. The final decision is made after the doctor's review.",
+  // Round 2026-07-18 (conversation-first UX pass) — deterministic, service-tailored cost guidance (item 9).
+  costGuidance: {
+    generic:
+      "The exact cost depends on the service, a clinical review, and sometimes imaging — we can't give a firm number without an examination. To guide you more precisely, could you tell me which service you're interested in so I can give an initial estimate based on that?",
+    byService: {
+      "advanced-dental-implant":
+        "Implant cost depends on the number of units, bone condition, a possible need for a sinus lift or bone graft, the abutment type, and an imaging review. We can't give a firm number without a review, but for an initial estimate, could you tell me how many teeth you're considering and whether you have a recent X-ray or CBCT scan?",
+      rhinoplasty:
+        "Rhinoplasty cost depends on your nose type, any previous surgery, how much correction is needed, and an in-person examination — we can't give an exact number without a visit. For an initial estimate, have you had rhinoplasty before, and is your main goal appearance, breathing, or both?",
+      "facial-rejuvenation":
+        "Facial rejuvenation cost depends on the chosen method (injectables, a lift, or a combination), your skin condition and sagging, and how long results last / how many sessions are needed. For an initial estimate, which area of your face concerns you most, and have you had a similar procedure before?",
+    } as Record<string, string>,
+  },
+  // Round 2026-07-18 — short, colloquial service names for chip labels.
+  serviceShortLabels: {
+    "advanced-dental-implant": "Implants",
+    "impacted-tooth-surgery": "Impacted Tooth",
+    "facial-rejuvenation": "Facial Rejuvenation",
+    "facial-cosmetic-surgery": "Facial Cosmetic Surgery",
+    "orthognathic-surgery": "Jaw Surgery",
+    rhinoplasty: "Rhinoplasty",
+    general_consultation: "General Consultation",
+  },
   leadForm: {
     fullNameLabel: "Full Name",
     mobileLabel: "Mobile Number",
@@ -466,8 +489,6 @@ export const assistantFlow = {
     triageEyebrow: "Initial Assessment",
     triageAnswerPlaceholder: "Your answer...",
     consultationBookingEyebrow: "Book a Consultation",
-    costQuestionEyebrow: "Cost Inquiry",
-    costQuestionTitle: "Initial Cost Estimate",
     beforeAfterTitle: "Our Work",
     articlesTitle: "Articles",
     imageUploadTitle: "Send a Photo",
@@ -479,16 +500,12 @@ export const assistantFlow = {
     freeTextPlaceholder: "Type your question here...",
     freeTextSubmitCta: "Ask",
     freeTextThinkingLabel: "Thinking...",
-    freeTextUnclearMessage: "I couldn't quite understand that — please use one of the options above, or try rephrasing your question.",
     freeTextUnavailableMessage: "Smart replies are temporarily unavailable right now. You can use the quick-guidance options instead, or call the clinic directly to coordinate.",
     askQuestionCta: "Ask a Question",
   },
   steps: {
     consultationBooking: {
       intro: "To book a consultation, please choose the service you're interested in. After an initial review, our clinic team will guide you through the next steps.",
-    },
-    costQuestion: {
-      intro: "The exact cost is determined after an examination and review of your case. For a more precise estimate, you can continue with the consultation booking path.",
     },
     imageUploadFuture: {
       notice: "Photo upload for initial review will be enabled in an upcoming update.",
@@ -532,13 +549,24 @@ export const assistantFlow = {
   },
   aiConversation: {
     verifiedIntro: "Your number is verified. You can now ask up to 3 main questions about your treatment, preparation, care, or the booking path.",
-    questionsRemainingLabels: { "3": "3 questions remaining", "2": "2 questions remaining", "1": "1 question remaining" },
+    questionsRemainingLabels: {
+      "3": "For more precise guidance, you have 3 main questions left.",
+      "2": "For more precise guidance, you have 2 main questions left.",
+      "1": "For more precise guidance, you have 1 main question left.",
+    },
     limitReachedNotice: "For a more thorough review, please continue through the consultation booking path.",
     safetyNotice: "This guidance does not replace an in-person examination or a doctor's opinion; the final decision is made after review by our clinic team.",
     viewSuggestedStepCta: "View",
     askAnotherCta: "Next Question",
     relatedCareCta: "Related Care",
     continueBookingCta: "Continue Booking",
+    resumeBookingPrompt: "Shall we continue your booking?",
+    changeServiceCta: "Change Service",
+    fallbackPrompt: "To guide you more precisely, could you tell me what your question is about: cost, care, choosing a service, or booking a consultation?",
+    fallbackChips: { cost: "Cost", service: "Choose a Service", care: "Care", booking: "Book a Consultation" },
+    costEstimateCta: "Initial Cost Estimate",
+    bookServiceTemplate: "Book a {service} Consultation",
+    careForServiceTemplate: "{service} Care",
   },
   contextualAsk: {
     prompt: "Have a question before continuing?",

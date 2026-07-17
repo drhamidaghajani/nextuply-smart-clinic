@@ -128,3 +128,47 @@ export function TypingIndicator() {
     </span>
   );
 }
+
+/**
+ * Round 2026-07-18 (conversation-first UX pass, per Hamid — "it still
+ * feels like a form with a chat attached to it"): the assistant's
+ * bubble/card vocabulary for a single continuous transcript. Every
+ * interaction (opening message, quick actions, questions, answers,
+ * guided booking steps, OTP, confirmation) renders as one of these
+ * inside `AssistantDrawer`'s scrolling feed, instead of the drawer
+ * swapping between separate full-screen "form" views.
+ */
+
+/** An assistant-authored line — left-aligned (logical `me-auto`, so it's the visual left under RTL and right under LTR — matches this drawer's existing RTL-safe convention). */
+export function AssistantBubble({ children }: { children: ReactNode }) {
+  return <div className="me-auto max-w-[90%] rounded-2xl rounded-ss-sm border border-charcoal/10 bg-white px-3.5 py-2.5 text-sm leading-6 text-charcoal/85">{children}</div>;
+}
+
+/** A patient-authored line — the mirror of `AssistantBubble`. */
+export function UserBubble({ children }: { children: ReactNode }) {
+  return <div className="ms-auto max-w-[85%] rounded-2xl rounded-ee-sm bg-gold/10 px-3.5 py-2.5 text-sm leading-6 text-charcoal">{children}</div>;
+}
+
+/**
+ * A compact, centered recap of a completed guided step (e.g. "✓ ایمپلنت
+ * دندان پیشرفته انتخاب شد") — deliberately NOT another paired assistant/
+ * user bubble: the guided card itself already showed the question, so a
+ * full bubble pair here would just repeat it. This is what lets a
+ * multi-step booking collapse into a short, scannable history instead of
+ * a wall of repeated prompts.
+ */
+export function ChoiceRecap({ children }: { children: ReactNode }) {
+  return <p className="mx-auto max-w-[85%] text-center text-xs leading-6 text-charcoal/45">{children}</p>;
+}
+
+/**
+ * Wraps an existing step component (`ServiceSelectionStep`, `TriageStep`,
+ * etc. — unchanged internally) so it reads as a card inside the
+ * conversation rather than a screen that replaces it. This is the whole
+ * mechanism behind "refactor carefully, don't throw away the existing
+ * implementation" — every guided step keeps its own validation/props/
+ * server calls exactly as before; only its container changed.
+ */
+export function GuidedCard({ children }: { children: ReactNode }) {
+  return <div className="rounded-2xl border border-charcoal/10 bg-white p-4 shadow-[0_1px_2px_rgba(0,0,0,0.04)]">{children}</div>;
+}

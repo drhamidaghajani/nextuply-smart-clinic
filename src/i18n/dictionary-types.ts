@@ -189,6 +189,13 @@ export interface AssistantFlowDictionary {
   services: readonly AssistantServiceOption[];
   triageQuestions: Record<string, readonly string[]>;
   safetyNotice: string;
+  /** Round 2026-07-18 (conversation-first UX pass) — deterministic, service-tailored cost guidance (item 9 of the brief): explains what actually drives the price instead of inventing a number, keyed by `ServiceId`. `generic` covers any service without its own tailored entry (and the case where no service is known yet). */
+  costGuidance: {
+    generic: string;
+    byService: Record<string, string>;
+  };
+  /** Round 2026-07-18 — short, natural service names for chip labels ("رزرو مشاوره ایمپلنت") — `services[].label` is the full formal name and reads awkwardly inside a small chip. */
+  serviceShortLabels: Record<string, string>;
   leadForm: {
     fullNameLabel: string;
     mobileLabel: string;
@@ -210,8 +217,6 @@ export interface AssistantFlowDictionary {
     triageEyebrow: string;
     triageAnswerPlaceholder: string;
     consultationBookingEyebrow: string;
-    costQuestionEyebrow: string;
-    costQuestionTitle: string;
     beforeAfterTitle: string;
     articlesTitle: string;
     imageUploadTitle: string;
@@ -223,15 +228,13 @@ export interface AssistantFlowDictionary {
     freeTextPlaceholder: string;
     freeTextSubmitCta: string;
     freeTextThinkingLabel: string;
-    freeTextUnclearMessage: string;
-    /** Round 2026-07-16 — AI transport failure/not-configured, distinct from `freeTextUnclearMessage` ("I didn't understand"). See `intent-detector.ts`'s `FreeTextResult` doc-comment. */
+    /** Round 2026-07-16 — AI transport failure/not-configured. Round 2026-07-18 — the old `freeTextUnclearMessage` ("I didn't understand") is retired; see `aiConversation.fallbackPrompt`, its real replacement. */
     freeTextUnavailableMessage: string;
     /** Round 2026-07-17 (Smart Assistant product redesign) — the deliberate, distinct "ask a question" action on the opening menu; replaces the old always-open free-text composer. */
     askQuestionCta: string;
   };
   steps: {
     consultationBooking: { intro: string };
-    costQuestion: { intro: string };
     imageUploadFuture: { notice: string };
     beforeAfter: { body: string; cta: string };
     articles: { body: string; cta: string };
@@ -261,10 +264,10 @@ export interface AssistantFlowDictionary {
     description: string;
     submitCta: string;
   };
-  /** Round 2026-07-17 — the post-OTP, up-to-3-question AI conversation panel (`ai-conversation-step.tsx`). */
+  /** Round 2026-07-17 — the post-OTP, up-to-3-question AI conversation, now folded directly into the drawer's single conversation transcript (round 2026-07-18) rather than a separate step screen. */
   aiConversation: {
     verifiedIntro: string;
-    /** Keyed by remaining-question count as a string — only "1"/"2"/"3" are ever looked up (0 shows `limitReachedNotice` instead). */
+    /** Keyed by remaining-question count as a string — only "1"/"2"/"3" are ever looked up (0 shows `limitReachedNotice` instead). Round 2026-07-18 (item 7) — softer phrasing than a bare counter, so it reads as guidance, not a penalty. */
     questionsRemainingLabels: { "3": string; "2": string; "1": string };
     limitReachedNotice: string;
     safetyNotice: string;
@@ -273,6 +276,17 @@ export interface AssistantFlowDictionary {
     askAnotherCta: string;
     relatedCareCta: string;
     continueBookingCta: string;
+    /** Round 2026-07-18 (item 4) — shown after answering a question that interrupted booking, offering to resume exactly where the patient left off. */
+    resumeBookingPrompt: string;
+    changeServiceCta: string;
+    /** Round 2026-07-18 (item 8) — replaces the old vague "use the buttons above" fallback with a genuinely helpful clarifying prompt. */
+    fallbackPrompt: string;
+    fallbackChips: { cost: string; service: string; care: string; booking: string };
+    /** Round 2026-07-18 (item 2) — chip offered after a cost answer to re-show the same guidance without spending another question. */
+    costEstimateCta: string;
+    /** `"{service}"` placeholder templates for service-aware chip labels ("رزرو مشاوره ایمپلنت" / "مراقبت‌های ایمپلنت") — a template (not string concatenation) so word order stays grammatical in en/ar too. */
+    bookServiceTemplate: string;
+    careForServiceTemplate: string;
   };
   /** Round 2026-07-17 — the "قبل از ادامه، سؤالی دارید؟" prompt shown on booking-flow steps (item 6 of the brief). */
   contextualAsk: {

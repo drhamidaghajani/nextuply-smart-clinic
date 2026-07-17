@@ -1411,10 +1411,17 @@ export const fa = {
       smsUnavailableMessage: "در حال حاضر تأیید پیامکی موقتاً در دسترس نیست. لطفاً برای رزرو یا پیگیری، با کلینیک تماس بگیرید یا از واتساپ استفاده کنید.",
       smsUnavailableBookingMessage: "برای ثبت نهایی درخواست، تأیید شماره موبایل لازم است. در حال حاضر این بخش موقتاً در دسترس نیست؛ لطفاً با کلینیک تماس بگیرید.",
       invalidMobileMessage: "شماره موبایل معتبر نیست.",
-      invalidCodeMessage: "کد وارد شده صحیح نیست.",
-      expiredCodeMessage: "کد منقضی شده — لطفاً دوباره درخواست دهید.",
-      tooManyAttemptsMessage: "تعداد تلاش‌ها بیش از حد مجاز است — لطفاً کد جدید درخواست دهید.",
+      // Round 2026-07-19 (OTP UX/verification fix, item 6) — exact required copy.
+      invalidCodeMessage: "کد واردشده درست نیست. لطفاً کد پیامک‌شده را دوباره بررسی کنید.",
+      expiredCodeMessage: "مهلت این کد تمام شده است. لطفاً کد جدید دریافت کنید.",
+      tooManyAttemptsMessage: "تعداد تلاش‌ها بیش از حد مجاز است. لطفاً کمی بعد دوباره کد دریافت کنید.",
+      verifyUnavailableMessage: "در حال حاضر تأیید کد با مشکل مواجه شد. لطفاً چند لحظه بعد دوباره تلاش کنید.",
       devBypassNotice: "🔧 حالت توسعه: سرویس پیامک متصل نیست. برای ادامه، کد ۰۰۰۰۰۰ را وارد کنید.",
+      // Round 2026-07-19 (item 5) — `{time}` replaced client-side.
+      codeExpiryLabel: "مهلت اعتبار کد: {time}",
+      resendCooldownLabel: "ارسال مجدد کد تا {time} ثانیه دیگر",
+      codeExpiredNotice: "مهلت کد تمام شد. لطفاً کد جدید دریافت کنید.",
+      autoVerifyingLabel: "در حال تأیید کد...",
     },
   },
 

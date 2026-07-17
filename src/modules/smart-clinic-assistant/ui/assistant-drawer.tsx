@@ -117,6 +117,8 @@ export function AssistantDrawer() {
   const [sessionToken, setSessionToken] = useState<string | null>(null);
   const [pendingPurpose, setPendingPurpose] = useState<OtpPurpose>("assistant_access");
   const pendingActionRef = useRef<((token: string) => void) | null>(null);
+  /** Round 2026-07-19 (OTP UX/verification fix, item 1) — bumped every time `runGated` opens a FRESH verification attempt (never on the OTP card's own internal resend, which reuses the same instance/timers on purpose). Passed as `PhoneVerificationStep`'s `key` so a genuinely new gated action can never reuse a stale mobile/code/timer state left over from a previous attempt — React remounts a clean instance instead. */
+  const [otpAttemptId, setOtpAttemptId] = useState(0);
 
   // --- Post-OTP AI conversation state + mid-booking detour memory (item 5) ---
   const [questionsRemaining, setQuestionsRemaining] = useState(3);
@@ -181,6 +183,7 @@ export function AssistantDrawer() {
     }
     setPendingPurpose(purpose);
     pendingActionRef.current = action;
+    setOtpAttemptId((id) => id + 1);
     setMode("otp");
   };
 
@@ -603,7 +606,7 @@ export function AssistantDrawer() {
     }
     if (mode === "otp") {
       return (
-        <GuidedCard>
+        <GuidedCard key={otpAttemptId}>
           <PhoneVerificationStep
             dict={dict}
             locale={locale}

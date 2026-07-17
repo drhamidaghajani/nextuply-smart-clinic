@@ -594,10 +594,17 @@ export const assistantFlow = {
     smsUnavailableMessage: "التحقق عبر الرسائل النصية غير متاح مؤقتًا في الوقت الحالي. يرجى الاتصال بالعيادة أو استخدام واتساب للحجز أو المتابعة.",
     smsUnavailableBookingMessage: "التحقق من رقم الجوال مطلوب لإتمام طلب الحجز. هذه الخطوة غير متاحة مؤقتًا حاليًا؛ يرجى الاتصال بالعيادة مباشرة.",
     invalidMobileMessage: "رقم الجوال غير صالح.",
-    invalidCodeMessage: "الرمز المدخل غير صحيح.",
-    expiredCodeMessage: "انتهت صلاحية الرمز — يرجى طلب رمز جديد.",
-    tooManyAttemptsMessage: "عدد المحاولات تجاوز الحد المسموح — يرجى طلب رمز جديد.",
+    // Round 2026-07-19 (OTP UX/verification fix, item 6).
+    invalidCodeMessage: "الرمز المدخل غير صحيح. يرجى التحقق من الرمز المُرسل إليكم عبر الرسائل النصية.",
+    expiredCodeMessage: "انتهت صلاحية هذا الرمز. يرجى طلب رمز جديد.",
+    tooManyAttemptsMessage: "عدد المحاولات تجاوز الحد المسموح. يرجى الانتظار قليلاً ثم طلب رمز جديد.",
+    verifyUnavailableMessage: "يواجه التحقق من الرمز مشكلة حاليًا. يرجى المحاولة مرة أخرى بعد لحظات.",
     devBypassNotice: "🔧 وضع التطوير: لا توجد خدمة رسائل نصية متصلة. أدخلوا الرمز 000000 للمتابعة.",
+    // Round 2026-07-19 (item 5) — `{time}` يُستبدل من جهة العميل.
+    codeExpiryLabel: "مهلة صلاحية الرمز: {time}",
+    resendCooldownLabel: "يمكنكم إعادة إرسال الرمز خلال {time} ثانية",
+    codeExpiredNotice: "انتهت مهلة الرمز. يرجى طلب رمز جديد.",
+    autoVerifyingLabel: "جارٍ التحقق من الرمز...",
   },
 } satisfies AssistantFlowDictionary;
 

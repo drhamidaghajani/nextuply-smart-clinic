@@ -608,10 +608,17 @@ export const assistantFlow = {
     smsUnavailableMessage: "SMS verification is temporarily unavailable right now. Please call the clinic or use WhatsApp to book or follow up.",
     smsUnavailableBookingMessage: "Mobile verification is required to finalize your booking request. This step is temporarily unavailable right now — please call the clinic directly.",
     invalidMobileMessage: "This mobile number isn't valid.",
-    invalidCodeMessage: "That code isn't correct.",
-    expiredCodeMessage: "This code has expired — please request a new one.",
-    tooManyAttemptsMessage: "Too many attempts — please request a new code.",
+    // Round 2026-07-19 (OTP UX/verification fix, item 6).
+    invalidCodeMessage: "That code isn't correct. Please double-check the code we texted you.",
+    expiredCodeMessage: "This code has expired. Please request a new one.",
+    tooManyAttemptsMessage: "Too many attempts. Please wait a bit and request a new code.",
+    verifyUnavailableMessage: "Verification is having trouble right now. Please try again in a moment.",
     devBypassNotice: "🔧 Dev mode: no SMS provider is connected. Enter code 000000 to continue.",
+    // Round 2026-07-19 (item 5) — `{time}` replaced client-side.
+    codeExpiryLabel: "Code valid for: {time}",
+    resendCooldownLabel: "You can resend the code in {time}s",
+    codeExpiredNotice: "This code has expired. Please request a new one.",
+    autoVerifyingLabel: "Verifying code...",
   },
 } satisfies AssistantFlowDictionary;
 

@@ -7,8 +7,17 @@ import type { Locale } from "@/i18n/locales";
 
 import { SERVICE_IDS } from "./types";
 
-/** Accepts Persian/Arabic-Indic digits too (common on a Persian-first mobile keyboard) before validating. */
-function normalizeDigits(value: string): string {
+/**
+ * Round 2026-07-19 (OTP UX/verification fix, per Hamid): exported — this
+ * is now the one shared digit-normalization utility for BOTH the mobile
+ * field (already used here, unchanged) and the OTP code field
+ * (`verify-otp.ts`/`phone-verification-step.tsx`), per his explicit "one
+ * shared normalization utility" requirement, rather than a second
+ * near-duplicate implementation. Accepts Persian (۰-۹) and Arabic-Indic
+ * (٠-٩) digits, common on a Persian-first mobile keyboard, alongside
+ * plain English digits.
+ */
+export function normalizeDigits(value: string): string {
   return value
     .replace(/[۰-۹]/g, (d) => String("۰۱۲۳۴۵۶۷۸۹".indexOf(d)))
     .replace(/[٠-٩]/g, (d) => String("٠١٢٣٤٥٦٧٨٩".indexOf(d)))

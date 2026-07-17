@@ -327,10 +327,18 @@ export interface AssistantFlowDictionary {
     /** Round 2026-07-16 — shown specifically when SMS is unavailable during the final booking submit (`purpose: "booking_request"`), naming that consequence explicitly rather than the generic message. */
     smsUnavailableBookingMessage: string;
     invalidMobileMessage: string;
+    /** Round 2026-07-19 (OTP UX/verification fix, item 6) — user-friendly, specific copy replacing the old generic messages. */
     invalidCodeMessage: string;
     expiredCodeMessage: string;
     tooManyAttemptsMessage: string;
+    /** Shown when `verifyOtp` itself returns `"unavailable"` (a transport/provider issue during the verify call, not the same as `smsUnavailableMessage`, which covers SMS-send-time unavailability). */
+    verifyUnavailableMessage: string;
     devBypassNotice: string;
+    /** Round 2026-07-19 — countdown/auto-verify copy for the OTP card. `{time}` is a literal placeholder replaced client-side (mm:ss for expiry, a plain seconds count for resend). */
+    codeExpiryLabel: string;
+    resendCooldownLabel: string;
+    codeExpiredNotice: string;
+    autoVerifyingLabel: string;
   };
 }
 

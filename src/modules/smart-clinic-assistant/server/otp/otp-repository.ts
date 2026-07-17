@@ -10,6 +10,10 @@ import { getDefaultClinicId } from "@/core/tenancy/clinic";
 
 const MAX_OTP_ATTEMPTS = 5;
 const OTP_TTL_MINUTES = 5;
+/** Round 2026-07-19 (OTP UX/verification fix) — how long a patient must wait before requesting another SMS for the same mobile+purpose; enforced server-side in `request-otp.ts` (not just a client-side disabled button) so a race or a bypassed client can't spam sends. */
+const OTP_RESEND_COOLDOWN_SECONDS = 60;
+
+export { OTP_TTL_MINUTES, OTP_RESEND_COOLDOWN_SECONDS };
 
 async function ensureClinicExists(clinicId: string): Promise<void> {
   await prisma.clinic.upsert({
@@ -48,6 +52,43 @@ export async function findActiveOtpCode(mobile: string, purpose: "assistant_acce
   return prisma.otpCode.findFirst({
     where: { clinicId, mobile, purpose, consumedAt: null, expiresAt: { gt: new Date() } },
     orderBy: { createdAt: "desc" },
+  });
+}
+
+/**
+ * Round 2026-07-19 (OTP UX/verification fix) — the single most recent OTP
+ * request for this mobile+purpose REGARDLESS of consumed/expired status.
+ * Two callers: (1) `request-otp.ts`'s resend-cooldown check (needs the
+ * latest request's `createdAt`, even if it was already consumed/expired),
+ * (2) `verify-otp.ts`'s diagnostic logging, to distinguish "never
+ * requested" (`no_active_code`) from "a newer request superseded this
+ * one" (`stale_code`) when `findActiveOtpCode` above comes back empty —
+ * see that file's doc-comment.
+ */
+export async function findLatestOtpRequest(mobile: string, purpose: "assistant_access" | "booking_request") {
+  const clinicId = getDefaultClinicId();
+  return prisma.otpCode.findFirst({
+    where: { clinicId, mobile, purpose },
+    orderBy: { createdAt: "desc" },
+  });
+}
+
+/**
+ * Round 2026-07-19 (OTP UX/verification fix, per Hamid — root cause of
+ * "user receives SMS code but entering it says the code is wrong"):
+ * called right before issuing a new OTP so at most one code is ever
+ * valid at a time for a given mobile+purpose — an older SMS (delayed in
+ * transit, or from an accidental double-request) can never verify a
+ * newer session. Marks them `consumedAt` (not deleted) — same
+ * "consumed" state a successful verification leaves, so `findActiveOtpCode`
+ * naturally excludes them and no separate "invalidated" status is needed
+ * anywhere else in the schema.
+ */
+export async function invalidatePendingOtpCodes(mobile: string, purpose: "assistant_access" | "booking_request") {
+  const clinicId = getDefaultClinicId();
+  await prisma.otpCode.updateMany({
+    where: { clinicId, mobile, purpose, consumedAt: null },
+    data: { consumedAt: new Date() },
   });
 }
 

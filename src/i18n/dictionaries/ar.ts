@@ -585,7 +585,8 @@ export const assistantFlow = {
       "2": "لإرشادكم بدقة أكبر، تبقّى لكم سؤالان رئيسيان.",
       "1": "لإرشادكم بدقة أكبر، تبقّى لكم سؤال رئيسي واحد.",
     },
-    limitReachedNotice: "لمراجعة أدق، يتم متابعة المسار عبر حجز الاستشارة.",
+    // Round 2026-07-22 (focused-conversation UX fix, item 8) — exact required copy.
+    limitReachedNotice: "تمت الإجابة عن أسئلتكم الرئيسية الثلاثة. لمراجعة أدق، من الأفضل متابعة مسار الاستشارة أو اختيار الخدمة.",
     safetyNotice: "هذا الإرشاد لا يغني عن الفحص ورأي الطبيب؛ يُتخذ القرار النهائي بعد مراجعة فريق العيادة.",
     viewSuggestedStepCta: "عرض",
     askAnotherCta: "السؤال التالي",
@@ -607,6 +608,16 @@ export const assistantFlow = {
       "لا مشكلة. سيرشدكم فريق العيادة في جلسة الاستشارة إلى كيفية الحصول على صورة أو CBCT — لا داعي لتجهيزها الآن. هل تودون تحديد موعد للفحص الحضوري/الاستشارة؟",
     preparationQuestionCta: "سؤال عن التحضير",
     handoffNotice: "لمراجعة أدق، يجب أن يطّلع فريق العيادة على حالتكم. يُسجَّل طلبكم مع ملخص هذه المحادثة ليتمكن فريق العيادة من المتابعة بكامل السياق.",
+    // Round 2026-07-22 (focused-conversation UX fix): recap templates (item 7), resume-card third chip (item 4), post-limit composer lock (item 3).
+    questionRecapTemplate: "سؤال حول {service}",
+    serviceSelectedPrefix: "تم اختيار الخدمة: ",
+    timeSelectedPrefix: "تم اختيار الوقت: ",
+    cancelBookingCta: "إلغاء الحجز",
+    requestCallCta: "طلب اتصال من العيادة",
+    composerLocked: {
+      prompt: "للمتابعة، يرجى اختيار أحد المسارات التالية.",
+      careCta: "عرض العناية ذات الصلة",
+    },
   },
   contextualAsk: {
     prompt: "هل لديكم سؤال قبل المتابعة؟",

@@ -1404,7 +1404,8 @@ export const fa = {
         "2": "برای راهنمایی دقیق‌تر، ۲ سؤال اصلی دیگر باقی مانده است.",
         "1": "برای راهنمایی دقیق‌تر، ۱ سؤال اصلی دیگر باقی مانده است.",
       },
-      limitReachedNotice: "برای بررسی دقیق‌تر، ادامه مسیر از طریق رزرو مشاوره انجام می‌شود.",
+      // Round 2026-07-22 (focused-conversation UX fix, item 8) — exact required copy.
+      limitReachedNotice: "۳ سؤال اصلی شما پاسخ داده شد. برای بررسی دقیق‌تر، بهتر است مسیر مشاوره یا انتخاب خدمت را ادامه دهیم.",
       safetyNotice: "این راهنمایی جایگزین معاینه و نظر پزشک نیست؛ تصمیم نهایی پس از بررسی توسط تیم کلینیک انجام می‌شود.",
       viewSuggestedStepCta: "مشاهده",
       askAnotherCta: "سؤال بعدی",
@@ -1434,6 +1435,16 @@ export const fa = {
       // Round 2026-07-21 (V2, item 13) — exact required copy.
       handoffNotice:
         "برای بررسی دقیق‌تر، تیم کلینیک باید مورد شما را بررسی کند. درخواست شما همراه با خلاصه گفتگو ثبت می‌شود تا همکاران کلینیک با زمینه کامل پیگیری کنند.",
+      // Round 2026-07-22 (focused-conversation UX fix): recap templates (item 7), resume-card third chip (item 4), post-limit composer lock (item 3).
+      questionRecapTemplate: "سؤال درباره {service}",
+      serviceSelectedPrefix: "خدمت انتخاب شد: ",
+      timeSelectedPrefix: "زمان انتخاب شد: ",
+      cancelBookingCta: "لغو رزرو",
+      requestCallCta: "درخواست تماس از کلینیک",
+      composerLocked: {
+        prompt: "برای ادامه، یکی از مسیرهای زیر را انتخاب کنید.",
+        careCta: "مشاهده مراقبت‌های مرتبط",
+      },
     },
     contextualAsk: {
       prompt: "قبل از ادامه، سؤالی دارید؟",

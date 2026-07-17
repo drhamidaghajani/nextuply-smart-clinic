@@ -602,7 +602,8 @@ export const assistantFlow = {
       "2": "For more precise guidance, you have 2 main questions left.",
       "1": "For more precise guidance, you have 1 main question left.",
     },
-    limitReachedNotice: "For a more thorough review, please continue through the consultation booking path.",
+    // Round 2026-07-22 (focused-conversation UX fix, item 8) — exact required copy.
+    limitReachedNotice: "Your 3 main questions have been answered. For a closer review, let's continue through the consultation booking or service-selection path.",
     safetyNotice: "This guidance does not replace an in-person examination or a doctor's opinion; the final decision is made after review by our clinic team.",
     viewSuggestedStepCta: "View",
     askAnotherCta: "Next Question",
@@ -625,6 +626,16 @@ export const assistantFlow = {
     preparationQuestionCta: "Ask about preparation",
     handoffNotice:
       "For a closer review, our clinic team needs to look at your case. Your request is saved along with a summary of this conversation, so our staff can follow up with the full context.",
+    // Round 2026-07-22 (focused-conversation UX fix): recap templates (item 7), resume-card third chip (item 4), post-limit composer lock (item 3).
+    questionRecapTemplate: "Question about {service}",
+    serviceSelectedPrefix: "Service selected: ",
+    timeSelectedPrefix: "Time selected: ",
+    cancelBookingCta: "Cancel Booking",
+    requestCallCta: "Request a Call from the Clinic",
+    composerLocked: {
+      prompt: "To continue, please choose one of the paths below.",
+      careCta: "View Related Care",
+    },
   },
   contextualAsk: {
     prompt: "Have a question before continuing?",

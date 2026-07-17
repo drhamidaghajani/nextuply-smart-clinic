@@ -319,6 +319,17 @@ export interface AssistantFlowDictionary {
     preparationQuestionCta: string;
     /** Round 2026-07-21 (V2, item 13) — "human handoff ready": exact required public copy, shown when a handoff is recommended (explicit request, repeated dissatisfaction, or the question limit reached while still engaged). Never a full handoff system — just this notice + a booking offer, and a `role: "system"` log entry for staff (see `log-handoff.ts`). */
     handoffNotice: string;
+    /** Round 2026-07-22 (focused-conversation UX fix, item 7) — `"{service}"` template for the collapsed recap line of a completed free-text Q&A turn ("✓ سؤال درباره جراحی فک"); used only when the question had a known service context, see `assistant-drawer.tsx`'s recap-boundary logic. */
+    questionRecapTemplate: string;
+    /** Round 2026-07-22 (item 7) — prefixes for the service-selected/time-selected collapse recap lines, matching the exact "✓ خدمت انتخاب شد: …" / "✓ زمان انتخاب شد: …" pattern. */
+    serviceSelectedPrefix: string;
+    timeSelectedPrefix: string;
+    /** Round 2026-07-22 (item 4) — "لغو رزرو", the third resume-card chip; abandons the in-progress booking back to the main menu. */
+    cancelBookingCta: string;
+    /** Round 2026-07-22 (item 3/8) — "درخواست تماس از کلینیک", offered once the question limit is reached; routes through the existing handoff log (no new CRM/notification system). */
+    requestCallCta: string;
+    /** Round 2026-07-22 (item 3) — the persistent decision card shown INSTEAD of the free-text composer once a verified session has used all its questions (`questionsRemaining <= 0`), distinct from the one-time `limitReachedNotice` transcript entry shown the moment the limit is first reached. */
+    composerLocked: { prompt: string; careCta: string };
   };
   /** Round 2026-07-17 — the "قبل از ادامه، سؤالی دارید؟" prompt shown on booking-flow steps (item 6 of the brief). */
   contextualAsk: {

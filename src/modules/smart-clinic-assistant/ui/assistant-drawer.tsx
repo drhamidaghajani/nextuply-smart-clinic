@@ -67,7 +67,19 @@ const DISSATISFACTION_KEYWORDS: Record<Locale, string[]> = {
   ar: ["هذا ليس جوابي", "أجب عن سؤالي", "لم تفهم", "غير ذي صلة", "لم أقصد ذلك", "إجابة خاطئة"],
 };
 
-type AssistantMode = "menu" | "conversation" | "booking" | "identify" | "otp" | "confirmation";
+/**
+ * Round 2026-07-22 (focused-conversation UX fix, per Hamid — "the UI
+ * behaves like an infinite transcript"): `"decision"` is a new terminal
+ * mode with no live-area card of its own (`renderLiveArea` falls through
+ * to `null` for it, same as the old unhandled-default case) — its whole
+ * point is that the just-pushed assistant entry (limit-reached notice or
+ * mid-booking resume prompt) is ALREADY the live content, chips and all,
+ * so no separate composer/card should render underneath it. Distinct
+ * from `"menu"` (which also renders no live area) so `showBack` still
+ * shows the "back to menu" affordance while the user is mid-flow at a
+ * decision point, not actually back at the main menu.
+ */
+type AssistantMode = "menu" | "conversation" | "booking" | "identify" | "otp" | "confirmation" | "decision";
 
 interface ChipAction {
   label: string;
@@ -78,8 +90,8 @@ interface ChipAction {
 type ConversationEntry =
   /** An assistant-authored line, optionally with follow-up quick replies. */
   | { id: string; kind: "assistant"; text: string; chips?: ChipAction[] }
-  /** A patient-typed free-text question. */
-  | { id: string; kind: "user"; text: string }
+  /** A patient-typed free-text question. Round 2026-07-22 (item 7) — `recapLabel`, when known (a service context was active), is the short topic used for the collapsed recap line ("✓ سؤال درباره جراحی فک") once this turn is no longer the active one; falls back to a truncated `text` when absent. */
+  | { id: string; kind: "user"; text: string; recapLabel?: string }
   /** A compact recap of a completed guided card (service picked, triage done, time chosen, OTP verified, …) — deliberately not a full bubble pair, since the card itself already showed the question. */
   | { id: string; kind: "choice"; text: string }
   /** A small muted aside — the softened question-counter, a transport-failure notice. */
@@ -142,8 +154,17 @@ export function AssistantDrawer() {
   const closeButtonRef = useRef<HTMLButtonElement>(null);
   const composerInputRef = useRef<HTMLInputElement>(null);
   const bottomRef = useRef<HTMLDivElement>(null);
-  /** Round 2026-07-20 (item 8) — the growing content wrapper, observed by `ResizeObserver` so ANY height change (a new entry, a booking card swapping in, an async-loaded option list, a timer label appearing) re-scrolls — not just the specific state changes a deps array would need enumerating. */
+  /** Round 2026-07-20 (item 8) — the growing content wrapper, observed by `ResizeObserver` so ANY height change (a new entry, a booking card swapping in, an async-loaded option list, a timer label appearing) re-scrolls — not just the specific state changes a deps array would need enumerating. Round 2026-07-22 — kept as a SUPPLEMENT to `activeTurnRef` below (per Hamid's explicit "do not rely only on content height ResizeObserver"), not the primary mechanism anymore. */
   const contentRef = useRef<HTMLDivElement>(null);
+  /**
+   * Round 2026-07-22 (focused-conversation UX fix, item 2) — wraps the
+   * CURRENTLY ACTIVE turn (the still-expanded tail of `entries` plus
+   * whatever `renderLiveArea()` renders underneath it): the one thing
+   * that must always be scrolled into view, deterministically, on every
+   * state transition that produces new active content — not just
+   * whenever the content wrapper's total height happens to change.
+   */
+  const activeTurnRef = useRef<HTMLDivElement>(null);
   const entryIdRef = useRef(0);
   const seededForRef = useRef<string | null>(null);
   const shownIntroRef = useRef(false);
@@ -224,16 +245,40 @@ export function AssistantDrawer() {
     return () => observer.disconnect();
   }, [shouldReduceMotion]);
 
+  /**
+   * Round 2026-07-22 (focused-conversation UX fix, item 2 — "do not rely
+   * only on content height ResizeObserver; the active decision card must
+   * come into view"): the explicit, deterministic mechanism. Fires on
+   * every transition that produces a new active turn — a new entry
+   * (assistant response, chip result, resume/limit/confirmation card),
+   * a mode change (OTP card opening, booking↔conversation), a booking
+   * step change (the next booking card), a fresh OTP attempt, or the
+   * typing indicator appearing. Double `requestAnimationFrame` — the
+   * first waits for React to commit the DOM, the second for the browser
+   * to complete layout on that new DOM — before measuring/scrolling, so
+   * this doesn't race an about-to-be-stale layout the way a single rAF
+   * (or none) can.
+   */
+  useEffect(() => {
+    if (!isOpen) return;
+    const raf1 = requestAnimationFrame(() => {
+      requestAnimationFrame(() => {
+        activeTurnRef.current?.scrollIntoView({ behavior: shouldReduceMotion ? "auto" : "smooth", block: "start" });
+      });
+    });
+    return () => cancelAnimationFrame(raf1);
+  }, [isOpen, mode, step, entries.length, isAsking, otpAttemptId, shouldReduceMotion]);
+
   // On mobile, the on-screen keyboard opening resizes the visual
-  // viewport (not the document) — re-anchor to the bottom so the
-  // composer/active card stays visible instead of sliding under the
-  // keyboard. Instant, not smooth — this is a viewport correction, not a
-  // content-arrival animation.
+  // viewport (not the document) — re-anchor to the active turn (not just
+  // the literal bottom) so the composer/active card stays visible above
+  // the keyboard instead of sliding under it. Instant, not smooth — this
+  // is a viewport correction, not a content-arrival animation.
   useEffect(() => {
     if (typeof window === "undefined" || !window.visualViewport) return;
     const viewport = window.visualViewport;
     const handleViewportResize = () => {
-      bottomRef.current?.scrollIntoView({ behavior: "auto", block: "end" });
+      activeTurnRef.current?.scrollIntoView({ behavior: "auto", block: "end" });
     };
     viewport.addEventListener("resize", handleViewportResize);
     return () => viewport.removeEventListener("resize", handleViewportResize);
@@ -266,6 +311,19 @@ export function AssistantDrawer() {
     setOtpAttemptId((id) => id + 1);
     setMode("otp");
   };
+
+  /**
+   * Round 2026-07-22 (focused-conversation UX fix, item 5 — "never ask
+   * OTP again inside a verified session"): the ONE place "is this
+   * session verified" is decided. Deliberately NOT combined with
+   * `questionsRemaining` (that was the actual bug — see
+   * `handleAskQuestionEntry`'s previous version) or any other state:
+   * verification and "has questions left" are independent facts. Every
+   * other check in this file (OTP gating, booking, the composer-lock
+   * guard) reads this instead of `sessionToken` directly, so there's
+   * exactly one definition of "verified" to keep correct.
+   */
+  const isVerified = Boolean(sessionToken);
 
   const modeForStep = (target: AssistantStep): AssistantMode => (BOOKING_STEPS.includes(target) ? "booking" : "menu");
 
@@ -302,9 +360,20 @@ export function AssistantDrawer() {
     requestAnimationFrame(() => composerInputRef.current?.focus());
   };
 
+  /**
+   * Round 2026-07-22 (item 5 — bug fix): used to require BOTH
+   * `sessionToken` AND `questionsRemaining > 0` to skip the identify/OTP
+   * step, which meant a genuinely verified patient who'd already used
+   * all 3 questions was wrongly sent back to `mode="identify"` (asking
+   * for name/mobile again) instead of just being shown their remaining
+   * options while staying recognized. Now: verified is verified, full
+   * stop — `enterConversationMode` always runs for a verified session,
+   * and `renderLiveArea`'s composer-lock guard (item 3) is what decides
+   * whether that shows the composer or the locked decision card.
+   */
   const handleAskQuestionEntry = (fromStep?: AssistantStep) => {
     if (fromStep) setReturnStep(fromStep);
-    if (sessionToken && questionsRemaining > 0) {
+    if (isVerified) {
       enterConversationMode();
       return;
     }
@@ -325,15 +394,16 @@ export function AssistantDrawer() {
     setReturnStep(null);
   };
 
-  const handleChangeService = () => {
+  /** Round 2026-07-22 (item 4) — "لغو رزرو": abandons the interrupted booking rather than forcing a resume/change-service choice, per the exact 3-chip resume-card spec. Returns to the main menu; the partially-filled booking state is simply not resumed (a fresh "رزرو مشاوره" click starts clean from service selection), no separate reset action needed. */
+  const handleCancelBooking = () => {
+    pushEntry({ kind: "choice", text: dict.aiConversation.cancelBookingCta });
     setReturnStep(null);
-    pushEntry({ kind: "choice", text: dict.aiConversation.changeServiceCta });
-    setMode("booking");
-    setStep("service_selection");
+    setMode("menu");
+    setStep("general");
   };
 
   const nextQuestionChip = (): ChipAction =>
-    sessionToken && questionsRemaining > 0
+    isVerified && questionsRemaining > 0
       ? { label: dict.aiConversation.askAnotherCta, onClick: focusComposer }
       : { label: dict.ui.askQuestionCta, onClick: () => handleAskQuestionEntry() };
 
@@ -484,6 +554,10 @@ export function AssistantDrawer() {
         ? [{ label: dict.aiConversation.bookServiceTemplate.replace("{service}", short), onClick: () => handleServiceSelect(lastServiceId), emphasized: true }]
         : [{ label: mainActionLabel("consultation_booking"), onClick: () => routeToStep("consultation_booking"), emphasized: true }],
     });
+    // Round 2026-07-22 (item 3/4) — a handoff notice is itself a terminal
+    // decision point (its one chip IS the next action); never leave the
+    // free-text composer open underneath it.
+    setMode("decision");
     void logHandoffEvent(sessionToken, reason, locale, triggeringMessage);
   };
 
@@ -494,21 +568,35 @@ export function AssistantDrawer() {
     { label: dict.aiConversation.fallbackChips.booking, onClick: () => routeToStep("consultation_booking") },
   ];
 
-  const limitReachedChips = (): ChipAction[] => {
-    const chips: ChipAction[] = [];
-    if (returnStep) chips.push({ label: dict.aiConversation.continueBookingCta, onClick: handleReturnToBooking, emphasized: true });
-    chips.push({ label: mainActionLabel("consultation_booking"), onClick: () => routeToStep("consultation_booking") });
-    chips.push({ label: mainActionLabel("service_selection"), onClick: () => routeToStep("service_selection") });
-    chips.push({ label: dict.ui.closeCta, onClick: close });
-    return chips;
-  };
-
-  const resumeChips = (): ChipAction[] => [
-    { label: dict.aiConversation.continueBookingCta, onClick: handleReturnToBooking, emphasized: true },
-    { label: dict.aiConversation.askAnotherCta, onClick: focusComposer },
-    { label: dict.aiConversation.changeServiceCta, onClick: handleChangeService },
+  /**
+   * Round 2026-07-22 (item 8) — exact required 4-chip set for the "3
+   * questions answered" notice. No `returnStep`/"continue booking" chip
+   * here on purpose: when the limit lands WHILE mid-booking, the resume
+   * card (`resumeChips`, item 4) is shown instead — see the call sites in
+   * `handleAskFreeText` — so this set only ever appears when the patient
+   * wasn't mid-booking to begin with.
+   */
+  const limitReachedChips = (): ChipAction[] => [
+    { label: mainActionLabel("consultation_booking"), onClick: () => routeToStep("consultation_booking"), emphasized: true },
+    { label: mainActionLabel("service_selection"), onClick: () => routeToStep("service_selection") },
+    { label: dict.aiConversation.requestCallCta, onClick: () => triggerHandoff("درخواست تماس از کلینیک پس از پایان سؤالات") },
     { label: dict.ui.closeCta, onClick: close },
   ];
+
+  /**
+   * Round 2026-07-22 (item 4) — exact required 3-chip set: "ادامه رزرو"
+   * always, "سؤال دیگر" ONLY if verified with questions left (asking
+   * again is genuinely still possible), "لغو رزرو" always. `تغییر خدمت`/
+   * `بستن` (the old 4th/2nd chips) are dropped — not part of the spec for
+   * this specific card, and both are still reachable via the booking
+   * card itself once resumed.
+   */
+  const resumeChips = (): ChipAction[] => {
+    const chips: ChipAction[] = [{ label: dict.aiConversation.continueBookingCta, onClick: handleReturnToBooking, emphasized: true }];
+    if (isVerified && questionsRemaining > 0) chips.push({ label: dict.aiConversation.askAnotherCta, onClick: focusComposer });
+    chips.push({ label: dict.aiConversation.cancelBookingCta, onClick: handleCancelBooking });
+    return chips;
+  };
 
   const answerChips = (suggestedStep: AssistantStep | null, suggestedServiceId: ServiceId | null): ChipAction[] => {
     // A "triage"/"contact_capture" suggestion with a known service is the
@@ -630,7 +718,7 @@ export function AssistantDrawer() {
     dispatch({ type: "SET_SERVICE", serviceId });
     setLastServiceId(serviceId);
     const label = dict.services.find((service) => service.id === serviceId)?.label ?? serviceId;
-    pushEntry({ kind: "choice", text: label });
+    pushEntry({ kind: "choice", text: `✓ ${dict.aiConversation.serviceSelectedPrefix}${label}` });
     setMode("booking");
     setStep(serviceId === "general_consultation" ? "appointment_selection" : "triage");
   };
@@ -653,7 +741,7 @@ export function AssistantDrawer() {
     });
     // Round 2026-07-20 (item 7) — the already-formatted (Jalali for fa)
     // label, not the raw ISO `preferredDay`/`preferredTimeRange`.
-    pushEntry({ kind: "choice", text: result.displayLabel });
+    pushEntry({ kind: "choice", text: `✓ ${dict.aiConversation.timeSelectedPrefix}${result.displayLabel}` });
     setStep("contact_capture");
   };
 
@@ -698,10 +786,16 @@ export function AssistantDrawer() {
   const handleAskFreeText = () => {
     const trimmed = composerMessage.trim();
     if (!trimmed || isAsking) return;
-    pushEntry({ kind: "user", text: trimmed });
-    setComposerMessage("");
-
     const contextServiceId = state.leadInfo.selectedService ?? lastServiceId;
+    // Round 2026-07-22 (item 7) — a service-topic recap label, captured
+    // at ask-time, is what the transcript collapse shows once this turn
+    // is no longer active ("✓ سؤال درباره جراحی فک") instead of a raw,
+    // possibly long/casual truncation of what the patient actually typed.
+    const recapLabel = contextServiceId
+      ? dict.aiConversation.questionRecapTemplate.replace("{service}", dict.serviceShortLabels[contextServiceId] ?? "")
+      : undefined;
+    pushEntry({ kind: "user", text: trimmed, recapLabel });
+    setComposerMessage("");
 
     // Round 2026-07-21 (V2, item 13) — an explicit request for a human
     // is answered immediately, client-side, no question consumed —
@@ -758,7 +852,18 @@ export function AssistantDrawer() {
       }
       if (result.type === "not_verified" || result.type === "limit_reached") {
         setQuestionsRemaining(0);
-        pushEntry({ kind: "assistant", text: dict.aiConversation.limitReachedNotice, chips: limitReachedChips() });
+        // Round 2026-07-22 (item 3 vs item 4 reconciliation) — a
+        // mid-booking side question that lands on an already-exhausted
+        // session still owes the patient a way back into their booking;
+        // the resume card (with no "ask another" chip, since there are
+        // none left) takes priority over the generic limit card, which
+        // only applies when the patient wasn't mid-booking.
+        if (returnStep) {
+          pushEntry({ kind: "assistant", text: dict.aiConversation.resumeBookingPrompt, chips: resumeChips() });
+        } else {
+          pushEntry({ kind: "assistant", text: dict.aiConversation.limitReachedNotice, chips: limitReachedChips() });
+        }
+        setMode("decision");
         return;
       }
       if (result.type === "unclear") {
@@ -771,10 +876,21 @@ export function AssistantDrawer() {
         pushEntry({ kind: "assistant", text: dict.aiConversation.fallbackPrompt, chips: returnStep ? undefined : fallbackChips() });
         setQuestionsRemaining(result.questionsRemaining);
         if (returnStep) {
+          // Round 2026-07-22 (item 4 — bug fix): used to leave `mode`
+          // untouched here, so the free-text composer stayed open right
+          // alongside this resume prompt. Closing it is the whole point
+          // of the resume card — the patient must choose resume/ask-
+          // again/cancel, not keep typing past it.
           pushEntry({ kind: "assistant", text: dict.aiConversation.resumeBookingPrompt, chips: resumeChips() });
+          setMode("decision");
         } else if (repeatCount >= 2) {
           triggerHandoff("عدم تشخیص مکرر منظور کاربر توسط دستیار");
-        } else if (result.questionsRemaining > 0) {
+        } else if (result.questionsRemaining <= 0) {
+          // Round 2026-07-22 (item 8) — the 3rd question itself can land
+          // as "unclear"; that still counts as the limit being reached.
+          pushEntry({ kind: "assistant", text: dict.aiConversation.limitReachedNotice, chips: limitReachedChips() });
+          setMode("decision");
+        } else {
           pushEntry({ kind: "note", text: dict.aiConversation.questionsRemainingLabels[String(result.questionsRemaining) as "1" | "2" | "3"] });
         }
         return;
@@ -787,7 +903,16 @@ export function AssistantDrawer() {
       setQuestionsRemaining(result.questionsRemaining);
       if (returnStep) {
         pushEntry({ kind: "assistant", text: dict.aiConversation.resumeBookingPrompt, chips: resumeChips() });
-      } else if (result.questionsRemaining > 0) {
+        setMode("decision");
+      } else if (result.questionsRemaining <= 0) {
+        // Round 2026-07-22 (item 8) — the 3rd successful answer itself
+        // is where the limit is actually reached (`askAssistantQuestion`
+        // only returns the separate "limit_reached" type on a 4th
+        // ATTEMPT) — show the exact required notice right here, not just
+        // on the next (blocked) attempt.
+        pushEntry({ kind: "assistant", text: dict.aiConversation.limitReachedNotice, chips: limitReachedChips() });
+        setMode("decision");
+      } else {
         pushEntry({ kind: "note", text: dict.aiConversation.questionsRemainingLabels[String(result.questionsRemaining) as "1" | "2" | "3"] });
       }
     })();
@@ -831,8 +956,40 @@ export function AssistantDrawer() {
     }
   };
 
+  /**
+   * Round 2026-07-22 (item 3) — the persistent decision card that
+   * REPLACES the composer once a verified session's questions are used
+   * up. Distinct from `limitReachedChips`/`resumeChips` (one-time
+   * transcript entries pushed the moment a specific answer lands): this
+   * is a defense-in-depth render guard inside `renderLiveArea` itself,
+   * so ANY path that lands in `mode === "conversation"` with no
+   * questions left (a stale chip, `ConfirmationStep`'s "ask another",
+   * re-clicking "پرسیدن سؤال") shows this instead of a composer the
+   * server would just reject anyway.
+   */
+  const composerLockedChips = (): ChipAction[] => [
+    { label: mainActionLabel("consultation_booking"), onClick: () => routeToStep("consultation_booking"), emphasized: true },
+    { label: mainActionLabel("service_selection"), onClick: () => routeToStep("service_selection") },
+    { label: dict.aiConversation.composerLocked.careCta, onClick: () => routeToStep("care_guidance") },
+    { label: dict.aiConversation.requestCallCta, onClick: () => triggerHandoff("درخواست تماس از کلینیک") },
+  ];
+
   const renderLiveArea = () => {
     if (mode === "conversation") {
+      if (isVerified && questionsRemaining <= 0) {
+        return (
+          <div className="flex flex-col items-start gap-2">
+            <AssistantBubble>{dict.aiConversation.composerLocked.prompt}</AssistantBubble>
+            <div className="flex flex-wrap gap-2 ps-1">
+              {composerLockedChips().map((chip, index) => (
+                <Chip key={index} emphasized={chip.emphasized} onClick={chip.onClick}>
+                  {chip.label}
+                </Chip>
+              ))}
+            </div>
+          </div>
+        );
+      }
       return (
         <div className="flex items-center gap-2">
           <input
@@ -889,7 +1046,7 @@ export function AssistantDrawer() {
             dict={dict}
             serviceId={state.leadInfo.selectedService}
             displayLabel={state.appointment.displayLabel}
-            canAskAnother={Boolean(sessionToken) && questionsRemaining > 0}
+            canAskAnother={isVerified && questionsRemaining > 0}
             onClose={close}
             onViewCare={() => routeToStep("care_guidance")}
             onAskAnother={() => handleAskQuestionEntry()}
@@ -917,6 +1074,45 @@ export function AssistantDrawer() {
   };
 
   const showBack = mode !== "menu";
+
+  /**
+   * Round 2026-07-22 (focused-conversation UX fix, item 1/7 — "the UI
+   * behaves like an infinite transcript... show only the focused current
+   * interaction"): a pure, render-time reduction of `entries` — the full
+   * array itself is never mutated or truncated, so DB persistence
+   * (`askAssistantQuestion`/`logHandoffEvent`) and the internal
+   * dashboard's `ConversationTranscript` (which reads straight from the
+   * database, not this component's state) are completely unaffected.
+   *
+   * A "turn" starts at any `choice` or `user` entry (both are always
+   * something the patient just did) and runs through the `assistant`/
+   * `note` entries that follow, until the next `choice`/`user`. Only the
+   * LAST turn — from the last `choice`/`user` entry to the end — stays
+   * expanded; every earlier turn collapses to one compact recap line
+   * (item 7's exact examples: "✓ شماره تأیید شد" / "✓ سؤال درباره جراحی
+   * فک" / "✓ خدمت انتخاب شد: …" / "✓ زمان انتخاب شد: …"). `choice`
+   * entries already double as their own recap line (unchanged); a
+   * collapsed `user` entry recaps via `recapLabel` (the service-topic
+   * label captured at ask-time) or a truncation of the raw text; `note`
+   * entries (the soft "2 questions left" aside) are dropped once
+   * collapsed — a stale counter from an old turn is noise, not a record
+   * worth keeping visible.
+   */
+  const activeTurnStart = (() => {
+    for (let i = entries.length - 1; i >= 0; i--) {
+      const kind = entries[i]!.kind;
+      if (kind === "choice" || kind === "user") return i;
+    }
+    return 0;
+  })();
+  const collapsedEntries = entries.slice(0, activeTurnStart);
+  const activeEntries = entries.slice(activeTurnStart);
+  const truncateForRecap = (text: string, max = 26) => (text.length > max ? `${text.slice(0, max)}…` : text);
+  const recapRows = collapsedEntries.flatMap((entry) => {
+    if (entry.kind === "choice") return [{ key: entry.id, text: entry.text }];
+    if (entry.kind === "user") return [{ key: entry.id, text: `✓ ${entry.recapLabel ?? truncateForRecap(entry.text)}` }];
+    return [];
+  });
 
   return (
     <AnimatePresence>
@@ -978,8 +1174,16 @@ export function AssistantDrawer() {
                   </button>
                 ) : null}
 
-                <div className="flex flex-col gap-3">
-                  {entries.map((entry) => {
+                {recapRows.length > 0 ? (
+                  <div className="flex flex-col gap-1.5">
+                    {recapRows.map((row) => (
+                      <ChoiceRecap key={row.key}>{row.text}</ChoiceRecap>
+                    ))}
+                  </div>
+                ) : null}
+
+                <div ref={activeTurnRef} className="mt-3 flex flex-col gap-3">
+                  {activeEntries.map((entry) => {
                     if (entry.kind === "user") return <UserBubble key={entry.id}>{entry.text}</UserBubble>;
                     if (entry.kind === "choice") return <ChoiceRecap key={entry.id}>{entry.text}</ChoiceRecap>;
                     if (entry.kind === "note") return <ChoiceRecap key={entry.id}>{entry.text}</ChoiceRecap>;
@@ -1003,9 +1207,9 @@ export function AssistantDrawer() {
                       <TypingIndicator />
                     </div>
                   ) : null}
-                </div>
 
-                <div className="mt-4">{renderLiveArea()}</div>
+                  <div className="mt-1">{renderLiveArea()}</div>
+                </div>
               </div>
               <div ref={bottomRef} />
             </div>

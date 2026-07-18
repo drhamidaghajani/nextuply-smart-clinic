@@ -7,6 +7,16 @@ import Image from "next/image";
  * or a premium abstract gradient + line-art glyph panel when it doesn't.
  * Used inside `ServiceSplitStory` and the hero — one visual language for
  * "the non-text side of an editorial block" across the service page.
+ *
+ * Round 2026-07-18 (hero image cropping fix, per Hamid — the service
+ * detail hero was rendering wide landscape source photos, e.g. the
+ * impacted-tooth diagram at ~2.5:1, inside this component's portrait
+ * `aspect-[4/5]` + `object-cover` frame, which crops most of the width
+ * off to fill the narrow frame). `aspectRatio`/`fit` are now caller-
+ * controlled, defaulting to the ORIGINAL portrait/cover behavior so the
+ * two `ServiceSplitStory` doctor-photo panels and the care-instructions
+ * grid (headshot/OR photography, genuinely fine as portrait crops) are
+ * unaffected — only `ServiceHero` opts into the landscape/contain frame.
  */
 export function ServiceVisualPanel({
   photoSrc,
@@ -14,6 +24,8 @@ export function ServiceVisualPanel({
   iconKey,
   photoPosition = "center",
   tone = "cream",
+  aspectRatio = "aspect-[4/5]",
+  fit = "cover",
 }: {
   photoSrc?: string;
   alt: string;
@@ -21,11 +33,26 @@ export function ServiceVisualPanel({
   iconKey?: string;
   photoPosition?: string;
   tone?: "cream" | "navy";
+  /** Tailwind aspect-ratio class for the frame, e.g. `"aspect-[16/10]"`. */
+  aspectRatio?: string;
+  /** `"contain"` shows the full source image (letterboxed on a soft frame background) — required for diagram-like images where `"cover"` would crop off content. */
+  fit?: "cover" | "contain";
 }) {
   if (photoSrc) {
     return (
-      <div className="relative aspect-[4/5] w-full overflow-hidden rounded-2xl shadow-[0_30px_80px_rgba(15,23,42,0.18)] sm:rounded-[28px]">
-        <Image src={photoSrc} alt={alt} fill sizes="(min-width: 1024px) 40vw, 90vw" className="object-cover" style={{ objectPosition: photoPosition }} />
+      <div
+        className={`relative ${aspectRatio} w-full overflow-hidden rounded-2xl shadow-[0_30px_80px_rgba(15,23,42,0.18)] sm:rounded-[28px] ${
+          fit === "contain" ? "bg-gradient-to-br from-warm-white to-cream" : ""
+        }`}
+      >
+        <Image
+          src={photoSrc}
+          alt={alt}
+          fill
+          sizes="(min-width: 1024px) 40vw, 90vw"
+          className={fit === "contain" ? "object-contain p-4 sm:p-6" : "object-cover"}
+          style={fit === "contain" ? undefined : { objectPosition: photoPosition }}
+        />
         <div aria-hidden className="pointer-events-none absolute inset-0 ring-1 ring-inset ring-warm-white/10" />
       </div>
     );
@@ -33,7 +60,7 @@ export function ServiceVisualPanel({
 
   return (
     <div
-      className={`relative flex aspect-[4/5] w-full items-center justify-center overflow-hidden rounded-2xl sm:rounded-[28px] ${
+      className={`relative flex ${aspectRatio} w-full items-center justify-center overflow-hidden rounded-2xl sm:rounded-[28px] ${
         tone === "navy" ? "bg-gradient-to-br from-deep-navy to-[#1a2540]" : "bg-gradient-to-br from-warm-white to-cream"
       }`}
     >

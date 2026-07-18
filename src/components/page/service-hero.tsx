@@ -112,7 +112,7 @@ export function ServiceHero({
         </div>
 
         <Reveal delay={0.2}>
-          <ServiceVisualPanel photoSrc={photoSrc} alt={title} iconKey={iconKey} photoPosition={photoPosition} tone="navy" />
+          <ServiceVisualPanel photoSrc={photoSrc} alt={title} iconKey={iconKey} photoPosition={photoPosition} tone="navy" aspectRatio="aspect-[16/10]" fit="contain" />
         </Reveal>
       </div>
     </section>

@@ -49,11 +49,10 @@
           "assignments": [
             {
               "id": "booking-text",
-              "name": "text",
+              "name": "smsText",
               "type": "string",
-              "value": "=درخواست جدید مشاوره ثبت شد.\nخدمت: {{$json.body.serviceLabel || \"—\"}}\nنام: {{$json.body.fullName}}\nموبایل: {{$json.body.mobile}}\nزمان: {{$json.body.selectedTimeLabel || \"هماهنگی با تماس\"}}\nداشبورد: {{$env.INTERNAL_DASHBOARD_BASE_URL}}{{$json.body.dashboardUrl}}"
-            },
-            { "id": "booking-to", "name": "to", "type": "string", "value": "={{$env.SECRETARY_NOTIFY_MOBILE}}" }
+              "value": "=درخواست جدید مشاوره ثبت شد.\nخدمت: {{$json.body.serviceLabel || \"—\"}}\nنام: {{$json.body.fullName}}\nموبایل: {{$json.body.mobile}}\nزمان: {{$json.body.selectedTimeLabel || \"هماهنگی با تماس\"}}\nداشبورد: https://REPLACE_WITH_CLINIC_DOMAIN{{$json.body.dashboardUrl}}"
+            }
           ]
         },
         "options": {}
@@ -62,7 +61,8 @@
       "name": "Build booking SMS text",
       "type": "n8n-nodes-base.set",
       "typeVersion": 3.4,
-      "position": [500, 80]
+      "position": [500, 80],
+      "notes": "Round 2026-07-26 fix: reads ONLY from $json.body (the webhook payload) — no $env, this n8n instance blocks environment access inside nodes. The dashboard domain is a plain literal placeholder here (not a secret, just not known at workflow-authoring time) — replace REPLACE_WITH_CLINIC_DOMAIN once, after import. Recipient number and Melipayamak credentials live on the HTTP Request node downstream, not here — see docs/n8n/README.md."
     },
     {
       "parameters": {
@@ -70,9 +70,9 @@
           "assignments": [
             {
               "id": "urgent-text",
-              "name": "text",
+              "name": "smsText",
               "type": "string",
-              "value": "=درخواست فوری در دستیار کلینیک ثبت شد.\nموضوع: {{$json.body.urgentReason || $json.body.activeTopic}}\nنام: {{$json.body.fullName || \"—\"}}\nموبایل: {{$json.body.mobile}}\nلطفاً سریع داشبورد را بررسی کنید.\n{{$env.INTERNAL_DASHBOARD_BASE_URL}}{{$json.body.dashboardUrl}}"
+              "value": "=درخواست فوری در دستیار کلینیک ثبت شد.\nموضوع: {{$json.body.urgentReason || $json.body.activeTopic}}\nنام: {{$json.body.fullName || \"—\"}}\nموبایل: {{$json.body.mobile}}\nلطفاً سریع داشبورد را بررسی کنید.\nhttps://REPLACE_WITH_CLINIC_DOMAIN{{$json.body.dashboardUrl}}"
             }
           ]
         },
@@ -82,7 +82,8 @@
       "name": "Build urgent SMS text",
       "type": "n8n-nodes-base.set",
       "typeVersion": 3.4,
-      "position": [500, 300]
+      "position": [500, 300],
+      "notes": "Same fix as 'Build booking SMS text' — payload fields only, no $env."
     },
     {
       "parameters": {
@@ -90,11 +91,10 @@
           "assignments": [
             {
               "id": "status-text",
-              "name": "text",
+              "name": "smsText",
               "type": "string",
-              "value": "=وضعیت نوبت تغییر کرد.\nنام: {{$json.body.fullName || \"—\"}}\nوضعیت جدید: {{$json.body.newStatus}}\nداشبورد: {{$env.INTERNAL_DASHBOARD_BASE_URL}}{{$json.body.dashboardUrl}}"
-            },
-            { "id": "status-to", "name": "to", "type": "string", "value": "={{$env.SECRETARY_NOTIFY_MOBILE}}" }
+              "value": "=وضعیت نوبت تغییر کرد.\nنام: {{$json.body.fullName || \"—\"}}\nوضعیت جدید: {{$json.body.newStatus}}\nداشبورد: https://REPLACE_WITH_CLINIC_DOMAIN{{$json.body.dashboardUrl}}"
+            }
           ]
         },
         "options": {}
@@ -105,7 +105,7 @@
       "typeVersion": 3.4,
       "position": [500, 520],
       "disabled": true,
-      "notes": "Optional per the spec ('appointment.status_changed: Optional internal SMS') — disabled by default. Enable this node + the HTTP Request node after it if you want a text on every status change; that can get noisy for a small clinic."
+      "notes": "Optional per the spec ('appointment.status_changed: Optional internal SMS') — disabled by default. Enable this node + the HTTP Request node after it if you want a text on every status change; that can get noisy for a small clinic. Same no-$env fix as the other two Build nodes."
     },
     {
       "parameters": {
@@ -113,13 +113,11 @@
         "url": "https://rest.payamak-panel.com/api/SendSMS/SendSMS",
         "sendBody": true,
         "contentType": "form-urlencoded",
+        "genericAuthType": "httpCustomAuth",
         "bodyParameters": {
           "parameters": [
-            { "name": "username", "value": "={{$env.MELIPAYAMAK_USERNAME}}" },
-            { "name": "password", "value": "={{$env.MELIPAYAMAK_API_KEY}}" },
-            { "name": "to", "value": "={{$json.to}}" },
-            { "name": "from", "value": "={{$env.MELIPAYAMAK_SENDER_NUMBER}}" },
-            { "name": "text", "value": "={{$json.text}}" },
+            { "name": "to", "value": "REPLACE_WITH_SECRETARY_MOBILE" },
+            { "name": "text", "value": "={{$json.smsText}}" },
             { "name": "isflash", "value": "false" }
           ]
         },
@@ -130,7 +128,13 @@
       "type": "n8n-nodes-base.httpRequest",
       "typeVersion": 4.2,
       "position": [760, 80],
-      "notes": "Free-text SendSMS endpoint (distinct from the app's own pattern-based OTP endpoint) — verify the exact field names/response shape against your live Melipayamak panel/docs before relying on this in production; not independently re-verified in this repo. MELIPAYAMAK_SENDER_NUMBER is your approved line number."
+      "credentials": {
+        "httpCustomAuth": {
+          "id": "REPLACE_WITH_CREDENTIAL_ID",
+          "name": "Melipayamak Credentials"
+        }
+      },
+      "notes": "Round 2026-07-26 fix: `username`/`password`/`from` no longer come from $env or from a Build node — they're injected by the 'Melipayamak Credentials' Custom Auth credential attached to this node (see docs/n8n/README.md §4). `to` is a plain static placeholder — replace REPLACE_WITH_SECRETARY_MOBILE with the real number after import. Free-text SendSMS endpoint (distinct from the app's own pattern-based OTP endpoint) — verify the exact field names/response shape against your live Melipayamak panel/docs before relying on this in production."
     },
     {
       "parameters": {
@@ -138,13 +142,11 @@
         "url": "https://rest.payamak-panel.com/api/SendSMS/SendSMS",
         "sendBody": true,
         "contentType": "form-urlencoded",
+        "genericAuthType": "httpCustomAuth",
         "bodyParameters": {
           "parameters": [
-            { "name": "username", "value": "={{$env.MELIPAYAMAK_USERNAME}}" },
-            { "name": "password", "value": "={{$env.MELIPAYAMAK_API_KEY}}" },
-            { "name": "to", "value": "={{$env.SECRETARY_NOTIFY_MOBILE}}" },
-            { "name": "from", "value": "={{$env.MELIPAYAMAK_SENDER_NUMBER}}" },
-            { "name": "text", "value": "={{$json.text}}" },
+            { "name": "to", "value": "REPLACE_WITH_SECRETARY_MOBILE" },
+            { "name": "text", "value": "={{$json.smsText}}" },
             { "name": "isflash", "value": "true" }
           ]
         },
@@ -155,7 +157,13 @@
       "type": "n8n-nodes-base.httpRequest",
       "typeVersion": 4.2,
       "position": [760, 220],
-      "notes": "isflash=true requests a flash SMS where the provider/handset supports it — a reasonable 'higher-priority' signal; drop it if your Melipayamak line doesn't support flash."
+      "credentials": {
+        "httpCustomAuth": {
+          "id": "REPLACE_WITH_CREDENTIAL_ID",
+          "name": "Melipayamak Credentials"
+        }
+      },
+      "notes": "isflash=true requests a flash SMS where the provider/handset supports it — a reasonable 'higher-priority' signal; drop it if your Melipayamak line doesn't support flash. Same credential-based auth as 'send booking SMS' — see docs/n8n/README.md §4."
     },
     {
       "parameters": {
@@ -163,13 +171,11 @@
         "url": "https://rest.payamak-panel.com/api/SendSMS/SendSMS",
         "sendBody": true,
         "contentType": "form-urlencoded",
+        "genericAuthType": "httpCustomAuth",
         "bodyParameters": {
           "parameters": [
-            { "name": "username", "value": "={{$env.MELIPAYAMAK_USERNAME}}" },
-            { "name": "password", "value": "={{$env.MELIPAYAMAK_API_KEY}}" },
-            { "name": "to", "value": "={{$env.OWNER_NOTIFY_MOBILE}}" },
-            { "name": "from", "value": "={{$env.MELIPAYAMAK_SENDER_NUMBER}}" },
-            { "name": "text", "value": "={{$json.text}}" },
+            { "name": "to", "value": "REPLACE_WITH_OWNER_MOBILE" },
+            { "name": "text", "value": "={{$json.smsText}}" },
             { "name": "isflash", "value": "true" }
           ]
         },
@@ -180,6 +186,12 @@
       "type": "n8n-nodes-base.httpRequest",
       "typeVersion": 4.2,
       "position": [760, 380],
+      "credentials": {
+        "httpCustomAuth": {
+          "id": "REPLACE_WITH_CREDENTIAL_ID",
+          "name": "Melipayamak Credentials"
+        }
+      },
       "notes": "Urgent requests notify BOTH the secretary and the owner — a genuinely urgent/safety case (e.g. a broken-nose trauma request) is deliberately over-notified rather than risk being missed."
     },
     {
@@ -188,13 +200,11 @@
         "url": "https://rest.payamak-panel.com/api/SendSMS/SendSMS",
         "sendBody": true,
         "contentType": "form-urlencoded",
+        "genericAuthType": "httpCustomAuth",
         "bodyParameters": {
           "parameters": [
-            { "name": "username", "value": "={{$env.MELIPAYAMAK_USERNAME}}" },
-            { "name": "password", "value": "={{$env.MELIPAYAMAK_API_KEY}}" },
-            { "name": "to", "value": "={{$json.to}}" },
-            { "name": "from", "value": "={{$env.MELIPAYAMAK_SENDER_NUMBER}}" },
-            { "name": "text", "value": "={{$json.text}}" },
+            { "name": "to", "value": "REPLACE_WITH_SECRETARY_MOBILE" },
+            { "name": "text", "value": "={{$json.smsText}}" },
             { "name": "isflash", "value": "false" }
           ]
         },
@@ -206,6 +216,12 @@
       "typeVersion": 4.2,
       "position": [760, 520],
       "disabled": true,
+      "credentials": {
+        "httpCustomAuth": {
+          "id": "REPLACE_WITH_CREDENTIAL_ID",
+          "name": "Melipayamak Credentials"
+        }
+      },
       "notes": "Disabled by default, matching 'Build status SMS text' above — this is the optional branch."
     },
     {

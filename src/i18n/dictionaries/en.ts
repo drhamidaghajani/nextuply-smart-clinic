@@ -644,6 +644,28 @@ export const assistantFlow = {
     recoveryQuestionCta: "Ask about recovery",
     verifiedContextLabel: "Number verified",
     viewJourneySummaryCta: "View conversation summary",
+    // Round 2026-07-23 (Urgency & Safety Router) — his exact given text for the broken-nose case, plus a generalized template/chip set for every other urgent/trauma topic.
+    urgent: {
+      noseTraumaResponse:
+        "Understood — your concern is a broken nose and you need an urgent appointment.\n\nIf the injury just happened, you have heavy bleeding, breathing through your nose has become difficult, you have severe pain or swelling, or the shape of your nose has visibly changed, please don't wait — contact the clinic for an urgent review, or if symptoms are severe, go to an emergency care center.\n\nTo coordinate quickly with Dr. Sadighi, I can log an urgent nose review request so our clinic team calls you.\n\nWhen did the injury happen?",
+      genericResponseTemplate:
+        "Understood — your concern is {topic} and you need an urgent appointment.\n\nIf your symptoms are severe, recent, or getting worse, please don't wait — contact the clinic for an urgent review, or if symptoms are severe, go to an emergency care center.\n\nTo coordinate quickly with Dr. Sadighi, I can log an urgent review request so our clinic team calls you.\n\nWhen did this start?",
+      genericTopicLabel: "an urgent review",
+      callCta: "Request an Urgent Call from the Clinic",
+      bookReviewTemplate: "Book a {service} Review",
+      bookReviewGeneric: "Book an Urgent Review",
+      within48hCta: "Less than 48 hours ago",
+      moreThanFewDaysCta: "More than a few days ago",
+      breathingIssueCta: "I have a breathing problem",
+      recentTraumaReply:
+        "Understood. For recent injuries (under 48 hours), an early review matters more. I'd suggest coordinating with the clinic as soon as possible, or going to an emergency care center if symptoms are severe.",
+      olderTraumaReply:
+        "Understood. Even if a few days have passed, a doctor's review is still important to make sure healing is on track. You can coordinate with the clinic through the paths below.",
+      breathingIssueReply:
+        "Difficulty breathing is a sign that shouldn't be ignored. If your breathing has clearly become difficult, please contact the clinic as soon as possible, or go to an emergency care center if symptoms are severe.",
+      callRequestConfirmed:
+        "Your urgent call request has been logged. It's saved along with a summary of this conversation for our clinic team to follow up. Our staff will call you as soon as possible.",
+    },
   },
   contextualAsk: {
     prompt: "Have a question before continuing?",

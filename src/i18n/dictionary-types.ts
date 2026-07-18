@@ -337,6 +337,37 @@ export interface AssistantFlowDictionary {
     verifiedContextLabel: string;
     /** Round 2026-07-22 (V2.2, item 2) — label for the optional, collapsed-by-default `<details>` that reveals the rest of the conversation path on request; never expanded by default. */
     viewJourneySummaryCta: string;
+    /**
+     * Round 2026-07-23 (Urgency & Safety Router, per Hamid — critical
+     * response-quality fix: "بینیم شکسته... فوری" was getting a generic
+     * rhinoplasty explanation instead of an urgent/safety response):
+     * copy for the deterministic urgency route, checked BEFORE any
+     * service-keyword matching. `noseTraumaResponse` is his exact given
+     * text for the broken-nose case (static, not templated — it names
+     * nose-specific symptoms that don't generalize). `genericResponseTemplate`
+     * (`"{topic}"` placeholder) covers every other detected urgent/trauma
+     * topic with the same 4-paragraph structure (acknowledge → safety
+     * guidance/call-now → offer to log the request → one clarifying
+     * question) without inventing symptom specifics for a service it
+     * wasn't given. Never a diagnosis, never "this is an emergency" as a
+     * final medical call, never treatment instructions — see
+     * assistant-drawer.tsx's urgency handler doc-comment.
+     */
+    urgent: {
+      noseTraumaResponse: string;
+      genericResponseTemplate: string;
+      genericTopicLabel: string;
+      callCta: string;
+      bookReviewTemplate: string;
+      bookReviewGeneric: string;
+      within48hCta: string;
+      moreThanFewDaysCta: string;
+      breathingIssueCta: string;
+      recentTraumaReply: string;
+      olderTraumaReply: string;
+      breathingIssueReply: string;
+      callRequestConfirmed: string;
+    };
   };
   /** Round 2026-07-17 — the "قبل از ادامه، سؤالی دارید؟" prompt shown on booking-flow steps (item 6 of the brief). */
   contextualAsk: {

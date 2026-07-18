@@ -68,6 +68,144 @@ const DISSATISFACTION_KEYWORDS: Record<Locale, string[]> = {
 };
 
 /**
+ * Round 2026-07-23 (Urgency & Safety Router, per Hamid — critical bug:
+ * "بینیم شکسته... فوری و اورژانسی" got a generic rhinoplasty explanation
+ * instead of an urgent/safety response, because service-keyword matching
+ * ran before any urgency check). Deliberately broad substring keywords —
+ * a false positive here just means an urgent-flavored response to a
+ * message that wasn't truly urgent (safe direction to err in); a false
+ * negative means a genuinely urgent message gets generic service content
+ * (the actual bug), which is the direction that must never happen. His
+ * exact given Persian list, plus reasonable en/ar equivalents.
+ */
+const URGENCY_KEYWORDS: Record<Locale, string[]> = {
+  fa: [
+    "فوری",
+    "اورژانسی",
+    "شکستگی",
+    "شکسته",
+    "ضربه",
+    "تصادف",
+    "خونریزی",
+    "خون دماغ شدید",
+    "درد شدید",
+    "تورم شدید",
+    "عفونت",
+    "تب",
+    "نمی‌تونم نفس بکشم",
+    "نمیتونم نفس بکشم",
+    "مشکل تنفس",
+    "نفس کشیدن سخت شده",
+    "همین الان",
+    "سریع وقت می‌خوام",
+    "سریع وقت میخوام",
+  ],
+  en: [
+    "urgent",
+    "emergency",
+    "fracture",
+    "fractured",
+    "broken",
+    "trauma",
+    "accident",
+    "bleeding",
+    "heavy nosebleed",
+    "severe pain",
+    "severe swelling",
+    "infection",
+    "fever",
+    "can't breathe",
+    "cannot breathe",
+    "breathing problem",
+    "trouble breathing",
+    "right now",
+    "need an appointment fast",
+    "asap",
+  ],
+  ar: [
+    "عاجل",
+    "طارئ",
+    "طارئة",
+    "كسر",
+    "مكسور",
+    "صدمة",
+    "حادث",
+    "نزيف",
+    "رعاف شديد",
+    "ألم شديد",
+    "تورم شديد",
+    "عدوى",
+    "حمى",
+    "لا أستطيع التنفس",
+    "مشكلة تنفس",
+    "صعوبة تنفس",
+    "الآن",
+    "أريد موعد بسرعة",
+  ],
+};
+
+/**
+ * Round 2026-07-23 — his given "service-specific trauma examples", used
+ * to (a) confirm urgency even without a generic urgency word present, and
+ * (b) pick which service/topic the urgent response names. Matched with
+ * simple AND-of-substrings (`requireAll`) rather than exact phrases —
+ * natural Persian adds possessive/verb suffixes ("بینیم شکسته" for "my
+ * nose is broken") that an exact-phrase match like `"بینی شکسته"` would
+ * miss; "بینیم".includes("بینی") still holds, so `["بینی","شکست"]`
+ * (stemmed, not "شکسته"/"شکستگی" separately) catches both. Order matters
+ * — first match wins, so more specific rules (a named service) are listed
+ * before the fully generic "bleeding after any surgery" rule.
+ */
+const TRAUMA_TOPIC_RULES: Record<Locale, Array<{ requireAll: string[]; serviceId: ServiceId | null; topicLabel: string }>> = {
+  fa: [
+    { requireAll: ["بینی", "شکست"], serviceId: "rhinoplasty", topicLabel: "شکستگی بینی" },
+    { requireAll: ["بینی", "ضربه"], serviceId: "rhinoplasty", topicLabel: "ضربه به بینی" },
+    { requireAll: ["فک", "شکست"], serviceId: "orthognathic-surgery", topicLabel: "شکستگی فک" },
+    { requireAll: ["دندان", "درد", "شدید"], serviceId: "impacted-tooth-surgery", topicLabel: "درد شدید دندان" },
+    { requireAll: ["ایمپلنت", "عفونت"], serviceId: "advanced-dental-implant", topicLabel: "عفونت ایمپلنت" },
+    { requireAll: ["ایمپلنت", "خونریزی"], serviceId: "advanced-dental-implant", topicLabel: "خونریزی ایمپلنت" },
+    { requireAll: ["صورت", "ورم"], serviceId: "facial-cosmetic-surgery", topicLabel: "تورم شدید صورت" },
+    { requireAll: ["تزریق", "ورم"], serviceId: "facial-rejuvenation", topicLabel: "واکنش شدید بعد از تزریق" },
+    { requireAll: ["تزریق", "عفونت"], serviceId: "facial-rejuvenation", topicLabel: "واکنش شدید بعد از تزریق" },
+    { requireAll: ["خونریزی", "جراحی"], serviceId: null, topicLabel: "خونریزی پس از جراحی" },
+  ],
+  en: [
+    { requireAll: ["nose", "broken"], serviceId: "rhinoplasty", topicLabel: "a broken nose" },
+    { requireAll: ["nose", "fracture"], serviceId: "rhinoplasty", topicLabel: "a broken nose" },
+    { requireAll: ["nose", "trauma"], serviceId: "rhinoplasty", topicLabel: "nose trauma" },
+    { requireAll: ["jaw", "broken"], serviceId: "orthognathic-surgery", topicLabel: "a broken jaw" },
+    { requireAll: ["jaw", "fracture"], serviceId: "orthognathic-surgery", topicLabel: "a broken jaw" },
+    { requireAll: ["tooth", "severe pain"], serviceId: "impacted-tooth-surgery", topicLabel: "severe tooth pain" },
+    { requireAll: ["implant", "infection"], serviceId: "advanced-dental-implant", topicLabel: "an implant infection" },
+    { requireAll: ["implant", "bleeding"], serviceId: "advanced-dental-implant", topicLabel: "bleeding after implant surgery" },
+    { requireAll: ["face", "swelling"], serviceId: "facial-cosmetic-surgery", topicLabel: "severe facial swelling" },
+    { requireAll: ["filler", "swelling"], serviceId: "facial-rejuvenation", topicLabel: "a severe reaction after an injection" },
+    { requireAll: ["botox", "swelling"], serviceId: "facial-rejuvenation", topicLabel: "a severe reaction after an injection" },
+    { requireAll: ["bleeding", "surgery"], serviceId: null, topicLabel: "bleeding after surgery" },
+  ],
+  ar: [
+    { requireAll: ["أنف", "كسر"], serviceId: "rhinoplasty", topicLabel: "كسر في الأنف" },
+    { requireAll: ["أنف", "صدمة"], serviceId: "rhinoplasty", topicLabel: "صدمة في الأنف" },
+    { requireAll: ["فك", "كسر"], serviceId: "orthognathic-surgery", topicLabel: "كسر في الفك" },
+    { requireAll: ["سن", "ألم شديد"], serviceId: "impacted-tooth-surgery", topicLabel: "ألم شديد في الأسنان" },
+    { requireAll: ["زراعة", "عدوى"], serviceId: "advanced-dental-implant", topicLabel: "عدوى في الزرعة" },
+    { requireAll: ["زراعة", "نزيف"], serviceId: "advanced-dental-implant", topicLabel: "نزيف بعد زراعة الأسنان" },
+    { requireAll: ["وجه", "تورم"], serviceId: "facial-cosmetic-surgery", topicLabel: "تورم شديد في الوجه" },
+    { requireAll: ["فيلر", "تورم"], serviceId: "facial-rejuvenation", topicLabel: "رد فعل شديد بعد الحقن" },
+    { requireAll: ["بوتوكس", "تورم"], serviceId: "facial-rejuvenation", topicLabel: "رد فعل شديد بعد الحقن" },
+    { requireAll: ["نزيف", "جراحة"], serviceId: null, topicLabel: "نزيف بعد الجراحة" },
+  ],
+};
+
+/** Round 2026-07-23 — first matching rule wins; `null` means no trauma-specific topic was named (the caller falls back to session/context service, or the generic urgent-review copy). */
+function detectTraumaTopic(normalized: string, locale: Locale): { serviceId: ServiceId | null; topicLabel: string } | null {
+  for (const rule of TRAUMA_TOPIC_RULES[locale]) {
+    if (rule.requireAll.every((keyword) => normalized.includes(keyword))) return { serviceId: rule.serviceId, topicLabel: rule.topicLabel };
+  }
+  return null;
+}
+
+/**
  * Round 2026-07-22 (focused-conversation UX fix, per Hamid — "the UI
  * behaves like an infinite transcript"): `"decision"` is a new terminal
  * mode with no live-area card of its own (`renderLiveArea` falls through
@@ -209,6 +347,16 @@ export function AssistantDrawer() {
   const [jawStage, setJawStage] = useState<"intro" | "concern_selected" | "imaging_question" | "booking_offer" | "booking_flow">("intro");
   /** The short topic phrase for the compact public context summary ("… · رابطه فک بالا و پایین") — item 7. Not service-specific by construction (any future concern-style state could set it), but only the jaw flow populates it today. */
   const [activeConcern, setActiveConcern] = useState<string | null>(null);
+
+  /**
+   * Round 2026-07-23 (Urgency & Safety Router) — set only when "درخواست
+   * تماس فوری کلینیک" is clicked while NOT yet verified: remembers what
+   * to finalize (which service, which topic) once the patient has gone
+   * through the lightweight identify form + OTP, so `handleIdentifySubmit`
+   * can route to `finalizeUrgentCallRequest` instead of the normal
+   * `enterConversationMode` — see both for how this is consumed.
+   */
+  const [pendingUrgentContext, setPendingUrgentContext] = useState<{ serviceId: ServiceId | null; topicLabel: string } | null>(null);
 
   useEffect(() => {
     if (!isOpen) return;
@@ -401,6 +549,15 @@ export function AssistantDrawer() {
   const handleIdentifySubmit = (values: { fullName: string; mobile: string }) => {
     dispatch({ type: "SET_LEAD_INFO", leadInfo: values });
     pushEntry({ kind: "choice", text: `${values.fullName} · ${values.mobile}` });
+    // Round 2026-07-23 (Urgency & Safety Router) — an urgent call request
+    // that needed identify+OTP first finalizes as THAT request, not a
+    // normal AI-conversation entry.
+    if (pendingUrgentContext) {
+      const context = pendingUrgentContext;
+      setPendingUrgentContext(null);
+      runGated(() => finalizeUrgentCallRequest(context.serviceId, context.topicLabel), "assistant_access");
+      return;
+    }
     runGated(() => enterConversationMode(), "assistant_access");
   };
 
@@ -624,6 +781,107 @@ export function AssistantDrawer() {
     { label: dict.aiConversation.fallbackChips.care, onClick: () => routeToStep("care_guidance") },
     { label: dict.aiConversation.fallbackChips.booking, onClick: () => routeToStep("consultation_booking") },
   ];
+
+  /**
+   * Round 2026-07-23 (Urgency & Safety Router) — priority-1 check, run
+   * BEFORE `isHumanRequestPhrase`/`isDissatisfactionPhrase` and well
+   * before any server call, so a genuinely urgent message can never reach
+   * `local-intent-matcher.ts`'s plain service-keyword matching (the root
+   * cause: "بینی" alone routed straight to generic rhinoplasty guidance).
+   * True on either a generic urgency word OR a trauma-topic combination
+   * (`detectTraumaTopic`) matching on its OWN — "بینیم شکسته" with no
+   * "فوری" anywhere is still urgent.
+   */
+  const isUrgencyPhrase = (text: string): boolean => {
+    const normalized = text.trim().toLowerCase();
+    if (!normalized) return false;
+    if (URGENCY_KEYWORDS[locale].some((keyword) => normalized.includes(keyword.toLowerCase()))) return true;
+    return detectTraumaTopic(normalized, locale) !== null;
+  };
+
+  /**
+   * Round 2026-07-23 — exactly his given 5-chip set for the rhinoplasty
+   * case (call / book review / <48h / >48h / breathing issue), generalized
+   * for any other detected/contextual service: "مشکل تنفس دارم" only
+   * makes sense for the nose, so it's rhinoplasty-only; every other chip
+   * applies regardless of which service (or none) was detected. Never a
+   * dead end — every chip either logs the urgent request, jumps straight
+   * to contact capture, or leads to another concrete urgent-flow reply.
+   */
+  const urgentChips = (serviceId: ServiceId | null, topicLabel: string): ChipAction[] => {
+    const chips: ChipAction[] = [{ label: dict.aiConversation.urgent.callCta, onClick: () => handleUrgentCallRequest(serviceId, topicLabel), emphasized: true }];
+    if (serviceId) {
+      const short = dict.serviceShortLabels[serviceId] ?? dict.services.find((service) => service.id === serviceId)?.label ?? "";
+      chips.push({ label: dict.aiConversation.urgent.bookReviewTemplate.replace("{service}", short), onClick: () => handleUrgentBookingReview(serviceId) });
+    } else {
+      chips.push({ label: dict.aiConversation.urgent.bookReviewGeneric, onClick: () => handleUrgentBookingReview(null) });
+    }
+    chips.push({ label: dict.aiConversation.urgent.within48hCta, onClick: () => acknowledgeUrgentTiming(true, serviceId, topicLabel) });
+    chips.push({ label: dict.aiConversation.urgent.moreThanFewDaysCta, onClick: () => acknowledgeUrgentTiming(false, serviceId, topicLabel) });
+    if (serviceId === "rhinoplasty") {
+      chips.push({ label: dict.aiConversation.urgent.breathingIssueCta, onClick: () => handleUrgentBreathingIssue(serviceId, topicLabel) });
+    }
+    return chips;
+  };
+
+  /**
+   * Round 2026-07-23 — runs once verification is confirmed (either
+   * already verified, or just completed via `handleIdentifySubmit`'s
+   * `pendingUrgentContext` branch). Deliberately does NOT push the
+   * generic `handoffNotice`/`triggerHandoff` content — the urgent
+   * response already said what's needed; this just confirms the request
+   * was logged, per the exact required line.
+   */
+  const finalizeUrgentCallRequest = (serviceId: ServiceId | null, topicLabel: string) => {
+    if (serviceId) dispatch({ type: "SET_SERVICE", serviceId });
+    pushEntry({ kind: "assistant", text: dict.aiConversation.urgent.callRequestConfirmed });
+    void logHandoffEvent(sessionToken, `درخواست تماس فوری کلینیک — ${topicLabel}`, locale);
+    setMode("decision");
+  };
+
+  /**
+   * Round 2026-07-23 — "درخواست تماس فوری کلینیک": if already verified,
+   * logs and confirms immediately (no re-verification, per the standing
+   * "never ask OTP again" rule — `runGated`/`isVerified` unchanged). If
+   * not, routes to the lightweight identify/OTP contact-capture form
+   * (not the full multi-field `ContactCaptureStep` — urgency shouldn't
+   * mean more friction) and finalizes once that completes.
+   */
+  const handleUrgentCallRequest = (serviceId: ServiceId | null, topicLabel: string) => {
+    if (isVerified) {
+      finalizeUrgentCallRequest(serviceId, topicLabel);
+      return;
+    }
+    setPendingUrgentContext({ serviceId, topicLabel });
+    setMode("identify");
+  };
+
+  /** Round 2026-07-23 — "رزرو بررسی {service}": jumps STRAIGHT to contact capture, skipping triage/appointment-slot picking entirely — an urgent patient needs the clinic to call them, not a normal multi-step booking wizard. Falls back to `general_consultation` when no specific service was detected. */
+  const handleUrgentBookingReview = (serviceId: ServiceId | null) => {
+    const targetService = serviceId ?? "general_consultation";
+    dispatch({ type: "SET_SERVICE", serviceId: targetService });
+    setLastServiceId(targetService);
+    const label = dict.services.find((service) => service.id === targetService)?.label ?? targetService;
+    pushEntry({ kind: "choice", text: `✓ ${dict.aiConversation.serviceSelectedPrefix}${label}` });
+    setMode("booking");
+    setStep("contact_capture");
+  };
+
+  /** Deterministic, free — acknowledges timing, then re-offers the same urgent actions (never a dead end), with a tone-appropriate reply either way. */
+  const acknowledgeUrgentTiming = (recentTrauma: boolean, serviceId: ServiceId | null, topicLabel: string) => {
+    pushEntry({ kind: "choice", text: recentTrauma ? dict.aiConversation.urgent.within48hCta : dict.aiConversation.urgent.moreThanFewDaysCta });
+    pushEntry({
+      kind: "assistant",
+      text: recentTrauma ? dict.aiConversation.urgent.recentTraumaReply : dict.aiConversation.urgent.olderTraumaReply,
+      chips: urgentChips(serviceId, topicLabel),
+    });
+  };
+
+  /** Deterministic, free — breathing difficulty is one of the safety-check symptoms named in the urgent response itself; reinforces contacting the clinic/emergency care without declaring a diagnosis. */
+  const handleUrgentBreathingIssue = (serviceId: ServiceId | null, topicLabel: string) => {
+    pushEntry({ kind: "choice", text: dict.aiConversation.urgent.breathingIssueCta });
+    pushEntry({ kind: "assistant", text: dict.aiConversation.urgent.breathingIssueReply, chips: urgentChips(serviceId, topicLabel) });
+  };
 
   /**
    * Round 2026-07-22 (item 8) — exact required 4-chip set for the "3
@@ -865,6 +1123,34 @@ export function AssistantDrawer() {
       : undefined;
     pushEntry({ kind: "user", text: trimmed, recapLabel });
     setComposerMessage("");
+
+    // Round 2026-07-23 (Urgency & Safety Router, per Hamid — critical
+    // response-quality fix): PRIORITY 1, checked before absolutely
+    // everything else, including the human-request/dissatisfaction
+    // checks below and the server call (so it can never reach
+    // `local-intent-matcher.ts`'s plain service-keyword matching — the
+    // actual root cause of "بینیم شکسته... فوری" getting a generic
+    // rhinoplasty explanation). Deterministic, free, no question consumed.
+    // `detectTraumaTopic` runs on the SAME message to pick which
+    // service/topic the response names; the exact static text is used
+    // only when THIS message itself named a nose fracture/impact — a
+    // remembered `contextServiceId` of "rhinoplasty" from earlier in the
+    // conversation is not enough to justify the nose-specific wording.
+    if (isUrgencyPhrase(trimmed)) {
+      const trauma = detectTraumaTopic(trimmed.trim().toLowerCase(), locale);
+      const urgentServiceId = trauma?.serviceId ?? contextServiceId;
+      const topicLabel = trauma?.topicLabel ?? dict.aiConversation.urgent.genericTopicLabel;
+      if (urgentServiceId) setLastServiceId(urgentServiceId);
+      const responseText =
+        trauma?.serviceId === "rhinoplasty" ? dict.aiConversation.urgent.noseTraumaResponse : dict.aiConversation.urgent.genericResponseTemplate.replace("{topic}", topicLabel);
+      pushEntry({ kind: "assistant", text: responseText, chips: urgentChips(urgentServiceId, topicLabel) });
+      // Best-effort — silently no-ops if not yet verified (same limitation
+      // every handoff log in this file already has, see `triggerHandoff`);
+      // logged again in `finalizeUrgentCallRequest` once a session exists.
+      void logHandoffEvent(sessionToken, `درخواست فوری شناسایی شد — ${topicLabel}`, locale, trimmed);
+      setMode("decision");
+      return;
+    }
 
     // Round 2026-07-21 (V2, item 13) — an explicit request for a human
     // is answered immediately, client-side, no question consumed —

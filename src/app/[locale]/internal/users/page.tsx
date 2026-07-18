@@ -3,7 +3,7 @@ import { notFound } from "next/navigation";
 
 import { InternalNav } from "@/components/internal/internal-nav";
 import { isDatabaseConfigured } from "@/infrastructure/db/client";
-import { formatDateTimeForLocale } from "@/i18n/format-jalali-date";
+import { formatPersianDateTime } from "@/i18n/persian-format";
 import { isSupportedLocale } from "@/i18n/locales";
 import { requireOwnerActor } from "@/modules/internal-ops/server/internal-auth";
 import { hasAnyOwner, listInternalUsers } from "@/modules/internal-ops/server/internal-user-repository";
@@ -60,7 +60,7 @@ export default async function InternalUsersPage({
       [users, ownerExists] = await Promise.all([listInternalUsers(), hasAnyOwner()]);
     } catch (err) {
       console.error("[internal-users:load-failed]", err);
-      loadError = "اتصال به پایگاه داده برقرار نشد. تنظیمات DATABASE_URL را بررسی کنید.";
+      loadError = "در حال حاضر امکان اتصال به پایگاه داده وجود ندارد. لطفاً لحظاتی دیگر دوباره تلاش کنید.";
     }
   }
 
@@ -69,20 +69,13 @@ export default async function InternalUsersPage({
 
   return (
     <main dir="rtl" className="min-h-dvh bg-warm-white text-charcoal">
-      <div className="pt-[68px] lg:pt-[88px]">
-        <InternalNav locale={locale} active="users" actor={actor} />
-      </div>
-      <div className="mx-auto max-w-5xl px-6 py-10 sm:px-8">
-        <h1 className="text-xl font-bold text-deep-navy">کاربران داخلی (داخلی)</h1>
-        <p className="mt-2 max-w-2xl text-sm leading-relaxed text-charcoal/70">
-          مدیریت حساب‌های ورود کارکنان کلینیک — فقط برای مدیر. این صفحه یک سامانه مدیریت دسترسی کامل نیست؛ فقط دو نقش «مدیر» و «منشی» وجود
-          دارد.
-        </p>
+      <InternalNav locale={locale} active="users" actor={actor} />
+      <div className="mx-auto max-w-7xl px-6 py-6 sm:px-8">
+        <h1 className="text-xl font-bold text-deep-navy">کاربران داخلی</h1>
+        <p className="mt-2 max-w-2xl text-sm leading-relaxed text-charcoal/70">این بخش برای مدیریت حساب‌های ورود کارکنان کلینیک استفاده می‌شود.</p>
 
         {!dbConfigured && (
-          <div className="mt-6 rounded-lg border border-gold/30 bg-gold/10 px-4 py-3 text-sm text-charcoal/80">
-            متغیر محیطی <code className="font-mono">DATABASE_URL</code> تنظیم نشده — امکان مدیریت کاربران داخلی وجود ندارد.
-          </div>
+          <div className="mt-6 rounded-lg border border-gold/30 bg-gold/10 px-4 py-3 text-sm text-charcoal/80">مدیریت کاربران داخلی موقتاً در دسترس نیست.</div>
         )}
         {loadError && <div className="mt-6 rounded-lg border border-red-300 bg-red-50 px-4 py-3 text-sm text-red-700">{loadError}</div>}
         {error && (
@@ -174,7 +167,7 @@ export default async function InternalUsersPage({
                           </td>
                           <td className="px-3 py-3">
                             <span className="inline-flex items-center rounded-full bg-deep-navy/10 px-2.5 py-0.5 text-xs text-deep-navy">
-                              {user.role === "OWNER" ? "مدیر" : "منشی"}
+                              {user.role === "OWNER" ? "مدیرکل" : "منشی"}
                             </span>
                           </td>
                           <td className="px-3 py-3">
@@ -187,7 +180,7 @@ export default async function InternalUsersPage({
                             </span>
                           </td>
                           <td className="px-3 py-3 whitespace-nowrap text-charcoal/60">
-                            {user.lastLoginAt ? formatDateTimeForLocale(user.lastLoginAt, locale) : "—"}
+                            {user.lastLoginAt ? formatPersianDateTime(user.lastLoginAt) : "هنوز وارد نشده"}
                           </td>
                           <td className="px-3 py-3">
                             <form action={resetAction} className="flex items-center gap-1.5">

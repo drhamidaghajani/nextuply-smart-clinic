@@ -164,24 +164,55 @@ const VALID_APPOINTMENT_STATUSES: readonly BookingAppointmentStatus[] = [
   "cancelled",
 ];
 
+/**
+ * Round 2026-07-25 (Internal Operations Lite polish, Part F — bug: "status
+ * update does not persist, reverts to the previous status after refresh"):
+ * the write itself (`updateBookingRequestStatus`, a clinicId-scoped
+ * `updateMany`) was already correct — the actual problem was silent
+ * failure with no user-visible signal: every early-return above used a
+ * bare `return`, so an unconfigured database, a bad/missing status value,
+ * or a thrown DB error all looked EXACTLY like a successful update from
+ * the secretary's side (the page just re-rendered with nothing changed —
+ * indistinguishable from "it reverted"). Now every failure path
+ * `redirect()`s back to `/internal/appointments?statusError=1`, which the
+ * page renders as a visible error banner instead of silently no-oping.
+ * `redirect()` itself is deliberately called OUTSIDE any try/catch (it
+ * works by throwing a special Next.js control-flow signal — catching it
+ * would swallow the redirect itself, not the error it's reporting).
+ */
 export async function updateAppointmentStatusAction(locale: string, bookingRequestId: string, formData: FormData): Promise<void> {
-  if (!isDatabaseConfigured()) return;
+  if (!isDatabaseConfigured()) {
+    redirect(`/${locale}/internal/appointments?statusError=1`);
+  }
 
   const statusRaw = formData.get("appointmentStatus");
   const appointmentStatus = VALID_APPOINTMENT_STATUSES.find((status) => status === statusRaw);
-  if (!appointmentStatus) return;
+  if (!appointmentStatus) {
+    redirect(`/${locale}/internal/appointments?statusError=1`);
+  }
 
   const noteRaw = formData.get("internalNote");
   const internalNote = typeof noteRaw === "string" && noteRaw.trim() ? noteRaw.trim() : null;
 
-  // Round 2026-07-16 (contract-alignment pass): read the pre-update row so
-  // the `appointment.status_changed` automation event below can report
-  // both `oldStatus` and `newStatus` — `updateBookingRequestStatus` itself
-  // stays an `updateMany` (see its own doc-comment) so this read is kept
-  // separate rather than folded in.
-  const before = await getBookingRequestForStatusChange(bookingRequestId);
+  let before: Awaited<ReturnType<typeof getBookingRequestForStatusChange>> = null;
+  let writeFailed = false;
+  try {
+    // Round 2026-07-16 (contract-alignment pass): read the pre-update row
+    // so the `appointment.status_changed` automation event below can
+    // report both `oldStatus` and `newStatus` — `updateBookingRequestStatus`
+    // itself stays an `updateMany` (see its own doc-comment) so this read
+    // is kept separate rather than folded in.
+    before = await getBookingRequestForStatusChange(bookingRequestId);
+    await updateBookingRequestStatus({ id: bookingRequestId, appointmentStatus, internalNote });
+  } catch (error) {
+    console.error("[update-appointment-status] failed", error);
+    writeFailed = true;
+  }
 
-  await updateBookingRequestStatus({ id: bookingRequestId, appointmentStatus, internalNote });
+  if (writeFailed) {
+    redirect(`/${locale}/internal/appointments?statusError=1`);
+  }
+
   revalidatePath(`/${locale}/internal/appointments`);
 
   if (before && before.appointmentStatus !== appointmentStatus) {
@@ -198,4 +229,6 @@ export async function updateAppointmentStatusAction(locale: string, bookingReque
       dashboardUrl: `/${locale}/internal/appointments#booking-${bookingRequestId}`,
     });
   }
+
+  redirect(`/${locale}/internal/appointments?statusUpdated=1#booking-${bookingRequestId}`);
 }

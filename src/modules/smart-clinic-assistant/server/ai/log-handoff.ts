@@ -3,7 +3,7 @@
 import { sendAutomationEvent } from "@/modules/clinic-operations/server/automation-webhook";
 
 import { createAssistantMessage } from "./conversation-repository";
-import { findAssistantSession, findOrCreateDevBypassAssistantSession } from "../otp/otp-repository";
+import { findAssistantSession, findOrCreateDevBypassAssistantSession, updateAssistantSessionProfile } from "../otp/otp-repository";
 import { extractDevBypassMobile, isDevBypassToken, isValidDevBypassToken } from "../otp/session-guard";
 
 /**
@@ -34,13 +34,30 @@ import { extractDevBypassMobile, isDevBypassToken, isValidDevBypassToken } from 
  * no event, same as the system-message log two lines below. Kept as an
  * extension of THIS function rather than a separate call site because
  * both need the exact same session lookup — no reason to do it twice.
+ *
+ * Round 2026-07-25 (Internal Operations Lite polish, Part D — ROOT CAUSE
+ * of the "بیمار ناشناس" bug): `AssistantSession.fullName` is normally
+ * filled in by `updateAssistantSessionProfile` inside
+ * `ask-assistant-question.ts` — but the urgent router NEVER calls that
+ * (it's a deterministic client-side short-circuit specifically so an
+ * urgent message doesn't consume one of the patient's 3 questions), so a
+ * patient's name — even one they'd already given via the identify/OTP
+ * form — was never actually written to the session row for an
+ * urgent-first message. `knownFullName` (optional) closes that gap:
+ * passed from `assistant-drawer.tsx`'s urgent-flow call sites (which
+ * already have `state.leadInfo.fullName` client-side), it's persisted
+ * here the same "never overwrite an already-set value" way
+ * `ask-assistant-question.ts` does it, so both the transcript AND the
+ * dashboard's urgent panel (`listRecentUrgentHandoffs`) see a real name
+ * going forward, not just via its own read-side fallback chain.
  */
 export async function logHandoffEvent(
   sessionToken: string | null,
   reason: string,
   locale: string,
   triggeringMessage?: string,
-  urgentDetails?: { activeService: string | null; activeTopic: string; userMessage: string; dashboardUrl: string }
+  urgentDetails?: { activeService: string | null; activeTopic: string; userMessage: string; dashboardUrl: string },
+  knownFullName?: string | null
 ): Promise<void> {
   if (!sessionToken) return;
   try {
@@ -59,11 +76,17 @@ export async function logHandoffEvent(
     }
     await createAssistantMessage({ sessionId: session.id, role: "system", content: `handoff: ${reason}` });
 
+    let fullNameForEvent = session.fullName;
+    if (knownFullName && !session.fullName) {
+      await updateAssistantSessionProfile({ sessionId: session.id, fullName: knownFullName });
+      fullNameForEvent = knownFullName;
+    }
+
     if (urgentDetails) {
       void sendAutomationEvent({
         event: "urgent.requested",
         clinicId: session.clinicId,
-        fullName: session.fullName,
+        fullName: fullNameForEvent,
         mobile: session.mobile,
         activeService: urgentDetails.activeService ?? session.serviceSlug,
         activeTopic: urgentDetails.activeTopic,

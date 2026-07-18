@@ -3,6 +3,7 @@ import { notFound } from "next/navigation";
 import { InternalNav } from "@/components/internal/internal-nav";
 import { WEEKDAY_DISPLAY_ORDER, WEEKDAY_LABELS as SHARED_WEEKDAY_LABELS } from "@/core/weekday-labels";
 import { isSupportedLocale } from "@/i18n/locales";
+import { formatPersianCapacity, formatPersianTimeRange } from "@/i18n/persian-format";
 import { isDatabaseConfigured } from "@/infrastructure/db/client";
 import {
   createAvailabilitySlotAction,
@@ -29,18 +30,15 @@ export const dynamic = "force-dynamic";
  * table + form is deliberately enough here).
  *
  * All mutations go through Server Actions in `server/admin-actions.ts`,
- * protected by the same `INTERNAL_ADMIN_TOKEN` middleware gate as every
- * other `/internal/*` route (see that file's doc-comment for why no
- * separate check is added here). Zero client JS: every interactive
- * control is a plain `<form>` bound to a Server Action via `.bind()`.
+ * protected by the same internal-admin route guard as every other
+ * `/internal/*` route. Zero client JS: every interactive control is a
+ * plain `<form>` bound to a Server Action via `.bind()`.
  *
- * Round 2026-07-15, same day (availability-based booking): added a
- * Persian-first weekly BOARD above the existing edit table — a 7-column
- * (desktop) grid, each day showing its slots' next-occurrence used/
- * remaining capacity via `getWeeklyAvailabilityOverview`. This is a
- * second, calmer read of the same `DoctorAvailabilitySlot` data the
- * table already edits — no new state, no drag-and-drop, no calendar
- * library.
+ * Round 2026-07-25 (Internal Operations Lite polish) — dead top padding
+ * removed (see `dashboard/page.tsx`'s doc-comment for why it existed and
+ * why it's gone), every time/capacity now Persian-digit via
+ * `persian-format.ts`, and the page intro copy no longer reads like an
+ * internal engineering caveat.
  */
 const WEEKDAY_LABELS = SHARED_WEEKDAY_LABELS.fa;
 
@@ -63,7 +61,7 @@ export default async function AvailabilityAdminPage({ params }: { params: Promis
       });
     } catch (error) {
       console.error("[availability-admin:load-failed]", error);
-      loadError = "اتصال به پایگاه داده برقرار نشد. تنظیمات DATABASE_URL را بررسی کنید.";
+      loadError = "در حال حاضر امکان اتصال به پایگاه داده وجود ندارد. لطفاً لحظاتی دیگر دوباره تلاش کنید.";
     }
   }
 
@@ -71,25 +69,16 @@ export default async function AvailabilityAdminPage({ params }: { params: Promis
 
   return (
     <main dir="rtl" className="min-h-dvh bg-warm-white text-charcoal">
-      <div className="pt-[68px] lg:pt-[88px]">
-        <InternalNav locale={locale} active="availability" actor={actor} />
-      </div>
-      <div className="mx-auto max-w-6xl px-6 py-10 sm:px-8">
-        <h1 className="text-xl font-bold text-deep-navy">مدیریت زمان‌های حضور پزشک (داخلی)</h1>
-        <p className="mt-2 max-w-2xl text-sm leading-relaxed text-charcoal/70">
-          بازه‌های هفتگیِ استاندارد حضور پزشک — نه یک تقویم روز‌به‌روز. این صفحه یک سامانه نوبت‌دهی آنلاین کامل نیست؛ فقط بازه‌های کلی
-          هفتگی را برای هماهنگی داخلی منشی نگه می‌دارد.
-        </p>
+      <InternalNav locale={locale} active="availability" actor={actor} />
+      <div className="mx-auto max-w-7xl px-6 py-6 sm:px-8">
+        <h1 className="text-xl font-bold text-deep-navy">زمان‌بندی حضور دکتر</h1>
+        <p className="mt-2 max-w-2xl text-sm leading-relaxed text-charcoal/70">این بخش برای تعریف بازه‌های هفتگی حضور دکتر و مدیریت ظرفیت هر بازه استفاده می‌شود.</p>
 
         {!dbConfigured && (
-          <div className="mt-6 rounded-lg border border-gold/30 bg-gold/10 px-4 py-3 text-sm text-charcoal/80">
-            متغیر محیطی <code className="font-mono">DATABASE_URL</code> تنظیم نشده — امکان مدیریت بازه‌های زمانی وجود ندارد.
-          </div>
+          <div className="mt-6 rounded-lg border border-gold/30 bg-gold/10 px-4 py-3 text-sm text-charcoal/80">مدیریت بازه‌های زمانی موقتاً در دسترس نیست.</div>
         )}
 
-        {loadError && (
-          <div className="mt-6 rounded-lg border border-red-300 bg-red-50 px-4 py-3 text-sm text-red-700">{loadError}</div>
-        )}
+        {loadError && <div className="mt-6 rounded-lg border border-red-300 bg-red-50 px-4 py-3 text-sm text-red-700">{loadError}</div>}
 
         {dbConfigured && !loadError && overview.length > 0 && (
           <div className="mt-8">
@@ -112,12 +101,10 @@ export default async function AvailabilityAdminPage({ params }: { params: Promis
                               slot.isActive ? "border-charcoal/10 bg-warm-white" : "border-charcoal/5 bg-charcoal/[0.02] opacity-60"
                             }`}
                           >
-                            <p dir="ltr" className="font-mono text-charcoal/80">
-                              {slot.startTime}–{slot.endTime}
-                            </p>
+                            <p className="text-charcoal/80">{formatPersianTimeRange(slot.startTime, slot.endTime)}</p>
                             {slot.isActive ? (
                               <p className={`mt-0.5 ${slot.remainingCapacity === 0 ? "font-semibold text-red-600" : "text-charcoal/55"}`}>
-                                {slot.usedCapacity}/{slot.capacity} {slot.remainingCapacity === 0 ? "(تکمیل)" : ""}
+                                {formatPersianCapacity(slot.usedCapacity, slot.capacity)} {slot.remainingCapacity === 0 ? "(تکمیل)" : ""}
                               </p>
                             ) : (
                               <p className="mt-0.5 text-charcoal/40">غیرفعال</p>
@@ -197,9 +184,7 @@ export default async function AvailabilityAdminPage({ params }: { params: Promis
                       return (
                         <tr key={slot.id} className="border-b border-charcoal/5 last:border-0 align-top">
                           <td className="whitespace-nowrap px-3 py-3 font-medium">{WEEKDAY_LABELS[slot.weekday]}</td>
-                          <td className="whitespace-nowrap px-3 py-3 font-mono text-charcoal/70" dir="ltr">
-                            {slot.startTime}–{slot.endTime}
-                          </td>
+                          <td className="whitespace-nowrap px-3 py-3 text-charcoal/70">{formatPersianTimeRange(slot.startTime, slot.endTime)}</td>
                           <td className="px-3 py-3">
                             <form action={updateAction} className="flex flex-wrap items-center gap-2">
                               <input type="hidden" name="isActive" value={String(slot.isActive)} />

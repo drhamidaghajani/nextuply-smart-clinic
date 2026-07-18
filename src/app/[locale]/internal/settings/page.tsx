@@ -19,7 +19,7 @@ const ERROR_MESSAGES: Record<string, string> = {
   db_unavailable: "پایگاه داده در دسترس نیست.",
 };
 
-const ROLE_LABELS: Record<"OWNER" | "SECRETARY", string> = { OWNER: "مدیر", SECRETARY: "منشی" };
+const ROLE_LABELS: Record<"OWNER" | "SECRETARY", string> = { OWNER: "مدیرکل", SECRETARY: "منشی" };
 
 /**
  * Round 2026-07-24 (Internal Operations Lite, Part B) — reachable by
@@ -46,11 +46,9 @@ export default async function InternalSettingsPage({
 
   return (
     <main dir="rtl" className="min-h-dvh bg-warm-white text-charcoal">
-      <div className="pt-[68px] lg:pt-[88px]">
-        <InternalNav locale={locale} active="settings" actor={actor} />
-      </div>
-      <div className="mx-auto max-w-xl px-6 py-10 sm:px-8">
-        <h1 className="text-xl font-bold text-deep-navy">تنظیمات حساب (داخلی)</h1>
+      <InternalNav locale={locale} active="settings" actor={actor} />
+      <div className="mx-auto max-w-xl px-6 py-6 sm:px-8">
+        <h1 className="text-xl font-bold text-deep-navy">تنظیمات حساب</h1>
 
         <div className="mt-6 rounded-lg border border-charcoal/10 bg-cream p-5">
           <p className="text-xs text-charcoal/50">نام</p>
@@ -101,8 +99,8 @@ export default async function InternalSettingsPage({
           </form>
         ) : (
           <div className="mt-6 rounded-lg border border-gold/30 bg-gold/10 px-4 py-3 text-sm text-charcoal/80">
-            ورود اضطراری مدیرکل رمز عبور جداگانه‌ای ندارد — این کد دسترسی از متغیر محیطی سرور تنظیم می‌شود. برای ورود روزمره با نام کاربری و
-            رمز عبور، از «کاربران داخلی» یک حساب مدیر بسازید.
+            ورود اضطراری مدیرکل رمز عبور جداگانه‌ای ندارد. برای ورود روزمره با نام کاربری و رمز عبور، از «کاربران داخلی» یک حساب مدیرکل
+            بسازید.
           </div>
         )}
       </div>

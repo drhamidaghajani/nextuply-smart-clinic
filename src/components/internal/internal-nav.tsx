@@ -35,7 +35,7 @@ const NAV_LINKS = [
   { segment: "gallery", label: "گالری" },
 ] as const;
 
-const ROLE_LABELS: Record<"OWNER" | "SECRETARY", string> = { OWNER: "مدیر", SECRETARY: "منشی" };
+const ROLE_LABELS: Record<"OWNER" | "SECRETARY", string> = { OWNER: "مدیرکل", SECRETARY: "منشی" };
 
 export function InternalNav({
   locale,
@@ -50,8 +50,8 @@ export function InternalNav({
   const isOwner = actor.role === "OWNER";
 
   return (
-    <nav dir="rtl" className="flex flex-wrap items-center justify-between gap-3 bg-deep-navy px-6 py-4 sm:px-8">
-      <span className="text-xs font-semibold uppercase tracking-[0.2em] text-gold">پنل داخلی کلینیک</span>
+    <nav dir="rtl" className="flex flex-wrap items-center justify-between gap-3 bg-deep-navy px-6 py-3.5 sm:px-8">
+      <span className="text-xs font-semibold tracking-[0.04em] text-gold">پنل داخلی کلینیک دکتر علیرضا صدیقی</span>
       <div className="flex flex-wrap items-center gap-1">
         {NAV_LINKS.map((link) => (
           <a

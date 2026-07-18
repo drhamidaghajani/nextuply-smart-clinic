@@ -33,19 +33,13 @@ export default async function GalleryAdminPage({ params }: { params: Promise<{ l
 
   return (
     <main dir="rtl" className="min-h-dvh bg-warm-white text-charcoal">
-      <div className="pt-[68px] lg:pt-[88px]">
-        <InternalNav locale={locale} active="gallery" actor={actor} />
-      </div>
-      <div className="mx-auto max-w-5xl px-6 py-10 sm:px-8">
-        <h1 className="text-xl font-bold text-deep-navy">مدیریت تصاویر گالری قبل و بعد (داخلی)</h1>
-        <p className="mt-2 max-w-2xl text-sm leading-relaxed text-charcoal/70">
-          فهرست فقط‌خواندنی تصاویر واقعی فعال در سایت. آپلود یا حذف تصویر از این صفحه هنوز پیاده‌سازی نشده — تا اتصال یک سرویس ذخیره‌سازی
-          واقعی، تصاویر جدید باید مستقیماً در پوشه <code className="font-mono">public/media/gallery/</code> قرار گیرند (مطابق
-          docs/adr/0003).
-        </p>
+      <InternalNav locale={locale} active="gallery" actor={actor} />
+      <div className="mx-auto max-w-7xl px-6 py-6 sm:px-8">
+        <h1 className="text-xl font-bold text-deep-navy">گالری قبل و بعد</h1>
+        <p className="mt-2 max-w-2xl text-sm leading-relaxed text-charcoal/70">این بخش تصاویر قبل و بعد فعال در سایت را نمایش می‌دهد.</p>
 
         <div className="mt-6 rounded-lg border border-gold/30 bg-gold/10 px-4 py-3 text-sm text-charcoal/80">
-          آپلود/حذف تصویر از این پنل، در انتظار اتصال یک سرویس ذخیره‌سازی واقعی است (وضعیت باز — هنوز انتخاب نشده).
+          افزودن یا حذف تصویر از این صفحه هنوز فعال نیست — برای تغییر تصاویر با تیم فنی هماهنگ کنید.
         </div>
 
         {entries.length === 0 ? (
@@ -61,9 +55,6 @@ export default async function GalleryAdminPage({ params }: { params: Promise<{ l
                 </div>
                 <div className="p-2">
                   <p className="truncate text-xs font-medium text-charcoal">{serviceLabels[id] ?? id}</p>
-                  <p className="truncate text-[10px] text-charcoal/50" dir="ltr">
-                    {src}
-                  </p>
                 </div>
               </div>
             ))}

@@ -841,12 +841,19 @@ export function AssistantDrawer() {
     // landed (the detection-time log call silently no-ops without a
     // session). `userMessage` falls back to the topic label — the
     // original free-text isn't threaded through the identify/OTP detour.
-    void logHandoffEvent(sessionToken, `درخواست تماس فوری کلینیک — ${topicLabel}`, locale, undefined, {
-      activeService: serviceId,
-      activeTopic: topicLabel,
-      userMessage: topicLabel,
-      dashboardUrl: `/${locale}/internal/assistant-leads`,
-    });
+    void logHandoffEvent(
+      sessionToken,
+      `درخواست تماس فوری کلینیک — ${topicLabel}`,
+      locale,
+      undefined,
+      {
+        activeService: serviceId,
+        activeTopic: topicLabel,
+        userMessage: topicLabel,
+        dashboardUrl: `/${locale}/internal/assistant-leads`,
+      },
+      state.leadInfo.fullName || null
+    );
     setMode("decision");
   };
 
@@ -1161,12 +1168,19 @@ export function AssistantDrawer() {
       // Round 2026-07-24 (Internal Operations Lite, Part D) — `urgentDetails`
       // fires the `urgent.requested` n8n event too, gated on the exact same
       // "session exists" check (verified/contactable) as the system-message log.
-      void logHandoffEvent(sessionToken, `درخواست فوری شناسایی شد — ${topicLabel}`, locale, trimmed, {
-        activeService: urgentServiceId,
-        activeTopic: topicLabel,
-        userMessage: trimmed,
-        dashboardUrl: `/${locale}/internal/assistant-leads`,
-      });
+      void logHandoffEvent(
+        sessionToken,
+        `درخواست فوری شناسایی شد — ${topicLabel}`,
+        locale,
+        trimmed,
+        {
+          activeService: urgentServiceId,
+          activeTopic: topicLabel,
+          userMessage: trimmed,
+          dashboardUrl: `/${locale}/internal/assistant-leads`,
+        },
+        state.leadInfo.fullName || null
+      );
       setMode("decision");
       return;
     }

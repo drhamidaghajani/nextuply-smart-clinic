@@ -5,6 +5,7 @@ import { InternalNav } from "@/components/internal/internal-nav";
 import { REAL_PHOTOS } from "@/components/sections/gallery-photos";
 import { SERVICES } from "@/content/services";
 import { isSupportedLocale } from "@/i18n/locales";
+import { requireInternalActor } from "@/modules/internal-ops/server/internal-auth";
 
 /** Staff-only tooling — must never be indexed, even though the middleware token gate + robots.ts's Disallow already keep it out of normal crawling. */
 export const metadata: Metadata = { robots: { index: false, follow: false } };
@@ -25,6 +26,7 @@ export const metadata: Metadata = { robots: { index: false, follow: false } };
 export default async function GalleryAdminPage({ params }: { params: Promise<{ locale: string }> }) {
   const { locale } = await params;
   if (!isSupportedLocale(locale)) notFound();
+  const actor = await requireInternalActor(locale);
 
   const serviceLabels = Object.fromEntries(SERVICES.map((service) => [service.galleryCategory, service.title.fa]));
   const entries = Object.entries(REAL_PHOTOS) as [string, string][];
@@ -32,7 +34,7 @@ export default async function GalleryAdminPage({ params }: { params: Promise<{ l
   return (
     <main dir="rtl" className="min-h-dvh bg-warm-white text-charcoal">
       <div className="pt-[68px] lg:pt-[88px]">
-        <InternalNav locale={locale} active="gallery" />
+        <InternalNav locale={locale} active="gallery" actor={actor} />
       </div>
       <div className="mx-auto max-w-5xl px-6 py-10 sm:px-8">
         <h1 className="text-xl font-bold text-deep-navy">مدیریت تصاویر گالری قبل و بعد (داخلی)</h1>

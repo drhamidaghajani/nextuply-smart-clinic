@@ -14,6 +14,7 @@ import {
 } from "@/modules/smart-clinic-assistant/admin/status-labels";
 import { updateAppointmentStatusAction } from "@/modules/smart-clinic-assistant/server/admin-actions";
 import { listBookingRequestsForAdmin } from "@/modules/smart-clinic-assistant/server/lead-repository";
+import { requireInternalActor } from "@/modules/internal-ops/server/internal-auth";
 
 /** Staff-only tooling — must never be indexed, even though the middleware token gate + robots.ts's Disallow already keep it out of normal crawling. */
 export const metadata: Metadata = { robots: { index: false, follow: false } };
@@ -45,6 +46,7 @@ const SERVICE_LABELS = Object.fromEntries(fa.assistantFlow.services.map((service
 export default async function AppointmentsAdminPage({ params }: { params: Promise<{ locale: string }> }) {
   const { locale } = await params;
   if (!isSupportedLocale(locale)) notFound();
+  const actor = await requireInternalActor(locale);
 
   const dbConfigured = isDatabaseConfigured();
   let bookings: Awaited<ReturnType<typeof listBookingRequestsForAdmin>> = [];
@@ -62,7 +64,7 @@ export default async function AppointmentsAdminPage({ params }: { params: Promis
   return (
     <main dir="rtl" className="min-h-dvh bg-warm-white text-charcoal">
       <div className="pt-[68px] lg:pt-[88px]">
-        <InternalNav locale={locale} active="appointments" />
+        <InternalNav locale={locale} active="appointments" actor={actor} />
       </div>
       <div className="mx-auto max-w-6xl px-6 py-10 sm:px-8">
         <h1 className="text-xl font-bold text-deep-navy">درخواست‌های نوبت (داخلی)</h1>

@@ -39,3 +39,24 @@ export async function listAssistantMessagesForSession(sessionId: string) {
     orderBy: { createdAt: "asc" },
   });
 }
+
+/**
+ * Round 2026-07-24 (Internal Operations Lite, Part E) — powers the
+ * dashboard's "urgent requests" highlight panel. Reuses the EXISTING
+ * `role: "system"`, `"handoff: "`-prefixed message log (`log-handoff.ts`)
+ * — no new table. Filtered to the URGENT subset specifically (every
+ * urgent-router reason string this codebase writes contains "فوری";
+ * the other handoff triggers — explicit human request, repeated
+ * dissatisfaction, repeated "unclear" — never do), since a secretary
+ * scanning the dashboard needs to see safety-relevant requests first,
+ * not every handoff reason mixed together.
+ */
+export async function listRecentUrgentHandoffs(limit = 5) {
+  const clinicId = getDefaultClinicId();
+  return prisma.assistantMessage.findMany({
+    where: { clinicId, role: "system", content: { contains: "فوری" } },
+    orderBy: { createdAt: "desc" },
+    take: limit,
+    include: { session: { select: { fullName: true, mobile: true, serviceSlug: true } } },
+  });
+}

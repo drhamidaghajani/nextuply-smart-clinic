@@ -224,7 +224,10 @@ export async function getBookingRequestForStatusChange(id: string) {
   const clinicId = getDefaultClinicId();
   return prisma.bookingRequest.findFirst({
     where: { id, clinicId },
-    select: { id: true, leadId: true, appointmentStatus: true, appointmentDate: true, selectedSlotId: true },
+    // Round 2026-07-24 (Internal Operations Lite, Part D) — `clinicId`/
+    // `lead.fullName` added so the `appointment.status_changed` automation
+    // event (see `admin-actions.ts`) can carry them without a second query.
+    select: { id: true, clinicId: true, leadId: true, appointmentStatus: true, appointmentDate: true, selectedSlotId: true, lead: { select: { fullName: true } } },
   });
 }
 

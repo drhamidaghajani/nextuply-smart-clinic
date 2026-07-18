@@ -1,6 +1,7 @@
 "use server";
 
 import { isDatabaseConfigured } from "@/infrastructure/db/client";
+import { fa } from "@/i18n/dictionaries/fa";
 import { isSupportedLocale, type Locale } from "@/i18n/locales";
 
 import { sendAutomationEvent } from "@/modules/clinic-operations/server/automation-webhook";
@@ -45,6 +46,9 @@ import { isSessionVerified } from "./otp/session-guard";
  * succeeds — fire-and-forget, no-ops if `N8N_WEBHOOK_URL` is unset, never
  * blocks or affects this function's own return value.
  */
+/** Round 2026-07-24 (Internal Operations Lite, Part D) — Persian service labels for the `booking.requested` automation event's `serviceLabel` field, same source/pattern the internal admin pages already use (`fa.assistantFlow.services`). */
+const SERVICE_LABELS: Record<string, string> = Object.fromEntries(fa.assistantFlow.services.map((service) => [service.id, service.label]));
+
 /** Last-resort fallback only (zod's own per-field messages, sourced from the submission's locale, cover the real cases) — see `getValidationMessages`. */
 const GENERIC_INVALID_MESSAGE: Record<Locale, string> = {
   fa: "اطلاعات ارسال‌شده معتبر نیست.",
@@ -103,6 +107,26 @@ export async function submitBookingRequest(rawInput: unknown): Promise<
 
   const status = computeLeadStatus({ serviceId, answers: triageAnswers, triageCompleted: triageAnswers.length > 0 });
 
+  // Round 2026-07-24 (Internal Operations Lite, Part D): moved up from
+  // its previous position (after persistence) so the `booking.requested`
+  // automation event below can carry `transcriptSummary` — every input
+  // here was already available at this point regardless; this is a
+  // reordering, not a new AI call or added latency (the function already
+  // awaited this exact call before returning). A missing/failed summary
+  // never blocks the booking — see this call's own original doc-comment,
+  // moved down to where it's still logged.
+  const aiSummary = await generateLeadSummary({
+    serviceId,
+    triageAnswers,
+    ageRange: leadInfo.ageRange,
+    preferredContactMethod: leadInfo.preferredContactMethod,
+    leadStatus: status,
+    preferredDay,
+    preferredTimeRange,
+    locale,
+    sessionVerified: verified,
+  });
+
   let leadId: string | null = null;
   let bookingRequestId: string | null = null;
   let persisted = false;
@@ -121,7 +145,7 @@ export async function submitBookingRequest(rawInput: unknown): Promise<
       });
       bookingRequestId = bookingRequest.id;
 
-      const paymentDraft = await createPaymentDraftForLead({
+      await createPaymentDraftForLead({
         leadId: lead.id,
         bookingRequestId: bookingRequest.id,
         amount: payment.amount,
@@ -158,16 +182,20 @@ export async function submitBookingRequest(rawInput: unknown): Promise<
       // gracefully if N8N_WEBHOOK_URL isn't configured.
       void sendAutomationEvent({
         event: "booking.requested",
+        clinicId: lead.clinicId,
         bookingRequestId: bookingRequest.id,
         leadId: lead.id,
-        serviceId,
-        appointmentDate: bookingRequest.appointmentDate ? bookingRequest.appointmentDate.toISOString().slice(0, 10) : null,
-        selectedSlotId: bookingRequest.selectedSlotId,
-        preferredDate: bookingRequest.preferredDate,
-        preferredTimeRange: bookingRequest.preferredTimeRange,
-        appointmentStatus: bookingRequest.appointmentStatus,
-        paymentStatus: paymentDraft.paymentStatus,
-        createdAt: bookingRequest.createdAt.toISOString(),
+        serviceSlug: serviceId,
+        serviceLabel: serviceId ? (SERVICE_LABELS[serviceId] ?? null) : null,
+        fullName: leadInfo.fullName,
+        mobile: leadInfo.mobile,
+        selectedTimeLabel: bookingRequest.preferredDate
+          ? `${bookingRequest.preferredDate}${bookingRequest.preferredTimeRange ? ` (${bookingRequest.preferredTimeRange})` : ""}`
+          : null,
+        status: bookingRequest.appointmentStatus,
+        urgency: false,
+        transcriptSummary: aiSummary?.shortSummary ?? null,
+        dashboardUrl: `/${locale}/internal/appointments#booking-${bookingRequest.id}`,
       });
     } catch (error) {
       // TODO(backend): surface this to real error monitoring once it
@@ -200,30 +228,10 @@ export async function submitBookingRequest(rawInput: unknown): Promise<
     requestedAt: new Date().toISOString(),
   };
 
-  // Generate the internal (staff-only) lead summary exactly once, here,
-  // after the booking request is fully validated — never per-step, never
-  // for the deterministic parts of the flow. See AI_USAGE_NOTES.md for
-  // exactly what is/isn't sent. `sessionVerified` is `true` here by
-  // construction — this line is unreachable unless the check above
-  // already passed — passed through explicitly (not re-derived) so
-  // `callAiGateway`'s own verification check has a real value to check
-  // rather than an assumption. A missing/failed summary never blocks or
-  // alters the booking response — it's a best-effort staff aid, logged
-  // (not yet persisted — no `Lead.aiSummary`-shaped column exists; adding
-  // one is a real, separate schema change not authorized in this pass,
-  // same "don't touch DB without a green light" caution this project
-  // follows elsewhere) rather than surfaced anywhere patient-facing.
-  const aiSummary = await generateLeadSummary({
-    serviceId,
-    triageAnswers,
-    ageRange: leadInfo.ageRange,
-    preferredContactMethod: leadInfo.preferredContactMethod,
-    leadStatus: status,
-    preferredDay,
-    preferredTimeRange,
-    locale,
-    sessionVerified: verified,
-  });
+  // Best-effort staff aid, logged (not yet persisted — no `Lead.aiSummary`-
+  // shaped column exists; adding one is a real, separate schema change not
+  // authorized in this pass) rather than surfaced anywhere patient-facing.
+  // See AI_USAGE_NOTES.md for exactly what is/isn't sent to the AI Gateway.
   if (aiSummary) {
     console.log("[booking-request:ai-summary]", { leadId, ...aiSummary });
   }

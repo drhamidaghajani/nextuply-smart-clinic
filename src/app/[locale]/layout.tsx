@@ -2,15 +2,14 @@ import type { Metadata } from "next";
 import { Inter, Vazirmatn } from "next/font/google";
 import localFont from "next/font/local";
 import { notFound } from "next/navigation";
-import { SiteFooter } from "@/components/sections/site-footer";
-import { SiteHeader } from "@/components/site-header";
+import { SiteChrome } from "@/components/site-chrome";
 import { getDictionary } from "@/i18n/get-dictionary";
 import {
   LOCALE_DIRECTION,
   SUPPORTED_LOCALES,
   isSupportedLocale,
 } from "@/i18n/locales";
-import { AssistantDrawer, AssistantProvider, FloatingAssistantTrigger } from "@/modules/smart-clinic-assistant";
+import { AssistantProvider } from "@/modules/smart-clinic-assistant";
 import "../globals.css";
 
 // Headings only, per DESIGN_SYSTEM.md §3 (2026-07-02 font pairing decision).
@@ -86,13 +85,19 @@ export default async function LocaleLayout({
             now takes `locale` too — `AssistantDrawer` (mounted below,
             inside the provider) reads it via `useAssistant()` to select
             its own dictionary, so the whole assistant flow is
-            locale-aware, not just the homepage body. */}
+            locale-aware, not just the homepage body.
+
+            Round 2026-07-24 (Internal Operations Lite, Part A — crash fix):
+            `SiteHeader`/`SiteFooter`/`FloatingAssistantTrigger`/
+            `AssistantDrawer` moved into `SiteChrome`, which renders NONE of
+            them on `/{locale}/internal/*` — see that component's own
+            doc-comment for why. `AssistantProvider` itself still wraps
+            everything (cheap — just a context provider, no DOM), so
+            nothing on the public side changes. */}
         <AssistantProvider locale={locale}>
-          <SiteHeader dict={dict.header} locale={locale} />
-          {children}
-          <SiteFooter dict={dict.footer} locale={locale} />
-          <FloatingAssistantTrigger />
-          <AssistantDrawer />
+          <SiteChrome headerDict={dict.header} footerDict={dict.footer} locale={locale}>
+            {children}
+          </SiteChrome>
         </AssistantProvider>
       </body>
     </html>

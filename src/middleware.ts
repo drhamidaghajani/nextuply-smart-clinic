@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 
-import { INTERNAL_ADMIN_COOKIE, INTERNAL_ADMIN_COOKIE_MAX_AGE_SECONDS } from "@/core/internal-auth-cookie";
+import { INTERNAL_ADMIN_COOKIE, INTERNAL_ADMIN_COOKIE_MAX_AGE_SECONDS, INTERNAL_USER_SESSION_COOKIE } from "@/core/internal-auth-cookie";
 
 /**
  * Locale routing scaffold — see docs/adr/0002-fa-first-locale-scope.md and
@@ -90,7 +90,20 @@ function guardInternalRoute(request: NextRequest): NextResponse | null {
   }
 
   const cookieToken = request.cookies.get(INTERNAL_ADMIN_COOKIE)?.value;
-  if (cookieToken === requiredToken) {
+  // Round 2026-07-24 (Internal Operations Lite, Part B) — a real
+  // `InternalUser` login sets a DIFFERENT cookie (`INTERNAL_USER_SESSION_COOKIE`,
+  // an opaque `InternalUserSession` id, not a value this Edge-runtime
+  // guard can compare against anything meaningful). This layer only
+  // checks that the cookie is PRESENT — a deliberate, documented two-tier
+  // trade-off, not an oversight: Edge middleware here has no Postgres
+  // access to actually verify the session (no driver adapter added for
+  // this "lite" pass). The REAL check — does this session exist, is it
+  // unexpired, is the user still active — happens server-side on every
+  // page via `internal-auth.ts`'s `requireInternalActor`, which redirects
+  // to login itself if a stale/expired cookie slipped through here.
+  const hasUserSessionCookie = Boolean(request.cookies.get(INTERNAL_USER_SESSION_COOKIE)?.value);
+
+  if (cookieToken === requiredToken || hasUserSessionCookie) {
     // Already authenticated — send them forward instead of re-showing the login form.
     if (isLoginRoute) {
       const dashboardUrl = request.nextUrl.clone();

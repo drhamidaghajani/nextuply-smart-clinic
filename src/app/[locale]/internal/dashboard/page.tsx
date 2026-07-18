@@ -8,8 +8,10 @@ import { formatDateTimeForLocale } from "@/i18n/format-jalali-date";
 import { fa } from "@/i18n/dictionaries/fa";
 import { isSupportedLocale } from "@/i18n/locales";
 import { APPOINTMENT_STATUS_LABELS, LEAD_STATUS_LABELS } from "@/modules/smart-clinic-assistant/admin/status-labels";
+import { listRecentUrgentHandoffs } from "@/modules/smart-clinic-assistant/server/ai/conversation-repository";
 import { getWeeklyAvailabilityOverview } from "@/modules/smart-clinic-assistant/server/availability-scheduler";
 import { countPendingPaymentDrafts, listBookingRequestsForAdmin, listLeadsForAdmin } from "@/modules/smart-clinic-assistant/server/lead-repository";
+import { requireInternalActor } from "@/modules/internal-ops/server/internal-auth";
 
 /** Staff-only tooling — must never be indexed. */
 export const metadata: Metadata = { robots: { index: false, follow: false } };
@@ -33,21 +35,24 @@ const WEEKDAY_LABELS = SHARED_WEEKDAY_LABELS.fa;
 export default async function InternalDashboardPage({ params }: { params: Promise<{ locale: string }> }) {
   const { locale } = await params;
   if (!isSupportedLocale(locale)) notFound();
+  const actor = await requireInternalActor(locale);
 
   const dbConfigured = isDatabaseConfigured();
   let bookings: Awaited<ReturnType<typeof listBookingRequestsForAdmin>> = [];
   let leads: Awaited<ReturnType<typeof listLeadsForAdmin>> = [];
   let overview: Awaited<ReturnType<typeof getWeeklyAvailabilityOverview>> = [];
   let pendingPayments = 0;
+  let urgentHandoffs: Awaited<ReturnType<typeof listRecentUrgentHandoffs>> = [];
   let loadError: string | null = null;
 
   if (dbConfigured) {
     try {
-      [bookings, leads, overview, pendingPayments] = await Promise.all([
+      [bookings, leads, overview, pendingPayments, urgentHandoffs] = await Promise.all([
         listBookingRequestsForAdmin(),
         listLeadsForAdmin(),
         getWeeklyAvailabilityOverview(),
         countPendingPaymentDrafts(),
+        listRecentUrgentHandoffs(),
       ]);
     } catch (error) {
       console.error("[internal-dashboard:load-failed]", error);
@@ -83,7 +88,7 @@ export default async function InternalDashboardPage({ params }: { params: Promis
   return (
     <main dir="rtl" className="min-h-dvh bg-warm-white">
       <div className="pt-[68px] lg:pt-[88px]">
-        <InternalNav locale={locale} active="dashboard" />
+        <InternalNav locale={locale} active="dashboard" actor={actor} />
       </div>
 
       <div className="mx-auto max-w-6xl px-6 py-10 sm:px-8">
@@ -99,6 +104,30 @@ export default async function InternalDashboardPage({ params }: { params: Promis
           </div>
         )}
         {loadError && <div className="mt-6 rounded-lg border border-red-300 bg-red-50 px-4 py-3 text-sm text-red-700">{loadError}</div>}
+
+        {/* Round 2026-07-24 (Internal Operations Lite, Part E) — urgent requests surfaced FIRST, above every other panel, per "urgent requests highlighted." Reuses the existing handoff system-message log — see `listRecentUrgentHandoffs`'s doc-comment. */}
+        {dbConfigured && !loadError && urgentHandoffs.length > 0 && (
+          <div className="mt-6 rounded-xl border border-red-300 bg-red-50 p-5">
+            <h2 className="flex items-center gap-1.5 text-sm font-semibold text-red-800">⚑ درخواست‌های فوری اخیر</h2>
+            <ul className="mt-3 flex flex-col gap-2.5">
+              {urgentHandoffs.map((handoff) => (
+                <li key={handoff.id} className="flex flex-wrap items-center justify-between gap-2 border-b border-red-200/60 pb-2.5 text-xs last:border-0 last:pb-0">
+                  <div>
+                    <p className="font-medium text-red-900">{handoff.session.fullName ?? "بیمار ناشناس"}</p>
+                    <p className="mt-0.5 text-red-700/80" dir="ltr">
+                      {handoff.session.mobile || "—"}
+                    </p>
+                    <p className="mt-0.5 text-red-700/70">{handoff.content.replace(/^handoff:\s*/, "")}</p>
+                  </div>
+                  <span className="whitespace-nowrap text-[11px] text-red-600/60">{formatDateTimeForLocale(handoff.createdAt, locale)}</span>
+                </li>
+              ))}
+            </ul>
+            <a href={`/${locale}/internal/assistant-leads`} className="mt-3 inline-block text-xs font-medium text-red-800 underline decoration-dotted underline-offset-2 hover:text-red-900">
+              مشاهده در لیدها
+            </a>
+          </div>
+        )}
 
         {dbConfigured && !loadError && activeSlots.length === 0 && (
           <div className="mt-6 rounded-lg border border-gold/30 bg-gold/10 px-4 py-3 text-sm text-charcoal/80">

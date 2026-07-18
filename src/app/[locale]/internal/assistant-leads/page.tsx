@@ -14,6 +14,7 @@ import {
   PAYMENT_STATUS_LABELS,
 } from "@/modules/smart-clinic-assistant/admin/status-labels";
 import { listLeadsForAdmin } from "@/modules/smart-clinic-assistant/server/lead-repository";
+import { requireInternalActor } from "@/modules/internal-ops/server/internal-auth";
 
 /** Staff-only tooling — must never be indexed, even though the middleware token gate + robots.ts's Disallow already keep it out of normal crawling. */
 export const metadata: Metadata = { robots: { index: false, follow: false } };
@@ -59,6 +60,7 @@ export default async function AssistantLeadsAdminPage({ params }: { params: Prom
   if (!isSupportedLocale(locale)) {
     notFound();
   }
+  const actor = await requireInternalActor(locale);
 
   const dbConfigured = isDatabaseConfigured();
   let leads: Awaited<ReturnType<typeof listLeadsForAdmin>> = [];
@@ -76,7 +78,7 @@ export default async function AssistantLeadsAdminPage({ params }: { params: Prom
   return (
     <main dir="rtl" className="min-h-dvh bg-warm-white text-charcoal">
       <div className="pt-[68px] lg:pt-[88px]">
-        <InternalNav locale={locale} active="assistant-leads" />
+        <InternalNav locale={locale} active="assistant-leads" actor={actor} />
       </div>
       <div className="mx-auto max-w-6xl px-6 py-10 sm:px-8">
         <h1 className="text-xl font-bold text-deep-navy">سرنخ‌های دستیار هوشمند کلینیک (داخلی)</h1>

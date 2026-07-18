@@ -1,0 +1,256 @@
+{
+  "name": "Sadighi Clinic — Notifications",
+  "nodes": [
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "sadighi-clinic-notifications",
+        "authentication": "headerAuth",
+        "responseMode": "onReceived",
+        "responseData": "{\"ok\":true}",
+        "options": {}
+      },
+      "id": "webhook-trigger",
+      "name": "Webhook",
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2,
+      "position": [-40, 300],
+      "webhookId": "sadighi-clinic-notifications",
+      "credentials": {
+        "httpHeaderAuth": {
+          "id": "REPLACE_WITH_CREDENTIAL_ID",
+          "name": "N8N_WEBHOOK_TOKEN (Authorization: Bearer)"
+        }
+      },
+      "notes": "Set the app's N8N_WEBHOOK_URL to this node's Production URL. Create a 'Header Auth' credential named to match, with Name=Authorization and Value=Bearer <N8N_WEBHOOK_TOKEN> — never hardcode the token in this workflow JSON, only in the n8n credential store."
+    },
+    {
+      "parameters": {
+        "dataType": "string",
+        "value1": "={{$json.body.event}}",
+        "rules": {
+          "rules": [
+            { "value2": "booking.requested", "output": 0 },
+            { "value2": "urgent.requested", "output": 1 },
+            { "value2": "appointment.status_changed", "output": 2 }
+          ]
+        },
+        "fallbackOutput": 3
+      },
+      "id": "switch-event",
+      "name": "Switch: event",
+      "type": "n8n-nodes-base.switch",
+      "typeVersion": 1,
+      "position": [220, 300]
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "booking-text",
+              "name": "text",
+              "type": "string",
+              "value": "=درخواست جدید مشاوره ثبت شد.\nخدمت: {{$json.body.serviceLabel || \"—\"}}\nنام: {{$json.body.fullName}}\nموبایل: {{$json.body.mobile}}\nزمان: {{$json.body.selectedTimeLabel || \"هماهنگی با تماس\"}}\nداشبورد: {{$env.INTERNAL_DASHBOARD_BASE_URL}}{{$json.body.dashboardUrl}}"
+            },
+            { "id": "booking-to", "name": "to", "type": "string", "value": "={{$env.SECRETARY_NOTIFY_MOBILE}}" }
+          ]
+        },
+        "options": {}
+      },
+      "id": "build-booking-message",
+      "name": "Build booking SMS text",
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [500, 80]
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "urgent-text",
+              "name": "text",
+              "type": "string",
+              "value": "=درخواست فوری در دستیار کلینیک ثبت شد.\nموضوع: {{$json.body.urgentReason || $json.body.activeTopic}}\nنام: {{$json.body.fullName || \"—\"}}\nموبایل: {{$json.body.mobile}}\nلطفاً سریع داشبورد را بررسی کنید.\n{{$env.INTERNAL_DASHBOARD_BASE_URL}}{{$json.body.dashboardUrl}}"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "build-urgent-message",
+      "name": "Build urgent SMS text",
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [500, 300]
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "status-text",
+              "name": "text",
+              "type": "string",
+              "value": "=وضعیت نوبت تغییر کرد.\nنام: {{$json.body.fullName || \"—\"}}\nوضعیت جدید: {{$json.body.newStatus}}\nداشبورد: {{$env.INTERNAL_DASHBOARD_BASE_URL}}{{$json.body.dashboardUrl}}"
+            },
+            { "id": "status-to", "name": "to", "type": "string", "value": "={{$env.SECRETARY_NOTIFY_MOBILE}}" }
+          ]
+        },
+        "options": {}
+      },
+      "id": "build-status-message",
+      "name": "Build status SMS text",
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [500, 520],
+      "disabled": true,
+      "notes": "Optional per the spec ('appointment.status_changed: Optional internal SMS') — disabled by default. Enable this node + the HTTP Request node after it if you want a text on every status change; that can get noisy for a small clinic."
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://rest.payamak-panel.com/api/SendSMS/SendSMS",
+        "sendBody": true,
+        "contentType": "form-urlencoded",
+        "bodyParameters": {
+          "parameters": [
+            { "name": "username", "value": "={{$env.MELIPAYAMAK_USERNAME}}" },
+            { "name": "password", "value": "={{$env.MELIPAYAMAK_API_KEY}}" },
+            { "name": "to", "value": "={{$json.to}}" },
+            { "name": "from", "value": "={{$env.MELIPAYAMAK_SENDER_NUMBER}}" },
+            { "name": "text", "value": "={{$json.text}}" },
+            { "name": "isflash", "value": "false" }
+          ]
+        },
+        "options": { "timeout": 8000 }
+      },
+      "id": "send-booking-sms",
+      "name": "Melipayamak: send booking SMS",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [760, 80],
+      "notes": "Free-text SendSMS endpoint (distinct from the app's own pattern-based OTP endpoint) — verify the exact field names/response shape against your live Melipayamak panel/docs before relying on this in production; not independently re-verified in this repo. MELIPAYAMAK_SENDER_NUMBER is your approved line number."
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://rest.payamak-panel.com/api/SendSMS/SendSMS",
+        "sendBody": true,
+        "contentType": "form-urlencoded",
+        "bodyParameters": {
+          "parameters": [
+            { "name": "username", "value": "={{$env.MELIPAYAMAK_USERNAME}}" },
+            { "name": "password", "value": "={{$env.MELIPAYAMAK_API_KEY}}" },
+            { "name": "to", "value": "={{$env.SECRETARY_NOTIFY_MOBILE}}" },
+            { "name": "from", "value": "={{$env.MELIPAYAMAK_SENDER_NUMBER}}" },
+            { "name": "text", "value": "={{$json.text}}" },
+            { "name": "isflash", "value": "true" }
+          ]
+        },
+        "options": { "timeout": 8000 }
+      },
+      "id": "send-urgent-sms-secretary",
+      "name": "Melipayamak: send urgent SMS (secretary)",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [760, 220],
+      "notes": "isflash=true requests a flash SMS where the provider/handset supports it — a reasonable 'higher-priority' signal; drop it if your Melipayamak line doesn't support flash."
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://rest.payamak-panel.com/api/SendSMS/SendSMS",
+        "sendBody": true,
+        "contentType": "form-urlencoded",
+        "bodyParameters": {
+          "parameters": [
+            { "name": "username", "value": "={{$env.MELIPAYAMAK_USERNAME}}" },
+            { "name": "password", "value": "={{$env.MELIPAYAMAK_API_KEY}}" },
+            { "name": "to", "value": "={{$env.OWNER_NOTIFY_MOBILE}}" },
+            { "name": "from", "value": "={{$env.MELIPAYAMAK_SENDER_NUMBER}}" },
+            { "name": "text", "value": "={{$json.text}}" },
+            { "name": "isflash", "value": "true" }
+          ]
+        },
+        "options": { "timeout": 8000 }
+      },
+      "id": "send-urgent-sms-owner",
+      "name": "Melipayamak: send urgent SMS (owner)",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [760, 380],
+      "notes": "Urgent requests notify BOTH the secretary and the owner — a genuinely urgent/safety case (e.g. a broken-nose trauma request) is deliberately over-notified rather than risk being missed."
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://rest.payamak-panel.com/api/SendSMS/SendSMS",
+        "sendBody": true,
+        "contentType": "form-urlencoded",
+        "bodyParameters": {
+          "parameters": [
+            { "name": "username", "value": "={{$env.MELIPAYAMAK_USERNAME}}" },
+            { "name": "password", "value": "={{$env.MELIPAYAMAK_API_KEY}}" },
+            { "name": "to", "value": "={{$json.to}}" },
+            { "name": "from", "value": "={{$env.MELIPAYAMAK_SENDER_NUMBER}}" },
+            { "name": "text", "value": "={{$json.text}}" },
+            { "name": "isflash", "value": "false" }
+          ]
+        },
+        "options": { "timeout": 8000 }
+      },
+      "id": "send-status-sms",
+      "name": "Melipayamak: send status-change SMS",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [760, 520],
+      "disabled": true,
+      "notes": "Disabled by default, matching 'Build status SMS text' above — this is the optional branch."
+    },
+    {
+      "parameters": {},
+      "id": "unmatched-event",
+      "name": "Unmatched event (no-op)",
+      "type": "n8n-nodes-base.noOp",
+      "typeVersion": 1,
+      "position": [500, 700],
+      "notes": "Any event name this workflow doesn't recognize lands here and is simply dropped — the app is expected to only ever send the 3 documented event types (see docs/n8n/README.md)."
+    }
+  ],
+  "connections": {
+    "Webhook": {
+      "main": [[{ "node": "Switch: event", "type": "main", "index": 0 }]]
+    },
+    "Switch: event": {
+      "main": [
+        [{ "node": "Build booking SMS text", "type": "main", "index": 0 }],
+        [{ "node": "Build urgent SMS text", "type": "main", "index": 0 }],
+        [{ "node": "Build status SMS text", "type": "main", "index": 0 }],
+        [{ "node": "Unmatched event (no-op)", "type": "main", "index": 0 }]
+      ]
+    },
+    "Build booking SMS text": {
+      "main": [[{ "node": "Melipayamak: send booking SMS", "type": "main", "index": 0 }]]
+    },
+    "Build urgent SMS text": {
+      "main": [
+        [
+          { "node": "Melipayamak: send urgent SMS (secretary)", "type": "main", "index": 0 },
+          { "node": "Melipayamak: send urgent SMS (owner)", "type": "main", "index": 0 }
+        ]
+      ]
+    },
+    "Build status SMS text": {
+      "main": [[{ "node": "Melipayamak: send status-change SMS", "type": "main", "index": 0 }]]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "pinData": {},
+  "meta": {
+    "templateCredsSetupCompleted": false
+  }
+}

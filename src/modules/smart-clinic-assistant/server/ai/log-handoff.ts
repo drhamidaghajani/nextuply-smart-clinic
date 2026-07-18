@@ -1,5 +1,7 @@
 "use server";
 
+import { sendAutomationEvent } from "@/modules/clinic-operations/server/automation-webhook";
+
 import { createAssistantMessage } from "./conversation-repository";
 import { findAssistantSession, findOrCreateDevBypassAssistantSession } from "../otp/otp-repository";
 import { extractDevBypassMobile, isDevBypassToken, isValidDevBypassToken } from "../otp/session-guard";
@@ -23,8 +25,23 @@ import { extractDevBypassMobile, isDevBypassToken, isValidDevBypassToken } from 
  * first message of a session (no prior counted question) would leave
  * `AssistantSession.questionCount` at 0 and the internal transcript
  * summary hidden — see `conversation-transcript.tsx`'s doc-comment.
+ *
+ * Round 2026-07-24 (Internal Operations Lite, Part D) — `urgentDetails`
+ * (optional) additionally fires the `urgent.requested` automation event
+ * (fire-and-forget, no-ops if `N8N_WEBHOOK_URL` unset) once the session
+ * lookup above resolves — which is exactly the "identified/verified
+ * enough to contact" gate the brief asks for: no session, no `mobile`,
+ * no event, same as the system-message log two lines below. Kept as an
+ * extension of THIS function rather than a separate call site because
+ * both need the exact same session lookup — no reason to do it twice.
  */
-export async function logHandoffEvent(sessionToken: string | null, reason: string, locale: string, triggeringMessage?: string): Promise<void> {
+export async function logHandoffEvent(
+  sessionToken: string | null,
+  reason: string,
+  locale: string,
+  triggeringMessage?: string,
+  urgentDetails?: { activeService: string | null; activeTopic: string; userMessage: string; dashboardUrl: string }
+): Promise<void> {
   if (!sessionToken) return;
   try {
     const session = isDevBypassToken(sessionToken)
@@ -41,6 +58,22 @@ export async function logHandoffEvent(sessionToken: string | null, reason: strin
       await createAssistantMessage({ sessionId: session.id, role: "user", content: triggeringMessage });
     }
     await createAssistantMessage({ sessionId: session.id, role: "system", content: `handoff: ${reason}` });
+
+    if (urgentDetails) {
+      void sendAutomationEvent({
+        event: "urgent.requested",
+        clinicId: session.clinicId,
+        fullName: session.fullName,
+        mobile: session.mobile,
+        activeService: urgentDetails.activeService ?? session.serviceSlug,
+        activeTopic: urgentDetails.activeTopic,
+        urgency: true,
+        urgentReason: reason,
+        userMessage: urgentDetails.userMessage,
+        dashboardUrl: urgentDetails.dashboardUrl,
+        transcriptSummary: null,
+      });
+    }
   } catch (error) {
     console.error("[log-handoff] failed", error instanceof Error ? error.message : "unknown error");
   }

@@ -835,7 +835,18 @@ export function AssistantDrawer() {
   const finalizeUrgentCallRequest = (serviceId: ServiceId | null, topicLabel: string) => {
     if (serviceId) dispatch({ type: "SET_SERVICE", serviceId });
     pushEntry({ kind: "assistant", text: dict.aiConversation.urgent.callRequestConfirmed });
-    void logHandoffEvent(sessionToken, `درخواست تماس فوری کلینیک — ${topicLabel}`, locale);
+    // Round 2026-07-24 (Internal Operations Lite, Part D) — also fires
+    // `urgent.requested` here: this is the guaranteed-verified moment for a
+    // patient who wasn't yet identified when the urgent message first
+    // landed (the detection-time log call silently no-ops without a
+    // session). `userMessage` falls back to the topic label — the
+    // original free-text isn't threaded through the identify/OTP detour.
+    void logHandoffEvent(sessionToken, `درخواست تماس فوری کلینیک — ${topicLabel}`, locale, undefined, {
+      activeService: serviceId,
+      activeTopic: topicLabel,
+      userMessage: topicLabel,
+      dashboardUrl: `/${locale}/internal/assistant-leads`,
+    });
     setMode("decision");
   };
 
@@ -1147,7 +1158,15 @@ export function AssistantDrawer() {
       // Best-effort — silently no-ops if not yet verified (same limitation
       // every handoff log in this file already has, see `triggerHandoff`);
       // logged again in `finalizeUrgentCallRequest` once a session exists.
-      void logHandoffEvent(sessionToken, `درخواست فوری شناسایی شد — ${topicLabel}`, locale, trimmed);
+      // Round 2026-07-24 (Internal Operations Lite, Part D) — `urgentDetails`
+      // fires the `urgent.requested` n8n event too, gated on the exact same
+      // "session exists" check (verified/contactable) as the system-message log.
+      void logHandoffEvent(sessionToken, `درخواست فوری شناسایی شد — ${topicLabel}`, locale, trimmed, {
+        activeService: urgentServiceId,
+        activeTopic: topicLabel,
+        userMessage: trimmed,
+        dashboardUrl: `/${locale}/internal/assistant-leads`,
+      });
       setMode("decision");
       return;
     }

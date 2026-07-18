@@ -11,6 +11,7 @@ import {
 } from "@/modules/smart-clinic-assistant/server/admin-actions";
 import { getWeeklyAvailabilityOverview } from "@/modules/smart-clinic-assistant/server/availability-scheduler";
 import { listDoctorAvailabilitySlots } from "@/modules/smart-clinic-assistant/server/availability-repository";
+import { requireInternalActor } from "@/modules/internal-ops/server/internal-auth";
 
 /** Staff-only tooling — must never be indexed, even though the middleware token gate + robots.ts's Disallow already keep it out of normal crawling. */
 export const metadata: Metadata = { robots: { index: false, follow: false } };
@@ -46,6 +47,7 @@ const WEEKDAY_LABELS = SHARED_WEEKDAY_LABELS.fa;
 export default async function AvailabilityAdminPage({ params }: { params: Promise<{ locale: string }> }) {
   const { locale } = await params;
   if (!isSupportedLocale(locale)) notFound();
+  const actor = await requireInternalActor(locale);
 
   const dbConfigured = isDatabaseConfigured();
   let slots: Awaited<ReturnType<typeof listDoctorAvailabilitySlots>> = [];
@@ -70,7 +72,7 @@ export default async function AvailabilityAdminPage({ params }: { params: Promis
   return (
     <main dir="rtl" className="min-h-dvh bg-warm-white text-charcoal">
       <div className="pt-[68px] lg:pt-[88px]">
-        <InternalNav locale={locale} active="availability" />
+        <InternalNav locale={locale} active="availability" actor={actor} />
       </div>
       <div className="mx-auto max-w-6xl px-6 py-10 sm:px-8">
         <h1 className="text-xl font-bold text-deep-navy">مدیریت زمان‌های حضور پزشک (داخلی)</h1>

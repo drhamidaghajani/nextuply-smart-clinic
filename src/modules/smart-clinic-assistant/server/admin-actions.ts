@@ -5,8 +5,9 @@ import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 
 import { isDatabaseConfigured } from "@/infrastructure/db/client";
-import { INTERNAL_ADMIN_COOKIE, INTERNAL_ADMIN_COOKIE_MAX_AGE_SECONDS } from "@/core/internal-auth-cookie";
+import { INTERNAL_ADMIN_COOKIE, INTERNAL_ADMIN_COOKIE_MAX_AGE_SECONDS, INTERNAL_USER_SESSION_COOKIE } from "@/core/internal-auth-cookie";
 import { sendAutomationEvent } from "@/modules/clinic-operations/server/automation-webhook";
+import { deleteInternalUserSession } from "@/modules/internal-ops/server/internal-user-repository";
 
 import {
   createDoctorAvailabilitySlot,
@@ -54,9 +55,28 @@ export async function submitInternalLoginAction(locale: string, formData: FormDa
   redirect(`/${locale}/internal/dashboard`);
 }
 
+/**
+ * Round 2026-07-24 (Internal Operations Lite, Part B): now clears BOTH
+ * possible auth cookies, not just the bootstrap one — a real `InternalUser`
+ * login never left `INTERNAL_ADMIN_COOKIE` set in the first place, but
+ * logging out must be safe to call regardless of which path the current
+ * visitor authenticated through (`internal-nav.tsx`'s logout button is
+ * shared by both). Also best-effort deletes the DB session row so the
+ * SAME session id can't be replayed later even if the cookie were somehow
+ * captured — never blocks logout if that delete fails.
+ */
 export async function internalLogoutAction(locale: string): Promise<void> {
   const cookieStore = await cookies();
+  const sessionId = cookieStore.get(INTERNAL_USER_SESSION_COOKIE)?.value;
+  if (sessionId && isDatabaseConfigured()) {
+    try {
+      await deleteInternalUserSession(sessionId);
+    } catch (error) {
+      console.error("[internal-logout] session delete failed", error);
+    }
+  }
   cookieStore.delete(INTERNAL_ADMIN_COOKIE);
+  cookieStore.delete(INTERNAL_USER_SESSION_COOKIE);
   redirect(`/${locale}/internal/login`);
 }
 
@@ -169,13 +189,13 @@ export async function updateAppointmentStatusAction(locale: string, bookingReque
     // awaited so a slow/unreachable n8n instance can't delay this action.
     void sendAutomationEvent({
       event: "appointment.status_changed",
+      clinicId: before.clinicId,
       bookingRequestId,
       leadId: before.leadId,
+      fullName: before.lead?.fullName ?? null,
       oldStatus: before.appointmentStatus,
       newStatus: appointmentStatus,
-      appointmentDate: before.appointmentDate ? before.appointmentDate.toISOString().slice(0, 10) : null,
-      selectedSlotId: before.selectedSlotId,
-      updatedAt: new Date().toISOString(),
+      dashboardUrl: `/${locale}/internal/appointments#booking-${bookingRequestId}`,
     });
   }
 }

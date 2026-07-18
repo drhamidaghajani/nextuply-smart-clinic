@@ -36,6 +36,7 @@ model Clinic {
   assistantSessions       AssistantSession[]
   assistantMessages       AssistantMessage[]
   doctorAvailabilitySlots DoctorAvailabilitySlot[]
+  internalUsers           InternalUser[]
 }
 
 enum LeadStatus {
@@ -364,4 +365,62 @@ model DoctorAvailabilitySlot {
 
   @@index([clinicId])
   @@index([clinicId, isActive])
+}
+
+/// Round 2026-07-24 (Internal Operations Lite, per Hamid — "Internal Users
+/// Lite"): the first REAL staff-auth accounts this codebase has ever had.
+/// Deliberately two roles only, no permission matrix/RBAC engine — see
+/// `internal-auth.ts` for exactly what each role can reach. This sits
+/// ALONGSIDE the existing `INTERNAL_ADMIN_TOKEN` bearer-token gate
+/// (`src/middleware.ts`), not replacing it — that token remains a
+/// permanent break-glass "ورود اضطراری مدیرکل" path, per Hamid's explicit
+/// "do not remove until DB auth is fully working" (and even after, it
+/// stays as the emergency option he asked to keep).
+enum InternalUserRole {
+  OWNER
+  SECRETARY
+}
+
+model InternalUser {
+  id           String           @id @default(uuid())
+  clinicId     String
+  clinic       Clinic           @relation(fields: [clinicId], references: [id])
+  fullName     String
+  /// Always stored lowercase — normalized at the repository boundary
+  /// (`internal-user-repository.ts`), never relied on to already be
+  /// lowercase at the call site.
+  username     String           @unique
+  /// `scrypt` `salt:hash`, same format/algorithm as `OtpCode.codeHash` —
+  /// see `src/core/password-crypto.ts`. Never the plaintext password.
+  passwordHash String
+  role         InternalUserRole
+  isActive     Boolean          @default(true)
+  createdAt    DateTime         @default(now())
+  updatedAt    DateTime         @updatedAt
+  lastLoginAt  DateTime?
+
+  sessions InternalUserSession[]
+
+  @@index([clinicId])
+}
+
+/// One row per active login — the row's own `id` IS the opaque session
+/// token handed to the browser as an httpOnly cookie, same "no JWT/signing
+/// dependency" convention `AssistantSession` already established (see that
+/// model's doc-comment). `src/middleware.ts` (Edge runtime) only checks
+/// that this cookie is PRESENT before letting a request through to an
+/// `/internal/*` page — it cannot reach Postgres from Edge without adding
+/// a driver adapter this "lite" pass doesn't justify. The REAL check (does
+/// this session exist, is it unexpired, is the user still active) happens
+/// server-side, per-page, via `requireInternalActor()` — a documented,
+/// deliberate two-tier trade-off, not an oversight (see `internal-auth.ts`).
+model InternalUserSession {
+  id        String       @id @default(uuid())
+  userId    String
+  user      InternalUser @relation(fields: [userId], references: [id])
+  expiresAt DateTime
+  createdAt DateTime     @default(now())
+
+  @@index([userId])
+  @@index([expiresAt])
 }

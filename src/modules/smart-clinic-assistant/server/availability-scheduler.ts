@@ -1,6 +1,7 @@
 import { isDatabaseConfigured, prisma } from "@/infrastructure/db/client";
 import { getDefaultClinicId } from "@/core/tenancy/clinic";
 import { formatDateForLocale } from "@/i18n/format-jalali-date";
+import { formatPersianTimeRange } from "@/i18n/persian-format";
 import type { Locale } from "@/i18n/locales";
 import { WEEKDAY_LABELS } from "@/core/weekday-labels";
 
@@ -70,11 +71,26 @@ function toDateKey(date: Date): string {
   return date.toISOString().slice(0, 10);
 }
 
+/**
+ * Round 2026-07-26 (public-assistant Persian digit fix, per Hamid — bug:
+ * the Persian confirmation card showed "09:00–13:00" instead of "۰۹:۰۰ تا
+ * ۱۳:۰۰"): `startTime`/`endTime` are stored as plain `"HH:mm"` strings
+ * (see `DoctorAvailabilitySlot`'s own doc-comment) and were appended here
+ * RAW regardless of locale — `formatDateForLocale` above already
+ * Jalali/Persian-digit-formats the date portion, but nothing touched the
+ * time portion. `fa` now goes through `persian-format.ts`'s
+ * `formatPersianTimeRange` (Persian digits + "تا", not an en-dash) — the
+ * one centralized formatter for exactly this, reused here rather than
+ * re-implemented. `en`/`ar` are unchanged (still Western-digit `HH:mm`
+ * with an en-dash) — this fix is scoped to the reported Persian-UI bug,
+ * not a locale-formatting overhaul.
+ */
 function buildLabel(date: Date, startTime: string, endTime: string, locale: Locale): string {
   const weekdayLabel = WEEKDAY_LABELS[locale][date.getUTCDay()];
   const dateLabel = formatDateForLocale(date, locale);
   const separator = locale === "en" ? "," : "،";
-  return `${weekdayLabel} ${dateLabel}${separator} ${startTime}–${endTime}`;
+  const timeRange = locale === "fa" ? formatPersianTimeRange(startTime, endTime) : `${startTime}–${endTime}`;
+  return `${weekdayLabel} ${dateLabel}${separator} ${timeRange}`;
 }
 
 export async function getAvailableAppointmentOptions({

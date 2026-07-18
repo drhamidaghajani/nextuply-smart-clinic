@@ -6,6 +6,7 @@ import { useEffect, useRef, useState } from "react";
 
 import { getDictionary } from "@/i18n/get-dictionary";
 import { LOCALE_DIRECTION, type Locale } from "@/i18n/locales";
+import { formatPersianDigits } from "@/i18n/persian-format";
 
 import { ACTION_STEP_MAP } from "../application/action-step-map";
 import type { AssistantIntent, AssistantStep, LeadInfo, PaymentCurrency, ServiceId, TriageAnswer } from "../application/types";
@@ -457,6 +458,9 @@ export function AssistantDrawer() {
 
   const mainActionLabel = (id: string) => dict.mainActions.find((action) => action.id === id)?.label ?? id;
 
+  /** Round 2026-07-26 (public-assistant Persian digit fix) — the mobile number echoed back in a "✓ نام · موبایل" recap line, Persian-digit only for `fa` (matches `phone-verification-step.tsx`'s own `toLocaleDigits` convention; `en`/`ar` keep Western digits). */
+  const localizedMobile = (mobile: string) => (locale === "fa" ? formatPersianDigits(mobile) : mobile);
+
   const scrollToSection = (id: string) => {
     document.getElementById(id)?.scrollIntoView({ behavior: "smooth" });
   };
@@ -548,7 +552,7 @@ export function AssistantDrawer() {
 
   const handleIdentifySubmit = (values: { fullName: string; mobile: string }) => {
     dispatch({ type: "SET_LEAD_INFO", leadInfo: values });
-    pushEntry({ kind: "choice", text: `${values.fullName} · ${values.mobile}` });
+    pushEntry({ kind: "choice", text: `${values.fullName} · ${localizedMobile(values.mobile)}` });
     // Round 2026-07-23 (Urgency & Safety Router) — an urgent call request
     // that needed identify+OTP first finalizes as THAT request, not a
     // normal AI-conversation entry.
@@ -1092,7 +1096,7 @@ export function AssistantDrawer() {
 
   const handleContactSubmit = (leadInfo: LeadInfo) => {
     dispatch({ type: "SET_LEAD_INFO", leadInfo });
-    pushEntry({ kind: "choice", text: `${leadInfo.fullName} · ${leadInfo.mobile}` });
+    pushEntry({ kind: "choice", text: `${leadInfo.fullName} · ${localizedMobile(leadInfo.mobile)}` });
     setStep("payment_preparation");
   };
 

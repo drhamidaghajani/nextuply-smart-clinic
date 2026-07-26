@@ -29,7 +29,7 @@ export default async function ServicesIndexPage({ params }: { params: Promise<{ 
       <EditorialIntro>{dict.subheading}</EditorialIntro>
 
       <section data-header-bg="#faf7f1" className="bg-warm-white px-6 pb-16 sm:px-8 sm:pb-24">
-        <ServiceIndexList items={SERVICES} locale={locale} viewDetailsLabel={dict.viewDetailsCta} />
+        <ServiceIndexList items={SERVICES} locale={locale} viewDetailsLabel={dict.viewDetailsCta} includedItemsLabel={dict.includedItemsLabel} />
 
         <div className="mx-auto mt-16 flex max-w-4xl flex-col items-center gap-6 text-center">
           <DisclaimerBanner text={dict.disclaimer} />

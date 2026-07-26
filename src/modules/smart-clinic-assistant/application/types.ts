@@ -75,6 +75,12 @@ export const SERVICE_IDS = [
   "facial-cosmetic-surgery",
   "orthognathic-surgery",
   "rhinoplasty",
+  // Round 2026-07-26 (doctor feedback, per Hamid): two new main services —
+  // kept in sync by hand with `SERVICE_TAXONOMY_IDS` in `content/services.ts`,
+  // same as the original six (see that file's own doc-comment on why
+  // there's one id scheme, not a generated one).
+  "facial-trauma-surgery",
+  "facial-reconstruction-surgery",
   "general_consultation",
 ] as const;
 export type ServiceId = (typeof SERVICE_IDS)[number];

@@ -17,10 +17,13 @@ export function ServiceIndexList({
   items,
   locale,
   viewDetailsLabel,
+  includedItemsLabel,
 }: {
   items: readonly ServiceTaxonomyItem[];
   locale: Locale;
   viewDetailsLabel: string;
+  /** Round 2026-07-26 (doctor feedback, per Hamid) — compact preview of `item.includedItems[locale]` shown under the subtitle. */
+  includedItemsLabel: string;
 }) {
   const arrow = LOCALE_DIRECTION[locale] === "rtl" ? "←" : "→";
 
@@ -71,6 +74,17 @@ export function ServiceIndexList({
 
               <div className={`relative flex-1 ${mirrored ? "md:text-end" : ""}`}>
                 <p className="max-w-md text-sm leading-7 text-charcoal/65 sm:text-base sm:leading-8">{item.subtitle[locale]}</p>
+
+                <div className={`mt-4 flex max-w-md flex-wrap items-center gap-1.5 ${mirrored ? "md:justify-end" : ""}`}>
+                  <span className="text-[10px] font-semibold uppercase tracking-wide text-charcoal/40 sm:text-xs">{includedItemsLabel}</span>
+                  {item.includedItems[locale].slice(0, 5).map((label) => (
+                    <span key={label} className="rounded-full border border-charcoal/10 px-2.5 py-1 text-xs text-charcoal/60 sm:text-sm">
+                      {label}
+                    </span>
+                  ))}
+                  {item.includedItems[locale].length > 5 ? <span className="text-xs text-charcoal/40 sm:text-sm">+{item.includedItems[locale].length - 5}</span> : null}
+                </div>
+
                 <span className={`mt-4 inline-flex items-center gap-2 text-sm font-medium text-charcoal/50 transition-colors duration-300 ease-out group-hover:text-gold ${mirrored ? "md:flex-row-reverse" : ""}`}>
                   {viewDetailsLabel} {arrow}
                 </span>

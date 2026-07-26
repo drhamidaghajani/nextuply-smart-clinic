@@ -95,6 +95,28 @@ export default async function ServiceDetailPage({ params }: { params: Promise<{ 
         visual={<ServiceVisualPanel photoSrc="/media/doctor-surgery.jpg" alt={dict.approachHeading} photoPosition="75% 25%" />}
       />
 
+      {/* Round 2026-07-26 (doctor feedback, per Hamid — "make the services
+          section clearer for normal users by showing what each main
+          service includes"): `includedItems` lives on the taxonomy item
+          (`content/services.ts`), not this page's own dictionary — see
+          that field's doc-comment for why. Purely descriptive, per
+          Hamid's explicit "sub-services should NOT have separate pages"
+          — no links, no routing. */}
+      {taxonomyItem ? (
+        <ContentSection eyebrow={service.eyebrow} heading={dict.includedItemsHeading} tone="cream" headerBg="#fcfbf4">
+          <div className="mx-auto grid max-w-3xl grid-cols-1 gap-x-10 sm:grid-cols-2">
+            {taxonomyItem.includedItems[locale].map((item, index) => (
+              <Reveal key={item} delay={index * 0.04}>
+                <div className="flex items-start gap-3 border-b border-charcoal/10 py-3.5">
+                  <span aria-hidden className="mt-2.5 h-1.5 w-1.5 shrink-0 rounded-full bg-gold" />
+                  <p className="text-sm leading-7 text-charcoal/75 sm:text-base">{item}</p>
+                </div>
+              </Reveal>
+            ))}
+          </div>
+        </ContentSection>
+      ) : null}
+
       <ContentSection eyebrow={service.eyebrow} heading={service.suitableForHeading} tone="warm-white" headerBg="#faf7f1">
         <div className="mx-auto max-w-2xl border-t border-charcoal/10">
           {service.suitableFor.map((item, index) => (

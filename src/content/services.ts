@@ -31,6 +31,14 @@ export const SERVICE_TAXONOMY_IDS = [
   "facial-cosmetic-surgery",
   "orthognathic-surgery",
   "rhinoplasty",
+  // Round 2026-07-26 (doctor feedback, per Hamid): two new main services,
+  // appended rather than reordered — every existing consumer that keys
+  // off array position or the original six ids (Case Gallery's hand-tuned
+  // `BOX_LAYOUT` masonry, About page grid, etc.) stays exactly as it was,
+  // these two just flow in as additional entries. See `includedItems`
+  // below for why that field exists.
+  "facial-trauma-surgery",
+  "facial-reconstruction-surgery",
 ] as const;
 
 export type ServiceTaxonomyId = (typeof SERVICE_TAXONOMY_IDS)[number];
@@ -50,6 +58,20 @@ export interface ServiceTaxonomyItem {
   homepageDescription: Record<Locale, string>;
   footerLabel: Record<Locale, string>;
   assistantLabel: Record<Locale, string>;
+  /**
+   * Round 2026-07-26 (doctor feedback, per Hamid — "make the services
+   * section clearer for normal users by showing what each main service
+   * includes"). Short sub-service/procedure labels shown as a compact
+   * preview on cards (homepage, `/services`) and as a full section on the
+   * service detail page. Lives here (not in `servicesPage.items`,
+   * fa.ts's per-locale detail-page dictionary) deliberately: the card
+   * grids that need it (`ServiceTile`, `ServiceIndexList`) only ever
+   * receive `ServiceTaxonomyItem`, never the detail-page dictionary — one
+   * lookup, not two data sources kept in sync by slug. Per Hamid's
+   * explicit instruction, these are NOT sub-service pages — no routing,
+   * no separate slugs, purely descriptive.
+   */
+  includedItems: Record<Locale, readonly string[]>;
 }
 
 export const SERVICES: readonly ServiceTaxonomyItem[] = [
@@ -77,6 +99,18 @@ export const SERVICES: readonly ServiceTaxonomyItem[] = [
     },
     footerLabel: { fa: "ایمپلنت دندانی پیشرفته", en: "Advanced Dental Implant", ar: "زراعة الأسنان المتقدمة" },
     assistantLabel: { fa: "ایمپلنت دندانی پیشرفته", en: "Advanced Dental Implant", ar: "زراعة الأسنان المتقدمة" },
+    includedItems: {
+      fa: ["ایمپلنت تک‌دندان", "ایمپلنت چند دندان", "ایمپلنت کامل فک", "بازسازی استخوان پیش از ایمپلنت", "سینوس لیفت", "بررسی CBCT و طرح درمان ایمپلنت"],
+      en: [
+        "Single-tooth implant",
+        "Multiple-tooth implant",
+        "Full-arch implant",
+        "Bone grafting before implant placement",
+        "Sinus lift",
+        "CBCT imaging and implant treatment planning",
+      ],
+      ar: ["زراعة سن واحد", "زراعة عدة أسنان", "زراعة الفك الكامل", "ترقيع العظم قبل الزراعة", "رفع الجيب الفكي", "فحص CBCT وتخطيط علاج الزراعة"],
+    },
   },
   {
     id: "impacted-tooth-surgery",
@@ -102,6 +136,32 @@ export const SERVICES: readonly ServiceTaxonomyItem[] = [
     },
     footerLabel: { fa: "جراحی دندان نهفته", en: "Impacted Tooth Surgery", ar: "جراحة الأسنان المطمورة" },
     assistantLabel: { fa: "جراحی دندان نهفته", en: "Impacted Tooth Surgery", ar: "جراحة الأسنان المطمورة" },
+    includedItems: {
+      fa: [
+        "جراحی دندان عقل نهفته",
+        "جراحی دندان نیمه‌نهفته",
+        "جراحی دندان نیش نهفته",
+        "خارج‌سازی دندان‌های نهفته نزدیک عصب",
+        "بررسی موقعیت دندان با عکس و CBCT",
+        "مدیریت درد، التهاب یا عفونت مرتبط با دندان نهفته",
+      ],
+      en: [
+        "Impacted wisdom tooth surgery",
+        "Partially impacted tooth surgery",
+        "Impacted canine tooth surgery",
+        "Removal of impacted teeth near the nerve",
+        "Tooth position assessment with imaging and CBCT",
+        "Managing pain, inflammation, or infection related to an impacted tooth",
+      ],
+      ar: [
+        "جراحة ضرس العقل المطمور",
+        "جراحة السن المطمور جزئياً",
+        "جراحة الناب المطمور",
+        "استخراج الأسنان المطمورة القريبة من العصب",
+        "تقييم موقع السن بالأشعة وCBCT",
+        "علاج الألم أو الالتهاب أو العدوى المرتبطة بالسن المطمور",
+      ],
+    },
   },
   {
     id: "facial-rejuvenation",
@@ -127,6 +187,29 @@ export const SERVICES: readonly ServiceTaxonomyItem[] = [
     },
     footerLabel: { fa: "جوان‌سازی صورت", en: "Facial Rejuvenation", ar: "تجديد شباب الوجه" },
     assistantLabel: { fa: "جوان‌سازی صورت", en: "Facial Rejuvenation", ar: "تجديد شباب الوجه" },
+    includedItems: {
+      fa: [
+        "جوان‌سازی اطراف چشم و ابرو",
+        "اصلاح افتادگی‌های خفیف تا متوسط صورت",
+        "بهبود خطوط و فرم کلی صورت",
+        "بررسی گزینه‌های جراحی یا غیرجراحی متناسب با فرد",
+        "برنامه‌ریزی درمان بر اساس سن، پوست و انتظار بیمار",
+      ],
+      en: [
+        "Rejuvenation around the eyes and brow",
+        "Correcting mild-to-moderate facial sagging",
+        "Improving facial lines and overall contour",
+        "Reviewing surgical and non-surgical options suited to the individual",
+        "Treatment planning based on age, skin, and patient expectations",
+      ],
+      ar: [
+        "تجديد شباب محيط العينين والحاجب",
+        "تصحيح ترهلات الوجه الخفيفة إلى المتوسطة",
+        "تحسين خطوط الوجه وشكله العام",
+        "مراجعة الخيارات الجراحية وغير الجراحية المناسبة للفرد",
+        "تخطيط العلاج بناءً على العمر والبشرة وتوقعات المريض",
+      ],
+    },
   },
   {
     id: "facial-cosmetic-surgery",
@@ -152,6 +235,31 @@ export const SERVICES: readonly ServiceTaxonomyItem[] = [
     },
     footerLabel: { fa: "جراحی‌های زیبایی صورت", en: "Facial Cosmetic Surgery", ar: "جراحات تجميل الوجه" },
     assistantLabel: { fa: "جراحی‌های زیبایی صورت", en: "Facial Cosmetic Surgery", ar: "جراحات تجميل الوجه" },
+    includedItems: {
+      fa: ["پروتز چانه", "پروتز گونه", "پروتز زاویه فک", "لیفت صورت", "لیفت ابرو", "بلفاروپلاستی", "اصلاح فرم چانه", "اصلاح کانتور صورت", "جراحی‌های تکمیلی زیبایی صورت"],
+      en: [
+        "Chin implant",
+        "Cheek implant",
+        "Jaw angle implant",
+        "Facelift",
+        "Brow lift",
+        "Blepharoplasty (eyelid surgery)",
+        "Chin reshaping",
+        "Facial contouring",
+        "Complementary facial cosmetic procedures",
+      ],
+      ar: [
+        "تطعيم الذقن",
+        "تطعيم الوجنتين",
+        "تطعيم زاوية الفك",
+        "شد الوجه",
+        "رفع الحاجب",
+        "جراحة الجفون",
+        "إعادة تشكيل الذقن",
+        "نحت ملامح الوجه",
+        "إجراءات تجميلية مكملة للوجه",
+      ],
+    },
   },
   {
     id: "orthognathic-surgery",
@@ -177,6 +285,38 @@ export const SERVICES: readonly ServiceTaxonomyItem[] = [
     },
     footerLabel: { fa: "جراحی فک و چانه", en: "Orthognathic Surgery", ar: "جراحة الفك والذقن" },
     assistantLabel: { fa: "جراحی فک و چانه", en: "Orthognathic Surgery", ar: "جراحة الفك والذقن" },
+    includedItems: {
+      fa: [
+        "جراحی فک بالا",
+        "جراحی فک پایین",
+        "جراحی هم‌زمان دو فک",
+        "جراحی چانه",
+        "اصلاح جلو یا عقب بودن فک",
+        "اصلاح انحراف فک",
+        "اصلاح مشکلات جویدن و بستن دندان‌ها",
+        "همکاری با ارتودنسی در طرح درمان فک",
+      ],
+      en: [
+        "Upper jaw (maxilla) surgery",
+        "Lower jaw (mandible) surgery",
+        "Combined two-jaw surgery",
+        "Chin surgery (genioplasty)",
+        "Correcting a protruding or receded jaw",
+        "Correcting jaw asymmetry",
+        "Correcting chewing and bite problems",
+        "Coordination with orthodontics on the jaw treatment plan",
+      ],
+      ar: [
+        "جراحة الفك العلوي",
+        "جراحة الفك السفلي",
+        "جراحة الفكين معاً",
+        "جراحة الذقن",
+        "تصحيح تقدم أو تراجع الفك",
+        "تصحيح انحراف الفك",
+        "تصحيح مشاكل المضغ وإطباق الأسنان",
+        "التنسيق مع التقويم في خطة علاج الفك",
+      ],
+    },
   },
   {
     id: "rhinoplasty",
@@ -202,6 +342,153 @@ export const SERVICES: readonly ServiceTaxonomyItem[] = [
     },
     footerLabel: { fa: "جراحی زیبایی بینی", en: "Rhinoplasty", ar: "تجميل الأنف" },
     assistantLabel: { fa: "جراحی زیبایی بینی", en: "Rhinoplasty", ar: "تجميل الأنف" },
+    includedItems: {
+      fa: [
+        "جراحی زیبایی بینی",
+        "اصلاح انحراف بینی",
+        "جراحی بینی پس از ضربه یا شکستگی",
+        "اصلاح مشکلات تنفسی مرتبط با ساختار بینی",
+        "ترمیم یا اصلاح نتایج جراحی قبلی",
+        "بررسی تناسب بینی با فرم کلی صورت",
+      ],
+      en: [
+        "Cosmetic rhinoplasty",
+        "Correcting a deviated nasal septum",
+        "Nasal surgery after trauma or fracture",
+        "Correcting breathing problems related to nasal structure",
+        "Revision of a previous rhinoplasty's results",
+        "Assessing nose-to-face proportion and harmony",
+      ],
+      ar: [
+        "تجميل الأنف",
+        "تصحيح انحراف الحاجز الأنفي",
+        "جراحة الأنف بعد الصدمة أو الكسر",
+        "تصحيح مشاكل التنفس المرتبطة بتركيب الأنف",
+        "تصحيح نتائج عملية تجميل أنف سابقة",
+        "تقييم تناسق الأنف مع شكل الوجه العام",
+      ],
+    },
+  },
+  {
+    id: "facial-trauma-surgery",
+    slug: "facial-trauma-surgery",
+    iconKey: "facial-trauma",
+    // Round 2026-07-26 — no real clinic photo exists yet for this new
+    // service; deliberately a `galleryCategory` with NO `REAL_PHOTOS`
+    // entry (see `gallery-photos.ts`) so every surface that reads a photo
+    // by this key (`ServiceVisualPanel`, `ServiceBeforeAfterBand`, the
+    // `/before-after` gallery filter) already falls back to its existing
+    // "no photo yet" treatment — an abstract navy-gradient placeholder
+    // panel, or simply excluded from the before/after gallery — the same
+    // safe path `facial-rejuvenation` used before its own photo existed.
+    // TEMPORARY pending a doctor-approved real photo for this specialty.
+    galleryCategory: "facial-trauma",
+    englishLabel: "FACIAL TRAUMA & FRACTURE SURGERY",
+    title: { fa: "جراحی تروما و شکستگی‌های صورت", en: "Facial Trauma & Fracture Surgery", ar: "جراحة إصابات وكسور الوجه" },
+    subtitle: {
+      fa: "درمان آسیب‌ها، شکستگی‌ها و زخم‌های صورت پس از ضربه، تصادف یا حوادث، با هدف حفظ عملکرد و بازگرداندن فرم طبیعی صورت.",
+      en: "Treating facial injuries, fractures, and wounds after impact, accidents, or trauma — aimed at preserving function and restoring the face's natural form.",
+      ar: "علاج إصابات الوجه والكسور والجروح الناتجة عن الصدمات أو الحوادث، بهدف الحفاظ على الوظيفة واستعادة الشكل الطبيعي للوجه.",
+    },
+    shortDescription: {
+      fa: "درمان آسیب‌ها، شکستگی‌ها و زخم‌های صورت پس از ضربه، تصادف یا حوادث، با هدف حفظ عملکرد و بازگرداندن فرم طبیعی صورت.",
+      en: "Treating facial injuries, fractures, and wounds after impact, accidents, or trauma — aimed at preserving function and restoring the face's natural form.",
+      ar: "علاج إصابات الوجه والكسور والجروح الناتجة عن الصدمات أو الحوادث، بهدف الحفاظ على الوظيفة واستعادة الشكل الطبيعي للوجه.",
+    },
+    homepageDescription: {
+      fa: "درمان آسیب‌ها، شکستگی‌ها و زخم‌های صورت پس از ضربه، تصادف یا حوادث، با هدف حفظ عملکرد و بازگرداندن فرم طبیعی صورت.",
+      en: "Treating facial injuries, fractures, and wounds after impact, accidents, or trauma — aimed at preserving function and restoring the face's natural form.",
+      ar: "علاج إصابات الوجه والكسور والجروح الناتجة عن الصدمات أو الحوادث، بهدف الحفاظ على الوظيفة واستعادة الشكل الطبيعي للوجه.",
+    },
+    footerLabel: { fa: "جراحی تروما و شکستگی‌های صورت", en: "Facial Trauma & Fracture Surgery", ar: "جراحة إصابات وكسور الوجه" },
+    assistantLabel: { fa: "جراحی تروما و شکستگی‌های صورت", en: "Facial Trauma & Fracture Surgery", ar: "جراحة إصابات وكسور الوجه" },
+    includedItems: {
+      fa: [
+        "شکستگی فک بالا",
+        "شکستگی فک پایین",
+        "شکستگی استخوان گونه",
+        "شکستگی کاسه چشم",
+        "شکستگی بینی در اثر ضربه",
+        "آسیب‌های دندانی ناشی از ضربه",
+        "پارگی و زخم‌های صورت و دهان",
+        "بررسی فوری آسیب‌های صورت پس از تصادف یا ضربه",
+      ],
+      en: [
+        "Upper jaw fracture",
+        "Lower jaw fracture",
+        "Cheekbone (zygomatic) fracture",
+        "Eye socket (orbital) fracture",
+        "Nasal fracture from impact",
+        "Dental injuries caused by trauma",
+        "Facial and oral lacerations and wounds",
+        "Urgent assessment of facial injuries after an accident or impact",
+      ],
+      ar: [
+        "كسر الفك العلوي",
+        "كسر الفك السفلي",
+        "كسر عظم الوجنة",
+        "كسر محجر العين",
+        "كسر الأنف نتيجة صدمة",
+        "إصابات الأسنان الناتجة عن صدمة",
+        "تمزقات وجروح الوجه والفم",
+        "تقييم عاجل لإصابات الوجه بعد حادث أو صدمة",
+      ],
+    },
+  },
+  {
+    id: "facial-reconstruction-surgery",
+    slug: "facial-reconstruction-surgery",
+    iconKey: "facial-reconstruction",
+    // Same "no real photo yet" situation/rationale as facial-trauma-surgery above.
+    galleryCategory: "facial-reconstruction",
+    englishLabel: "FACIAL RECONSTRUCTION SURGERY",
+    title: { fa: "جراحی بازسازی صورت", en: "Facial Reconstruction Surgery", ar: "جراحة إعادة بناء الوجه" },
+    subtitle: {
+      fa: "بازسازی فرم و عملکرد صورت پس از آسیب، بیماری، نقص استخوانی یا جراحی‌های قبلی، با برنامه‌ریزی دقیق و نگاه عملکردی و زیبایی.",
+      en: "Reconstructing facial form and function after injury, illness, bone defects, or previous surgery — with careful planning and both a functional and aesthetic perspective.",
+      ar: "إعادة بناء شكل ووظيفة الوجه بعد الإصابة أو المرض أو النقص العظمي أو الجراحات السابقة، من خلال تخطيط دقيق ونظرة وظيفية وجمالية معاً.",
+    },
+    shortDescription: {
+      fa: "بازسازی فرم و عملکرد صورت پس از آسیب، بیماری، نقص استخوانی یا جراحی‌های قبلی، با برنامه‌ریزی دقیق و نگاه عملکردی و زیبایی.",
+      en: "Reconstructing facial form and function after injury, illness, bone defects, or previous surgery — with careful planning and both a functional and aesthetic perspective.",
+      ar: "إعادة بناء شكل ووظيفة الوجه بعد الإصابة أو المرض أو النقص العظمي أو الجراحات السابقة، من خلال تخطيط دقيق ونظرة وظيفية وجمالية معاً.",
+    },
+    homepageDescription: {
+      fa: "بازسازی فرم و عملکرد صورت پس از آسیب، بیماری، نقص استخوانی یا جراحی‌های قبلی، با برنامه‌ریزی دقیق و نگاه عملکردی و زیبایی.",
+      en: "Reconstructing facial form and function after injury, illness, bone defects, or previous surgery — with careful planning and both a functional and aesthetic perspective.",
+      ar: "إعادة بناء شكل ووظيفة الوجه بعد الإصابة أو المرض أو النقص العظمي أو الجراحات السابقة، من خلال تخطيط دقيق ونظرة وظيفية وجمالية معاً.",
+    },
+    footerLabel: { fa: "جراحی بازسازی صورت", en: "Facial Reconstruction Surgery", ar: "جراحة إعادة بناء الوجه" },
+    assistantLabel: { fa: "جراحی بازسازی صورت", en: "Facial Reconstruction Surgery", ar: "جراحة إعادة بناء الوجه" },
+    includedItems: {
+      fa: [
+        "بازسازی فک پس از آسیب یا نقص استخوانی",
+        "بازسازی چانه و فرم پایین صورت",
+        "بازسازی استخوان‌های صورت پس از تروما",
+        "اصلاح بدشکلی‌های باقی‌مانده پس از شکستگی",
+        "بازسازی بافت نرم صورت در موارد منتخب",
+        "اصلاح اسکار یا تغییر شکل‌های پس از آسیب",
+        "برنامه‌ریزی بازسازی با عکس، CBCT یا مدل سه‌بعدی در صورت نیاز",
+      ],
+      en: [
+        "Jaw reconstruction after injury or a bone defect",
+        "Chin and lower-face reconstruction",
+        "Reconstruction of facial bones after trauma",
+        "Correcting residual deformity after a fracture",
+        "Facial soft-tissue reconstruction in selected cases",
+        "Correcting scars or shape changes after injury",
+        "Reconstruction planning with imaging, CBCT, or a 3D model when needed",
+      ],
+      ar: [
+        "إعادة بناء الفك بعد إصابة أو نقص عظمي",
+        "إعادة بناء الذقن وأسفل الوجه",
+        "إعادة بناء عظام الوجه بعد الصدمة",
+        "تصحيح التشوه المتبقي بعد الكسر",
+        "إعادة بناء الأنسجة الرخوة للوجه في حالات مختارة",
+        "تصحيح الندبات أو التغيرات الشكلية بعد الإصابة",
+        "تخطيط إعادة البناء بالتصوير أو CBCT أو نموذج ثلاثي الأبعاد عند الحاجة",
+      ],
+    },
   },
 ] as const;
 

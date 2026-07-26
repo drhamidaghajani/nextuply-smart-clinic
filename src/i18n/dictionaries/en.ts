@@ -443,6 +443,18 @@ export const assistantFlow = {
       "Have you had any previous facial cosmetic surgery?",
       "Do you have any underlying medical conditions or take any medication?",
     ],
+    // Round 2026-07-26 (doctor feedback) — TODO(content): draft, needs clinical sign-off.
+    "facial-trauma-surgery": [
+      "When did this injury or impact happen?",
+      "Do you have severe pain, swelling, or bleeding in the injured area?",
+      "Do you have imaging or a medical report from an emergency visit?",
+    ],
+    // Round 2026-07-26 (doctor feedback) — TODO(content): draft, needs clinical sign-off.
+    "facial-reconstruction-surgery": [
+      "What's causing the need for reconstruction? (injury, illness, or previous surgery)",
+      "Which area of the face needs reconstruction?",
+      "Do you have photos, a CBCT scan, or related medical records?",
+    ],
   },
   safetyNotice: "This information is used only for initial screening and consultation guidance. The final decision is made after the doctor's review.",
   // Round 2026-07-18 (conversation-first UX pass) — deterministic, service-tailored cost guidance (item 9).
@@ -473,6 +485,8 @@ export const assistantFlow = {
     "facial-cosmetic-surgery": "Facial Cosmetic Surgery",
     "orthognathic-surgery": "Jaw Surgery",
     rhinoplasty: "Rhinoplasty",
+    "facial-trauma-surgery": "Facial Trauma",
+    "facial-reconstruction-surgery": "Facial Reconstruction",
     general_consultation: "General Consultation",
   },
   // Round 2026-07-20 (production UX fix, item 3) — "what's the best approach for me" answers, distinct from cost guidance.
@@ -854,6 +868,8 @@ const servicesPage = {
   beforeAfterBandHeading: "See real results",
   beforeAfterBandNote: "Every patient's result depends on their own structure and circumstances; these images are for general awareness, not a prediction of your own outcome.",
   careGuideHeading: "Related Care Guide",
+  includedItemsLabel: "Includes:",
+  includedItemsHeading: "What this treatment includes",
   // Round 2026-07-13 (taxonomy correction): exactly the 6 canonical
   // services from `src/content/services.ts` — see fa.ts's matching
   // comment for the full rationale.
@@ -1029,6 +1045,71 @@ const servicesPage = {
         { question: "How long is recovery?", answer: "Exact recovery time depends on individual factors and is discussed in detail during consultation." },
         { question: "Is the result fully predictable?", answer: "Results depend on each patient's own nasal structure — the goal is harmony with the face, not a guaranteed outcome." },
         { question: "Can this also fix breathing problems?", answer: "In some cases, yes — this must be confirmed during an in-person examination." },
+      ],
+    },
+    // Round 2026-07-26 (doctor feedback) — TODO(content): draft, needs clinical sign-off, same convention as the newer entries above.
+    {
+      slug: "facial-trauma-surgery",
+      eyebrow: "Facial Trauma & Fractures",
+      title: "Facial Trauma & Fracture Surgery",
+      subtitle: "Treating facial injuries, fractures, and wounds after impact, accidents, or trauma — aimed at preserving function and restoring the face's natural form.",
+      overview:
+        "Facial trauma and fracture surgery addresses injuries caused by impact, accidents, or trauma — from fractures of the jaw, cheekbone, eye socket, or nose to soft-tissue wounds of the face — prioritizing preserved function first, then restoring natural form.",
+      suitableForHeading: "Who this is typically suitable for",
+      suitableFor: [
+        "Patients with a facial bone fracture (jaw, cheekbone, eye socket, or nose) after impact or an accident",
+        "Patients with a facial soft-tissue wound requiring urgent repair",
+        "Patients with dental injury from an impact requiring urgent assessment",
+      ],
+      consultationPathHeading: "Consultation path",
+      consultationPath: "For acute facial injuries, urgent assessment and imaging to determine the extent of the injury is a prerequisite for any treatment decision.",
+      processHeading: "Treatment journey",
+      process: [
+        { title: "Urgent assessment", body: "Quickly reviewing the patient's condition and the severity of the facial injury." },
+        { title: "Imaging", body: "Precisely determining the location and extent of the fracture or injury." },
+        { title: "Treatment or surgery", body: "Repairing the fracture or wound according to the extent of the injury." },
+        { title: "Aftercare & follow-up", body: "Support through recovery and reviewing facial function." },
+      ],
+      faqHeading: "Frequently asked questions",
+      faq: [
+        { question: "Should I act immediately if I have a facial fracture?", answer: "Yes — facial injuries should be assessed as soon as possible; reach out through the Smart Assistant or by contacting the clinic directly." },
+        {
+          question: "Do all facial fractures require surgery?",
+          answer: "No — depending on the type and extent of the fracture, some cases can be managed non-surgically; this is determined during examination.",
+        },
+        { question: "How long is recovery from this surgery?", answer: "This varies based on the type and extent of the injury and is explained in detail during consultation." },
+      ],
+    },
+    {
+      slug: "facial-reconstruction-surgery",
+      eyebrow: "Facial Reconstruction",
+      title: "Facial Reconstruction Surgery",
+      subtitle: "Reconstructing facial form and function after injury, illness, bone defects, or previous surgery — with careful planning and both a functional and aesthetic perspective.",
+      overview:
+        "Facial reconstruction surgery restores facial form and function after injury, illness, bone defects, or previous surgery — with careful planning and equal attention to function and aesthetics, not appearance alone.",
+      suitableForHeading: "Who this is typically suitable for",
+      suitableFor: [
+        "Patients with a facial bone or tissue defect caused by injury, illness, or previous surgery",
+        "Patients with residual deformity after a fracture or trauma",
+        "Patients who need both functional and aesthetic facial reconstruction",
+      ],
+      consultationPathHeading: "Consultation path",
+      consultationPath: "A reconstruction plan is determined only after a careful review of the face's current condition and, if needed, specialized imaging.",
+      processHeading: "Treatment journey",
+      process: [
+        { title: "Initial consultation", body: "Reviewing the cause and extent of the facial defect or deformity." },
+        { title: "Specialized assessment", body: "Reviewing imaging or a 3D model if needed." },
+        { title: "Reconstruction planning", body: "Designing a step-by-step reconstruction plan suited to the patient's condition." },
+        { title: "Surgery & follow-up", body: "Performing the surgery and supporting the patient through recovery." },
+      ],
+      faqHeading: "Frequently asked questions",
+      faq: [
+        {
+          question: "Is facial reconstruction purely aesthetic?",
+          answer: "No — in many cases the primary goal is restoring normal facial function, with an improved appearance following alongside it.",
+        },
+        { question: "Is this surgery done in a single stage?", answer: "Depending on the extent of reconstruction needed, it may be planned in one or several stages; this is determined during consultation." },
+        { question: "How soon after the initial injury should I proceed?", answer: "Timing depends on the type of injury and current condition — it's best to have it assessed in consultation as soon as possible." },
       ],
     },
   ],

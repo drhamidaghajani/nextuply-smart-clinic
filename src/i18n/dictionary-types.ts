@@ -564,6 +564,17 @@ export interface ServicesPageDictionary {
   beforeAfterBandNote: string;
   /** Round 2026-07-13 (patient-care hub) — links a service detail page to its related `/care-instructions/[slug]` guide(s). */
   careGuideHeading: string;
+  /**
+   * Round 2026-07-26 (doctor feedback, per Hamid) — shared labels for the
+   * `includedItems` preview added to `ServiceTaxonomyItem`
+   * (`content/services.ts`). `includedItemsLabel` is the compact "شامل:"
+   * chip-row label used on cards; `includedItemsHeading` is the fuller
+   * section heading used on the service detail page. One shared pair
+   * across every service, not per-service copy — same reasoning as
+   * `consultationStepsHeading` above.
+   */
+  includedItemsLabel: string;
+  includedItemsHeading: string;
 }
 
 export interface HealthTourismSubpage {

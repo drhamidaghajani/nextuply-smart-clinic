@@ -174,14 +174,32 @@ import { ServiceTile } from "./service-tile";
  * visuals/motion are untouched, only the outer `<div>` became a `<Link>`
  * with the exact same classes.
  */
+/**
+ * Round 2026-07-26 (doctor feedback, per Hamid — two new main services +
+ * an included-items preview on every card) — FLAGGED, not silently
+ * dropped: the round-2026-07-05 "whole section capped to exactly one
+ * viewport, `h-dvh`, no taller" rule (see the long history above) is no
+ * longer physically possible to honor. That rule was tuned for 6 plain
+ * icon+title+subtitle cards; this round adds 2 more cards AND a preview
+ * chip row to every card. `h-dvh` (exact) is now `min-h-dvh` (floor, not
+ * a cap) — the section still opens at a full viewport but grows with its
+ * content instead of clipping/overlapping it. Grid went from
+ * `sm:grid-cols-3` (uneven 3+3+2 for 8 items) to `sm:grid-cols-4` (even
+ * 4+4). If the one-viewport constraint matters more than the new
+ * content, that's a real tradeoff to revisit with Hamid, not something
+ * to silently re-impose here.
+ */
 export function FeaturedServicesSection({
   dict,
   items,
   locale,
+  includedItemsLabel,
 }: {
   dict: ServicesDictionary;
   items: readonly ServiceTaxonomyItem[];
   locale: Locale;
+  /** Round 2026-07-26 (doctor feedback) — see `ServiceTile`'s own doc-comment; opts this section's cards into the compact included-items preview. */
+  includedItemsLabel?: string;
 }) {
   const shouldReduceMotion = useReducedMotion();
 
@@ -197,7 +215,7 @@ export function FeaturedServicesSection({
       id="services"
       data-header-bg="#fcfbf4"
       dir={LOCALE_DIRECTION[locale]}
-      className="snap-section relative flex h-dvh flex-col justify-center overflow-hidden bg-cream px-4 py-4 sm:px-8 sm:py-6 lg:py-8"
+      className="snap-section relative flex min-h-dvh flex-col justify-center overflow-hidden bg-cream px-4 py-8 sm:px-8 sm:py-12 lg:py-16"
     >
       {/* Round 2026-07-18 (P0 mobile bug fix): `start-1/2` (logical) + a
           physical `-translate-x-1/2` don't cancel out under RTL — see
@@ -233,10 +251,10 @@ export function FeaturedServicesSection({
           </motion.p>
         </div>
 
-        <div className="mt-3 grid grid-cols-2 gap-2 sm:mt-6 sm:grid-cols-3 sm:gap-4 lg:mt-8 lg:gap-5">
+        <div className="mt-4 grid grid-cols-2 gap-2.5 sm:mt-8 sm:grid-cols-4 sm:gap-4 lg:mt-10 lg:gap-5">
           {items.map((item, index) => (
             <motion.div key={item.id} {...fadeUp(shouldReduceMotion ? 0 : 0.16 + index * 0.06)}>
-              <ServiceTile item={item} locale={locale} isFeatured={item.id === "orthognathic-surgery"} />
+              <ServiceTile item={item} locale={locale} isFeatured={item.id === "orthognathic-surgery"} includedItemsLabel={includedItemsLabel} />
             </motion.div>
           ))}
         </div>

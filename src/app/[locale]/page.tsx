@@ -59,7 +59,7 @@ export default async function HomePage({
     <main className="homepage-scroll-snap">
       <Hero dict={dict.hero} />
       <SmartClinicAssistantSection dict={dict.aiConcierge} locale={locale} />
-      <FeaturedServicesSection dict={dict.services} items={SERVICES} locale={locale} />
+      <FeaturedServicesSection dict={dict.services} items={SERVICES} locale={locale} includedItemsLabel={dict.servicesPage.includedItemsLabel} />
       <WhyDrSadighiSection dict={dict.doctorStory} locale={locale} />
       <CaseGallerySection dict={dict.caseGallery} items={SERVICES} locale={locale} />
       <PatientJourneySection dict={dict.patientJourney} locale={locale} />

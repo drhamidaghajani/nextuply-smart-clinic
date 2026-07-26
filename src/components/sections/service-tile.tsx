@@ -16,15 +16,34 @@ import type { Locale } from "@/i18n/locales";
  * output is unchanged (verified — same props, same classes, only the
  * `motion.div` stagger wrapper stays in that file).
  */
+/**
+ * Round 2026-07-26 (doctor feedback, per Hamid — "make the services
+ * section clearer for normal users by showing what each main service
+ * includes"). `includedItemsLabel`/`includedItemsPreviewCount` are
+ * optional and default to showing nothing — the About page's call site
+ * (`about/page.tsx`) doesn't pass them, so its grid renders byte-for-byte
+ * identical to before this round; only `FeaturedServicesSection`
+ * (homepage) opts in. Kept inside this shared tile rather than
+ * duplicated at each call site so the homepage and any future reuse stay
+ * pixel-consistent, same reasoning as this component's own original
+ * extraction.
+ */
 export function ServiceTile({
   item,
   locale,
   isFeatured = false,
+  includedItemsLabel,
+  includedItemsPreviewCount = 4,
 }: {
   item: ServiceTaxonomyItem;
   locale: Locale;
   isFeatured?: boolean;
+  includedItemsLabel?: string;
+  includedItemsPreviewCount?: number;
 }) {
+  const previewItems = includedItemsLabel ? item.includedItems[locale].slice(0, includedItemsPreviewCount) : [];
+  const remainingCount = includedItemsLabel ? item.includedItems[locale].length - previewItems.length : 0;
+
   return (
     <Link
       href={getServiceHref(locale, item.slug)}
@@ -58,6 +77,27 @@ export function ServiceTile({
       <p className="mt-2 line-clamp-2 text-[10px] leading-relaxed text-charcoal/60 transition-colors duration-[900ms] ease-in-out group-hover:text-warm-white/80 sm:mt-2.5 sm:text-xs lg:text-sm">
         {item.subtitle[locale]}
       </p>
+
+      {includedItemsLabel && previewItems.length > 0 ? (
+        <div className="mt-2 flex flex-wrap items-center justify-center gap-1 sm:mt-3 sm:gap-1.5">
+          <span className="text-[8px] font-semibold uppercase tracking-wide text-charcoal/35 transition-colors duration-[900ms] ease-in-out group-hover:text-warm-white/50 sm:text-[10px]">
+            {includedItemsLabel}
+          </span>
+          {previewItems.map((label) => (
+            <span
+              key={label}
+              className="rounded-full bg-charcoal/[0.05] px-1.5 py-0.5 text-[8px] leading-none text-charcoal/55 transition-colors duration-[900ms] ease-in-out group-hover:bg-warm-white/10 group-hover:text-warm-white/75 sm:px-2 sm:py-1 sm:text-[10px]"
+            >
+              {label}
+            </span>
+          ))}
+          {remainingCount > 0 ? (
+            <span className="text-[8px] text-charcoal/35 transition-colors duration-[900ms] ease-in-out group-hover:text-warm-white/50 sm:text-[10px]">
+              +{remainingCount}
+            </span>
+          ) : null}
+        </div>
+      ) : null}
     </Link>
   );
 }

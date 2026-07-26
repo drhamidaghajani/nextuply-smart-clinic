@@ -199,9 +199,16 @@ export function FeaturedServicesSection({
       dir={LOCALE_DIRECTION[locale]}
       className="snap-section relative flex h-dvh flex-col justify-center overflow-hidden bg-cream px-4 py-4 sm:px-8 sm:py-6 lg:py-8"
     >
+      {/* Round 2026-07-18 (P0 mobile bug fix): `start-1/2` (logical) + a
+          physical `-translate-x-1/2` don't cancel out under RTL — see
+          patient-journey-section.tsx's own comment for the full
+          explanation of this exact bug, first diagnosed there. This
+          section's `overflow-hidden` clipped the visible symptom, but the
+          element was still mispositioned; `left-1/2` is the correct fix
+          (centering is direction-symmetric, not a logical-property case). */}
       <div
         aria-hidden
-        className="pointer-events-none absolute -top-24 start-1/2 h-[420px] w-[420px] -translate-x-1/2 rounded-full bg-gold/10 blur-3xl"
+        className="pointer-events-none absolute -top-24 left-1/2 h-[420px] w-[420px] -translate-x-1/2 rounded-full bg-gold/10 blur-3xl"
       />
 
       <div className="relative mx-auto w-full max-w-6xl">

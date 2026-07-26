@@ -36,6 +36,31 @@ body {
   color: var(--color-charcoal);
 }
 
+/* Round 2026-07-18 (P0 mobile bug fix, per Hamid — Android showed a
+   horizontal shift + white strip on the side). The round 2026-07-12
+   incident below reverted a blanket `overflow-x: hidden` on html/body
+   because `hidden` (like `auto`/`scroll`) forces the browser to also
+   treat the paired axis as a scroll container, which broke
+   `position: sticky` for every descendant. `clip` doesn't have that
+   side effect — per the CSS Overflow spec it's exempted from the
+   axis-pairing rule the same way `visible` is, so it clips horizontal
+   overflow without turning html/body into a scroll container and
+   without breaking sticky. `hidden` is declared first purely as a
+   fallback for browsers that don't understand the `clip` keyword (it's
+   simply ignored there, leaving `hidden` in effect) — every current
+   Safari/Chrome/Firefox on iOS and Android supports `clip`. This is a
+   defense-in-depth backstop, not a substitute for fixing the actual
+   overflowing element — see featured-services-section.tsx and
+   certificate-gallery-section.tsx for the specific bug this round also
+   fixed at the source. */
+html,
+body {
+  width: 100%;
+  max-width: 100%;
+  overflow-x: hidden;
+  overflow-x: clip;
+}
+
 h1,
 h2,
 h3,
@@ -283,6 +308,27 @@ p {
    file's `@supports` guard on Hero's exit-fade, not a broken state). */
 html:has(.homepage-scroll-snap) {
   scroll-snap-type: y mandatory;
+}
+
+/* Round 2026-07-18 (P0 mobile bug fix, per Hamid — iPhone report: "only
+   shows the hero video, scrolling reveals nothing after it"). Root
+   cause: this snap chain grew from the "Hero and AiConcierge" scope
+   described in the comment above to 8 of the homepage's 11 sections,
+   each pinned to an exact `h-dvh`. `dvh` recalculates live as iOS
+   Safari's address bar/toolbar collapses or expands DURING a scroll
+   gesture; `mandatory` snap forces a hard lock onto a section boundary
+   computed from that same live-changing height. The two fighting each
+   other mid-gesture is a well-documented iOS Safari failure mode — the
+   engine locks onto a boundary that no longer matches any rendered
+   section, leaving the viewport showing blank space (or stuck on Hero)
+   until something forces a reflow. Desktop/tablet browsers don't have a
+   scroll-driven dynamic toolbar, so the snap experience Hamid asked for
+   stays intact there — this only turns it off below the breakpoint
+   where iOS Safari's dynamic toolbar actually exists. */
+@media (max-width: 767px) {
+  html:has(.homepage-scroll-snap) {
+    scroll-snap-type: none;
+  }
 }
 
 .snap-section {

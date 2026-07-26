@@ -128,7 +128,12 @@ export function CertificateGallerySection({ dict, locale }: { dict: AboutPageDic
               type="button"
               onClick={() => openAt(primary.id)}
               aria-label={primary.label[locale]}
-              className="absolute bottom-2 start-1/2 z-20 w-[46%] -translate-x-1/2 transition-transform duration-300 ease-out hover:-translate-y-1.5 sm:w-[190px] lg:w-[220px]"
+              // Round 2026-07-18 (P0 mobile bug fix): `start-1/2` + a
+              // physical `-translate-x-1/2` don't cancel out under RTL —
+              // see patient-journey-section.tsx's comment for the full
+              // explanation. `left-1/2` is the correct fix (centering is
+              // direction-symmetric).
+              className="absolute bottom-2 left-1/2 z-20 w-[46%] -translate-x-1/2 transition-transform duration-300 ease-out hover:-translate-y-1.5 sm:w-[190px] lg:w-[220px]"
             >
               <CertificateFrame item={primary} locale={locale} />
             </button>

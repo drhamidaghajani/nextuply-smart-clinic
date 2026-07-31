@@ -72,6 +72,18 @@ export interface ServiceTaxonomyItem {
    * no separate slugs, purely descriptive.
    */
   includedItems: Record<Locale, readonly string[]>;
+  /**
+   * Round 2026-07-31 (doctor feedback, per Hamid — orthognathic-surgery
+   * page pass): the detail page's "رویکرد درمانی" split section
+   * (`[slug]/page.tsx`) previously hardcoded the same `/media/
+   * doctor-surgery.jpg` OR photo for all 8 services. Optional so the
+   * other 7 services keep that shared default unchanged — only a
+   * service with a real, doctor-approved photo for this specific
+   * section sets it.
+   */
+  approachPhotoSrc?: string;
+  /** `object-position` for `approachPhotoSrc` — defaults to the shared block's own default ("75% 25%") when unset. */
+  approachPhotoPosition?: string;
 }
 
 export const SERVICES: readonly ServiceTaxonomyItem[] = [
@@ -285,6 +297,8 @@ export const SERVICES: readonly ServiceTaxonomyItem[] = [
     },
     footerLabel: { fa: "جراحی فک و چانه", en: "Orthognathic Surgery", ar: "جراحة الفك والذقن" },
     assistantLabel: { fa: "جراحی فک و چانه", en: "Orthognathic Surgery", ar: "جراحة الفك والذقن" },
+    approachPhotoSrc: "/media/services-orthognathic-surgery.jpeg",
+    approachPhotoPosition: "center 25%",
     includedItems: {
       fa: [
         "جراحی فک بالا",

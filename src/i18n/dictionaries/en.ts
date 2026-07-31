@@ -996,11 +996,16 @@ const servicesPage = {
       subtitle: "Functional and aesthetic correction of the jaw and chin",
       overview:
         "Orthognathic (jaw) surgery corrects misalignment between the upper and lower jaw, which can improve both chewing/breathing function and facial proportion. This is Dr. Sadighi's core specialization.",
+      // Round 2026-07-31 (doctor feedback) — translated from Hamid's exact
+      // given Persian list, replacing the previous 3-item draft.
       suitableForHeading: "Who this is typically suitable for",
       suitableFor: [
-        "Patients with chewing, speech, or breathing difficulty related to jaw misalignment",
-        "Patients with noticeable jaw or chin asymmetry",
-        "Patients already undergoing, or coordinating with, orthodontic treatment",
+        "Patients with a protruding lower jaw",
+        "Patients with a recessed lower jaw",
+        "Patients with a protruding or recessed upper jaw",
+        "Patients with a narrow (constricted) upper jaw",
+        "Snoring and sleep disturbances caused by a recessed jaw",
+        "Obstructive Sleep Apnea (OSA)",
       ],
       consultationPathHeading: "Consultation path",
       consultationPath: "This procedure requires specialized imaging assessment and often coordination with an orthodontist; a precise treatment plan is only set after that evaluation.",

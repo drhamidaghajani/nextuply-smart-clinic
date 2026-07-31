@@ -86,13 +86,24 @@ export default async function ServiceDetailPage({ params }: { params: Promise<{ 
         visual={<ServiceVisualPanel photoSrc="/media/doctor-headshot.png" alt={service.title} photoPosition="top" />}
       />
 
+      {/* Round 2026-07-31 (doctor feedback, per Hamid): the approach photo
+          is now per-service via `taxonomyItem.approachPhotoSrc`, falling
+          back to the shared `/media/doctor-surgery.jpg` for every service
+          that hasn't been given its own approved photo yet — see that
+          field's doc-comment in `content/services.ts`. */}
       <ServiceSplitStory
         eyebrow={dict.approachEyebrow}
         title={dict.approachHeading}
         body={dict.approachNote}
         tone="navy"
         reverse
-        visual={<ServiceVisualPanel photoSrc="/media/doctor-surgery.jpg" alt={dict.approachHeading} photoPosition="75% 25%" />}
+        visual={
+          <ServiceVisualPanel
+            photoSrc={taxonomyItem?.approachPhotoSrc ?? "/media/doctor-surgery.jpg"}
+            alt={dict.approachHeading}
+            photoPosition={taxonomyItem?.approachPhotoPosition ?? "75% 25%"}
+          />
+        }
       />
 
       {/* Round 2026-07-26 (doctor feedback, per Hamid — "make the services

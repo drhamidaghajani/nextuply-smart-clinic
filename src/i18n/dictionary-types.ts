@@ -559,8 +559,10 @@ export interface FacialCosmeticPageDictionary {
   proceduresEyebrow: string;
   proceduresHeading: string;
   proceduresLead: string;
-  /** Overview-card anchor button. */
+  /** Overview-card disclosure trigger, closed state. */
   cardCta: string;
+  /** Same trigger, open state — the card expands in place, so the control has to be able to say "close" too. */
+  cardCtaClose: string;
   suitableForLabel: string;
   goalsLabel: string;
   processLabel: string;

@@ -883,6 +883,7 @@ const servicesPage = {
     proceduresLead:
       "If you're dealing with a double chin, puffy eyelids, drooping brows or facial skin, cheeks and facial angles that lack definition, or overly full cheeks, this page lets you explore the different facial cosmetic surgery paths — select any one to read that procedure's own explanation and aftercare.",
     cardCta: "Read more",
+    cardCtaClose: "Hide details",
     suitableForLabel: "Who is this suitable for?",
     goalsLabel: "Goal / result of this procedure",
     processLabel: "How treatment generally works",

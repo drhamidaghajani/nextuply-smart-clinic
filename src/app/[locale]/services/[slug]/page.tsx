@@ -16,8 +16,21 @@ import { getBeforeAfterHref, getServiceById, SERVICE_TAXONOMY_IDS } from "@/cont
 import { getDictionary } from "@/i18n/get-dictionary";
 import { isSupportedLocale, LOCALE_DIRECTION, SUPPORTED_LOCALES } from "@/i18n/locales";
 
+/**
+ * Round 2026-08-17: `facial-cosmetic-surgery` is excluded — it now has
+ * its own static route (`services/facial-cosmetic-surgery/page.tsx`,
+ * see that file for why). A static segment already wins over `[slug]`
+ * in the App Router, so leaving it here wouldn't break routing, but it
+ * would make the build emit a second, permanently unreachable copy of
+ * the page for every locale. It stays in `SERVICE_TAXONOMY_IDS` — every
+ * card, footer link, and Assistant entry still points at the same URL.
+ */
+const OWN_ROUTE_SLUGS = new Set<string>(["facial-cosmetic-surgery"]);
+
 export function generateStaticParams() {
-  return SUPPORTED_LOCALES.flatMap((locale) => SERVICE_TAXONOMY_IDS.map((slug) => ({ locale, slug })));
+  return SUPPORTED_LOCALES.flatMap((locale) =>
+    SERVICE_TAXONOMY_IDS.filter((slug) => !OWN_ROUTE_SLUGS.has(slug)).map((slug) => ({ locale, slug })),
+  );
 }
 
 /**

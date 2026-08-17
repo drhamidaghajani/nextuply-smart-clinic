@@ -335,6 +335,19 @@ html:has(.homepage-scroll-snap) {
   scroll-snap-align: start;
 }
 
+/* Round 2026-08-17 (Dr. Sadighi's Facial Cosmetic Surgery page): smooth
+   scrolling for that page's same-page anchor navigation. Scoped via
+   `:has()` to pages that actually opt in — exactly the pattern
+   `html:has(.homepage-scroll-snap)` above already established — rather
+   than a blanket `html { scroll-behavior: smooth }`, which would change
+   every route's scroll feel sitewide (including the internal dashboard)
+   for the sake of one page. The reduced-motion block at the end of this
+   file already forces `scroll-behavior: auto !important`, so this
+   inherits that opt-out for free and needs no guard of its own. */
+html:has(.smooth-anchor-scroll) {
+  scroll-behavior: smooth;
+}
+
 /* Round 29 (2026-07-11): Hero fades out as it scrolls past/exits the
    viewport, per Hamid — a decorative touch on top of the scroll-snap
    transition above, not a replacement for it. Pure CSS scroll-driven

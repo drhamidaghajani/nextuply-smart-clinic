@@ -26,6 +26,7 @@ export function ServiceHero({
   iconKey,
   photoSrc,
   photoPosition,
+  photoFit = "contain",
   locale,
   breadcrumb,
   ctaPrimaryLabel,
@@ -38,6 +39,16 @@ export function ServiceHero({
   iconKey: string;
   photoSrc?: string;
   photoPosition?: string;
+  /**
+   * Round 2026-08-17: defaults to `"contain"`, which is what the round
+   * 2026-07-26 cropping fix set for every service hero — right for the
+   * gallery photos, whose aspect ratios vary and which include
+   * diagram-like medical images that must never be cropped. A page whose
+   * hero image is already authored at the frame's own 16:10 ratio can opt
+   * into `"cover"` to fill it edge-to-edge (nothing is cropped at a
+   * matching ratio) instead of sitting inside `contain`'s padded frame.
+   */
+  photoFit?: "cover" | "contain";
   locale: Locale;
   breadcrumb: readonly BreadcrumbItem[];
   ctaPrimaryLabel: string;
@@ -112,7 +123,7 @@ export function ServiceHero({
         </div>
 
         <Reveal delay={0.2}>
-          <ServiceVisualPanel photoSrc={photoSrc} alt={title} iconKey={iconKey} photoPosition={photoPosition} tone="navy" aspectRatio="aspect-[16/10]" fit="contain" />
+          <ServiceVisualPanel photoSrc={photoSrc} alt={title} iconKey={iconKey} photoPosition={photoPosition} tone="navy" aspectRatio="aspect-[16/10]" fit={photoFit} />
         </Reveal>
       </div>
     </section>

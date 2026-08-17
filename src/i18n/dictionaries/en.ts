@@ -870,6 +870,69 @@ const servicesPage = {
   careGuideHeading: "Related Care Guide",
   includedItemsLabel: "Includes:",
   includedItemsHeading: "What this treatment includes",
+  // Round 2026-08-17 (Dr. Sadighi's feedback) — the Facial Cosmetic
+  // Surgery page becomes a parent/overview hub with same-page anchor
+  // navigation. Rhinoplasty is deliberately excluded (own page).
+  facialCosmetic: {
+    heroSubtitle:
+      "This page introduces the range of facial cosmetic procedures performed by Dr. Sadighi — from lifting and reshaping the face to refining the chin, cheeks, jaw, and eyelids. The goal is natural facial proportion, preserving personal identity, and choosing the right approach for each person's anatomy.",
+    heroCtaProcedures: "View the procedures",
+    navAriaLabel: "Facial cosmetic procedures navigation",
+    proceduresEyebrow: "Facial Aesthetics",
+    proceduresHeading: "Types of facial cosmetic surgery",
+    proceduresLead: "Select any procedure to read its full explanation.",
+    cardCta: "Read more",
+    suitableForLabel: "Who is this suitable for?",
+    goalsLabel: "Goal / result of this procedure",
+    processLabel: "How treatment generally works",
+    careLabel: "Key aftercare",
+    procedureCta: "Request a consultation about this procedure",
+    careHeading: "General care before and after facial cosmetic surgery",
+    careLead: "This is general guidance and does not replace your doctor's own instructions.",
+    carePreHeading: "Before surgery",
+    carePreItems: [
+      "Reviewing medical history, medication, and allergies during consultation",
+      "Imaging or other assessments where the doctor recommends them",
+      "Not taking any medication or supplement without medical advice",
+      "Coordinating the surgery date, aftercare, and a companion for the patient",
+      "Holding realistic expectations of the final result",
+    ],
+    carePostHeading: "After surgery",
+    carePostItems: [
+      "Taking medication and following the doctor's guidance",
+      "Avoiding pressure, impact, or massage on the operated area",
+      "Managing swelling and bruising as directed",
+      "Avoiding strenuous activity until it is appropriate",
+      "Attending follow-up visits to review healing",
+    ],
+    careNote: "Your exact aftercare is set by the doctor after examination, based on the procedure, your physical condition, and your treatment plan.",
+    faqHeading: "Frequently asked questions",
+    faq: [
+      {
+        question: "Is every facial cosmetic procedure suitable for everyone?",
+        answer:
+          "No. The right choice depends on facial form, age, skin quality, bone structure, medical history, and personal expectations. The final decision follows an examination and specialist consultation.",
+      },
+      {
+        question: "Can several facial cosmetic procedures be combined in one session?",
+        answer:
+          "In some cases combining procedures can produce a more harmonious result, but this depends on the individual, the procedures involved, and the doctor's assessment.",
+      },
+      {
+        question: "Will the result look natural?",
+        answer:
+          "Treatment is designed for a proportionate, natural result — one that preserves your facial identity rather than creating excessive or exaggerated change.",
+      },
+      {
+        question: "Is rhinoplasty covered on this page?",
+        answer: "No. Rhinoplasty has its own dedicated page, with its own separate pathway on the site.",
+      },
+    ],
+    finalCtaHeading: "Choosing the right approach starts with a specialist consultation",
+    finalCtaBody:
+      "In facial cosmetic surgery, choosing the right approach matters more than the operation itself. Carefully reviewing facial anatomy, personal expectations, and treatment limits helps you take a safer, more natural path.",
+    finalCtaButton: "Start with the Smart Clinic Assistant",
+  },
   // Round 2026-07-13 (taxonomy correction): exactly the 6 canonical
   // services from `src/content/services.ts` — see fa.ts's matching
   // comment for the full rationale.

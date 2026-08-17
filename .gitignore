@@ -73,6 +73,17 @@ public/media/.DS_Store
 !public/media/doctor-headshot.png
 !public/media/doctor-surgery.jpg
 !public/media/services-orthognathic-surgery.jpeg
+
+# 2026-08-17 — Facial Cosmetic Surgery page imagery (hero + one per
+# sub-procedure). Same per-file exception pattern as everything above.
+!public/media/services/facial-cosmetic-surgery/hero-facial-cosmetic.png
+!public/media/services/facial-cosmetic-surgery/section-facial-procedures.png
+!public/media/services/facial-cosmetic-surgery/procedure-face-lift.png
+!public/media/services/facial-cosmetic-surgery/procedure-submental-liposuction.png
+!public/media/services/facial-cosmetic-surgery/procedure-buccal-fat.png
+!public/media/services/facial-cosmetic-surgery/procedure-jawline-contouring.png
+!public/media/services/facial-cosmetic-surgery/procedure-blepharoplasty.png
+!public/media/services/facial-cosmetic-surgery/procedure-chin-surgery.png
 !public/media/gallery/dental-implant.jpeg
 !public/media/gallery/dr-sadighi-logo.png
 !public/media/gallery/facial-cosmetic.png

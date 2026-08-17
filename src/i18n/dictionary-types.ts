@@ -538,6 +538,48 @@ export interface ServiceDetail {
   faq: readonly PageFaqItem[];
 }
 
+/**
+ * Round 2026-08-17 (Dr. Sadighi's feedback — the Facial Cosmetic Surgery
+ * page becomes a parent/overview hub with same-page anchor navigation to
+ * 7 sub-procedures). Page chrome and copy only; the per-procedure medical
+ * content lives in `content/facial-cosmetic-procedures.ts`, matching the
+ * existing split between `content/services.ts` (structured per-service
+ * data) and `servicesPage` (page copy).
+ *
+ * Scoped under `servicesPage` rather than as a new top-level dictionary
+ * section because it IS a service page — this keeps every service-page
+ * string reachable from one place.
+ */
+export interface FacialCosmeticPageDictionary {
+  heroSubtitle: string;
+  /** Second hero CTA — an in-page anchor to the procedures grid, not a route. */
+  heroCtaProcedures: string;
+  /** Accessible name for the in-page anchor navigation landmark. */
+  navAriaLabel: string;
+  proceduresEyebrow: string;
+  proceduresHeading: string;
+  proceduresLead: string;
+  /** Overview-card anchor button. */
+  cardCta: string;
+  suitableForLabel: string;
+  goalsLabel: string;
+  processLabel: string;
+  careLabel: string;
+  procedureCta: string;
+  careHeading: string;
+  careLead: string;
+  carePreHeading: string;
+  carePreItems: readonly string[];
+  carePostHeading: string;
+  carePostItems: readonly string[];
+  careNote: string;
+  faqHeading: string;
+  faq: readonly PageFaqItem[];
+  finalCtaHeading: string;
+  finalCtaBody: string;
+  finalCtaButton: string;
+}
+
 export interface ServicesPageDictionary {
   eyebrow: string;
   heading: string;
@@ -575,6 +617,8 @@ export interface ServicesPageDictionary {
    */
   includedItemsLabel: string;
   includedItemsHeading: string;
+  /** Round 2026-08-17 — copy for the Facial Cosmetic Surgery overview hub only (`/services/facial-cosmetic-surgery`). */
+  facialCosmetic: FacialCosmeticPageDictionary;
 }
 
 export interface HealthTourismSubpage {

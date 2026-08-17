@@ -880,7 +880,8 @@ const servicesPage = {
     navAriaLabel: "Facial cosmetic procedures navigation",
     proceduresEyebrow: "Facial Aesthetics",
     proceduresHeading: "Types of facial cosmetic surgery",
-    proceduresLead: "Select any procedure to read its full explanation.",
+    proceduresLead:
+      "If you're dealing with a double chin, puffy eyelids, drooping brows or facial skin, cheeks and facial angles that lack definition, or overly full cheeks, this page lets you explore the different facial cosmetic surgery paths — select any one to read that procedure's own explanation and aftercare.",
     cardCta: "Read more",
     suitableForLabel: "Who is this suitable for?",
     goalsLabel: "Goal / result of this procedure",
@@ -942,12 +943,13 @@ const servicesPage = {
       eyebrow: "Dental Implants",
       title: "Advanced Dental Implant",
       subtitle: "A durable replacement for missing teeth",
-      overview: "A dental implant replaces the root of a missing tooth with a titanium post, providing a stable foundation for a prosthetic tooth.",
+      overview: "A dental implant replaces the root of a missing tooth with a titanium post, providing a stable foundation for a dental crown.",
       suitableForHeading: "Who this is typically suitable for",
       suitableFor: [
         "Patients with one or more missing teeth",
-        "Patients with adequate bone density, or who may need a bone graft assessment",
+        "Patients with inadequate bone density or bone/gum resorption",
         "Patients seeking a more permanent alternative to removable options",
+        "Patients with a specific medical condition, on osteoporosis-related medication, or with a history of chemotherapy or radiotherapy should mention this during consultation",
       ],
       consultationPathHeading: "Consultation path",
       consultationPath: "Imaging assessment of jawbone density is a prerequisite for a precise implant treatment plan.",
@@ -980,18 +982,27 @@ const servicesPage = {
       ],
       consultationPathHeading: "Consultation path",
       consultationPath: "Precise imaging of the impacted tooth's position is a prerequisite for determining the right surgical approach.",
-      processHeading: "Treatment journey",
+      processHeading: "Wisdom & Impacted Tooth Surgery Steps",
       process: [
-        { title: "Initial consultation", body: "Reviewing symptoms and dental history." },
-        { title: "Imaging assessment", body: "Precisely locating the depth and position of the impacted tooth." },
-        { title: "Surgery", body: "Removing the tooth with minimal trauma to surrounding bone and tissue." },
-        { title: "Aftercare & follow-up", body: "Guidance to support faster healing of the area." },
+        { title: "Specialist consultation & assessment", body: "Reviewing symptoms, tooth position, and any history of pain, infection, or pressure on neighboring teeth." },
+        { title: "Imaging & precise evaluation", body: "Reviewing an X-ray or CBCT scan if needed, to determine impaction depth, the tooth's path, and proximity to the nerve or sinus." },
+        { title: "Choosing the surgical approach", body: "Selecting the right technique based on impaction depth, proximity to the nerve, accessibility, and the patient's condition." },
+        { title: "Safe, precise surgery", body: "Removing the impacted tooth with the goal of minimizing damage to surrounding tissue and protecting sensitive structures." },
+        { title: "Aftercare & follow-up", body: "Guidance for managing pain, swelling, oral hygiene, and monitoring the healing process." },
       ],
       faqHeading: "Frequently asked questions",
       faq: [
-        { question: "Is this surgery always necessary?", answer: "No — it's recommended only when there's pain, infection, or a risk to neighboring teeth, assessed during examination." },
+        {
+          question: "Is impacted tooth surgery always necessary?",
+          answer:
+            "No. Whether surgery is needed depends on examination, imaging, symptoms, and the doctor's diagnosis. In some cases, surgery is recommended to prevent pain, infection, damage to neighboring teeth, cyst or tumor formation, or misalignment of the teeth.",
+        },
         { question: "How long is recovery?", answer: "Typically a short window; exact details are explained during consultation." },
-        { question: "Is general anesthesia required?", answer: "Local anesthesia is sufficient in most cases; the approach depends on case complexity, determined during consultation." },
+        {
+          question: "Is wisdom/impacted tooth surgery always done under general anesthesia?",
+          answer:
+            "No. In many cases, the surgery is done under local anesthesia. General anesthesia or sedation is typically considered when the impaction is very deep, the patient requests it, or there's significant fear or anxiety. The final decision is based on the doctor's diagnosis and judgment.",
+        },
       ],
     },
     {
@@ -1083,7 +1094,10 @@ const servicesPage = {
       faq: [
         { question: "Is this surgery purely cosmetic?", answer: "No — in many cases the primary goal is improving chewing, speech, or breathing function, with facial improvement as an accompanying benefit." },
         { question: "Do I need to coordinate with an orthodontist?", answer: "In many cases, yes — this is assessed during the initial consultation." },
-        { question: "How long is recovery from this surgery?", answer: "Given the complexity of this surgery, recovery is explained individually during consultation." },
+        {
+          question: "How long is recovery from this surgery?",
+          answer: "Recovery typically takes about a week, though this can vary depending on the patient's condition and the complexity of the surgery; exact details are explained during consultation.",
+        },
       ],
     },
     {
@@ -1122,7 +1136,7 @@ const servicesPage = {
       title: "Facial Trauma & Fracture Surgery",
       subtitle: "Treating facial injuries, fractures, and wounds after impact, accidents, or trauma — aimed at preserving function and restoring the face's natural form.",
       overview:
-        "Facial trauma and fracture surgery addresses injuries caused by impact, accidents, or trauma — from fractures of the jaw, cheekbone, eye socket, or nose to soft-tissue wounds of the face — prioritizing preserved function first, then restoring natural form.",
+        "Facial trauma and fracture surgery addresses injuries caused by impact, accidents, or trauma — from fractures of the jaw, cheekbone, eye socket, or nose to soft-tissue wounds of the face — prioritizing preserved function first, and then restoring the face's natural form, appearance, and the patient's confidence.",
       suitableForHeading: "Who this is typically suitable for",
       suitableFor: [
         "Patients with a facial bone fracture (jaw, cheekbone, eye socket, or nose) after impact or an accident",
@@ -1133,10 +1147,10 @@ const servicesPage = {
       consultationPath: "For acute facial injuries, urgent assessment and imaging to determine the extent of the injury is a prerequisite for any treatment decision.",
       processHeading: "Treatment journey",
       process: [
-        { title: "Urgent assessment", body: "Quickly reviewing the patient's condition and the severity of the facial injury." },
-        { title: "Imaging", body: "Precisely determining the location and extent of the fracture or injury." },
-        { title: "Treatment or surgery", body: "Repairing the fracture or wound according to the extent of the injury." },
-        { title: "Aftercare & follow-up", body: "Support through recovery and reviewing facial function." },
+        { title: "Precise assessment & diagnosis", body: "Quickly reviewing the patient's condition and determining the severity and type of facial injury." },
+        { title: "Imaging & digital planning", body: "Precisely determining the location and extent of the fracture; digital-technology surgical planning where needed." },
+        { title: "Open or closed surgery", body: "Surgery matched to the type of fracture, with titanium plate-and-screw fixation where needed." },
+        { title: "Follow-up & rehabilitation", body: "Support through recovery and functional and aesthetic rehabilitation of the face." },
       ],
       faqHeading: "Frequently asked questions",
       faq: [

@@ -103,11 +103,15 @@ export default async function ServiceDetailPage({ params }: { params: Promise<{ 
           is now per-service via `taxonomyItem.approachPhotoSrc`, falling
           back to the shared `/media/doctor-surgery.jpg` for every service
           that hasn't been given its own approved photo yet — see that
-          field's doc-comment in `content/services.ts`. */}
+          field's doc-comment in `content/services.ts`.
+          Round 2026-08-18 (doctor feedback): the approach NOTE is now
+          the same per-service-override-with-fallback shape, so
+          orthognathic-surgery's more specific "دقت و مراقبت در هر
+          مرحله" copy doesn't leak onto the other 7 service pages. */}
       <ServiceSplitStory
         eyebrow={dict.approachEyebrow}
         title={dict.approachHeading}
-        body={dict.approachNote}
+        body={taxonomyItem?.approachNote?.[locale] ?? dict.approachNote}
         tone="navy"
         reverse
         visual={

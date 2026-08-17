@@ -84,6 +84,15 @@ export interface ServiceTaxonomyItem {
   approachPhotoSrc?: string;
   /** `object-position` for `approachPhotoSrc` — defaults to the shared block's own default ("75% 25%") when unset. */
   approachPhotoPosition?: string;
+  /**
+   * Round 2026-08-18 (doctor feedback, per Hamid — orthognathic-surgery
+   * "دقت و مراقبت در هر مرحله" section needed service-specific copy about
+   * digital planning and 3D simulation, not the generic shared note every
+   * other service page still uses). Same optional-override shape and
+   * fallback pattern as `approachPhotoSrc` above — omitted for every
+   * other service, which keeps reading the shared `servicesPage.approachNote`.
+   */
+  approachNote?: Record<Locale, string>;
 }
 
 export const SERVICES: readonly ServiceTaxonomyItem[] = [
@@ -111,17 +120,40 @@ export const SERVICES: readonly ServiceTaxonomyItem[] = [
     },
     footerLabel: { fa: "ایمپلنت دندانی پیشرفته", en: "Advanced Dental Implant", ar: "زراعة الأسنان المتقدمة" },
     assistantLabel: { fa: "ایمپلنت دندانی پیشرفته", en: "Advanced Dental Implant", ar: "زراعة الأسنان المتقدمة" },
+    // Round 2026-08-18 (doctor feedback, per Hamid): list now opens with
+    // evaluation/planning before any surgical item, and gains "پیوند
+    // لثه" — his exact given ordering.
     includedItems: {
-      fa: ["ایمپلنت تک‌دندان", "ایمپلنت چند دندان", "ایمپلنت کامل فک", "بازسازی استخوان پیش از ایمپلنت", "سینوس لیفت", "بررسی CBCT و طرح درمان ایمپلنت"],
+      fa: [
+        "ارزیابی پزشکی",
+        "بررسی CBCT و طرح درمان",
+        "ایمپلنت تک‌دندان",
+        "ایمپلنت چند دندان",
+        "ایمپلنت کامل فک",
+        "بازسازی استخوان پیش از ایمپلنت",
+        "پیوند لثه",
+        "سینوس لیفت",
+      ],
       en: [
+        "Medical evaluation",
+        "CBCT imaging and treatment planning",
         "Single-tooth implant",
         "Multiple-tooth implant",
         "Full-arch implant",
         "Bone grafting before implant placement",
+        "Gum grafting",
         "Sinus lift",
-        "CBCT imaging and implant treatment planning",
       ],
-      ar: ["زراعة سن واحد", "زراعة عدة أسنان", "زراعة الفك الكامل", "ترقيع العظم قبل الزراعة", "رفع الجيب الفكي", "فحص CBCT وتخطيط علاج الزراعة"],
+      ar: [
+        "تقييم طبي",
+        "فحص CBCT وتخطيط العلاج",
+        "زراعة سن واحد",
+        "زراعة عدة أسنان",
+        "زراعة الفك الكامل",
+        "ترقيع العظم قبل الزراعة",
+        "ترقيع اللثة",
+        "رفع الجيب الفكي",
+      ],
     },
   },
   {
@@ -299,6 +331,17 @@ export const SERVICES: readonly ServiceTaxonomyItem[] = [
     assistantLabel: { fa: "جراحی فک و چانه", en: "Orthognathic Surgery", ar: "جراحة الفك والذقن" },
     approachPhotoSrc: "/media/services-orthognathic-surgery.jpeg",
     approachPhotoPosition: "center 25%",
+    // Round 2026-08-18 (doctor feedback, per Hamid) — condensed from his
+    // 3 given paragraphs into one polished paragraph (his exact meaning
+    // and phrasing kept: precise analysis, digital design, per-patient
+    // anatomy, first consultation through post-treatment follow-up, and
+    // pre-surgical 3D jaw simulation for precision/predictability) —
+    // per his own "keep it polished... do not make the section too long."
+    approachNote: {
+      fa: "دکتر صدیقی در جراحی فک، درمان را بر پایه آنالیز دقیق، طراحی دیجیتال و شرایط جسمانی و چهره هر بیمار برنامه‌ریزی می‌کند؛ از نخستین مشاوره و طراحی دیجیتال تا اجرای جراحی و پیگیری‌های پس از درمان، هر مرحله بر اساس آناتومی و نیازهای اختصاصی بیمار پیش می‌رود. با کمک تکنولوژی دیجیتال و شبیه‌سازی سه‌بعدی جراحی فک، موقعیت فک‌ها، تقارن صورت و نتیجه نهایی پیش از جراحی بررسی و طراحی می‌شود تا درمان با دقت و پیش‌بینی‌پذیری بیشتری انجام شود.",
+      en: "For jaw surgery, Dr. Sadighi plans treatment around precise analysis, digital design, and each patient's own physical and facial condition — every stage, from the first consultation and digital design through surgery and post-treatment follow-up, follows that patient's specific anatomy and needs. Using digital technology and 3D jaw-surgery simulation, jaw position, facial symmetry, and the final result are reviewed and designed before surgery for greater precision and predictability.",
+      ar: "في جراحة الفك، يخطط الدكتور صديقي العلاج بناءً على تحليل دقيق وتصميم رقمي والحالة الجسدية والوجهية لكل مريض؛ من الاستشارة الأولى والتصميم الرقمي إلى تنفيذ الجراحة والمتابعة بعد العلاج، تسير كل مرحلة وفق تشريح المريض واحتياجاته الخاصة. وباستخدام التكنولوجيا الرقمية والمحاكاة ثلاثية الأبعاد لجراحة الفك، تتم مراجعة وتصميم موضع الفكين وتناظر الوجه والنتيجة النهائية قبل الجراحة لتحقيق دقة وقابلية تنبؤ أكبر.",
+    },
     includedItems: {
       fa: [
         "جراحی فک بالا",
@@ -416,6 +459,10 @@ export const SERVICES: readonly ServiceTaxonomyItem[] = [
     },
     footerLabel: { fa: "جراحی تروما و شکستگی‌های صورت", en: "Facial Trauma & Fracture Surgery", ar: "جراحة إصابات وكسور الوجه" },
     assistantLabel: { fa: "جراحی تروما و شکستگی‌های صورت", en: "Facial Trauma & Fracture Surgery", ar: "جراحة إصابات وكسور الوجه" },
+    // Round 2026-08-18 (doctor feedback, per Hamid) — added "شکستگی
+    // پیشانی و ناحیه اربیتال" (frontal bone + orbital region), distinct
+    // from the existing eye-socket item, ordered right after the nasal
+    // fracture item per his given list.
     includedItems: {
       fa: [
         "شکستگی فک بالا",
@@ -423,6 +470,7 @@ export const SERVICES: readonly ServiceTaxonomyItem[] = [
         "شکستگی استخوان گونه",
         "شکستگی کاسه چشم",
         "شکستگی بینی در اثر ضربه",
+        "شکستگی پیشانی و ناحیه اربیتال",
         "آسیب‌های دندانی ناشی از ضربه",
         "پارگی و زخم‌های صورت و دهان",
         "بررسی فوری آسیب‌های صورت پس از تصادف یا ضربه",
@@ -433,6 +481,7 @@ export const SERVICES: readonly ServiceTaxonomyItem[] = [
         "Cheekbone (zygomatic) fracture",
         "Eye socket (orbital) fracture",
         "Nasal fracture from impact",
+        "Frontal bone and orbital region fracture",
         "Dental injuries caused by trauma",
         "Facial and oral lacerations and wounds",
         "Urgent assessment of facial injuries after an accident or impact",
@@ -443,6 +492,7 @@ export const SERVICES: readonly ServiceTaxonomyItem[] = [
         "كسر عظم الوجنة",
         "كسر محجر العين",
         "كسر الأنف نتيجة صدمة",
+        "كسر عظم الجبهة ومنطقة المحجر",
         "إصابات الأسنان الناتجة عن صدمة",
         "تمزقات وجروح الوجه والفم",
         "تقييم عاجل لإصابات الوجه بعد حادث أو صدمة",

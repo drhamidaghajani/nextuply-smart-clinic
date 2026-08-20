@@ -13,6 +13,12 @@ export const REAL_PHOTOS: Partial<Record<string, string>> = {
   "dental-implant": "/media/gallery/dental-implant.jpeg",
   "impacted-tooth": "/media/gallery/impacted-tooth.jpeg",
   "facial-rejuvenation": "/media/gallery/facial-rejuvenation.jpeg",
+  // Round 2026-08-20 — reuses the same hero photos wired to the service
+  // detail pages' own hero (see `content/services.ts`'s `heroPhotoSrc`),
+  // so this section's last two boxes stop falling back to the icon
+  // placeholder, per Hamid's "همگی تصویر داشته باشند" follow-up.
+  "facial-trauma": "/media/services/facial-trauma-surgery.png.jpeg",
+  "facial-reconstruction": "/media/services/facial-reconstruction-surgery.png.jpeg",
 };
 
 /** Per-photo `object-position` override — defaults to "center" if unset. */

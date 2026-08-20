@@ -182,6 +182,14 @@ const BOX_LAYOUT: Record<string, string> = {
   "facial-rejuvenation": "col-span-1 row-span-1",
   "advanced-dental-implant": "col-span-1 row-span-1 lg:col-span-2 lg:row-span-1",
   "impacted-tooth-surgery": "col-span-1 row-span-1 lg:col-span-2 lg:row-span-1",
+  // Round 2026-08-20 (per Hamid): these two land after `rhinoplasty` in
+  // `SERVICE_TAXONOMY_IDS` order with no explicit span, so they fell back
+  // to the generic 1x1 cell — a half-empty-looking pair of small boxes
+  // under the taller row above them. Same size as the dental-implant/
+  // impacted-tooth pair above (a full-width two-box strip), not a new
+  // layout invented for them.
+  "facial-trauma-surgery": "col-span-1 row-span-1 lg:col-span-2 lg:row-span-1",
+  "facial-reconstruction-surgery": "col-span-1 row-span-1 lg:col-span-2 lg:row-span-1",
 };
 
 // Toned down from the reference site's measured values (~6deg tilt,

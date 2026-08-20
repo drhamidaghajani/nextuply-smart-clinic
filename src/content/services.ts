@@ -93,6 +93,18 @@ export interface ServiceTaxonomyItem {
    * other service, which keeps reading the shared `servicesPage.approachNote`.
    */
   approachNote?: Record<Locale, string>;
+  /**
+   * Round 2026-08-20 (doctor-provided image swap, per Hamid's PDF brief):
+   * per-service hero photo override. Falls back to `REAL_PHOTOS[galleryCategory]`
+   * (`gallery-photos.ts`) when unset — that map is ALSO read by
+   * `ServiceBeforeAfterBand`/the `/before-after` gallery, and this round's
+   * brief only asked to replace each page's own hero image, not its
+   * before/after band photo, so a separate override field here (rather
+   * than editing `REAL_PHOTOS` itself) keeps the two independent.
+   */
+  heroPhotoSrc?: string;
+  /** `object-position` for `heroPhotoSrc` — defaults to center when unset. */
+  heroPhotoPosition?: string;
 }
 
 export const SERVICES: readonly ServiceTaxonomyItem[] = [
@@ -120,6 +132,8 @@ export const SERVICES: readonly ServiceTaxonomyItem[] = [
     },
     footerLabel: { fa: "ایمپلنت دندانی پیشرفته", en: "Advanced Dental Implant", ar: "زراعة الأسنان المتقدمة" },
     assistantLabel: { fa: "ایمپلنت دندانی پیشرفته", en: "Advanced Dental Implant", ar: "زراعة الأسنان المتقدمة" },
+    heroPhotoSrc: "/media/services/advanced-dental-implant.jpeg",
+    approachPhotoSrc: "/media/services/advanced-dental-implant1.png.jpeg",
     // Round 2026-08-18 (doctor feedback, per Hamid): list now opens with
     // evaluation/planning before any surgical item, and gains "پیوند
     // لثه" — his exact given ordering.
@@ -180,6 +194,8 @@ export const SERVICES: readonly ServiceTaxonomyItem[] = [
     },
     footerLabel: { fa: "جراحی دندان نهفته", en: "Impacted Tooth Surgery", ar: "جراحة الأسنان المطمورة" },
     assistantLabel: { fa: "جراحی دندان نهفته", en: "Impacted Tooth Surgery", ar: "جراحة الأسنان المطمورة" },
+    heroPhotoSrc: "/media/services/impacted-tooth-surgery.png.jpeg",
+    approachPhotoSrc: "/media/services/impacted-tooth-surgery1.png.jpeg",
     includedItems: {
       fa: [
         "جراحی دندان عقل نهفته",
@@ -231,6 +247,8 @@ export const SERVICES: readonly ServiceTaxonomyItem[] = [
     },
     footerLabel: { fa: "جوان‌سازی صورت", en: "Facial Rejuvenation", ar: "تجديد شباب الوجه" },
     assistantLabel: { fa: "جوان‌سازی صورت", en: "Facial Rejuvenation", ar: "تجديد شباب الوجه" },
+    heroPhotoSrc: "/media/services/facial-rejuvenation.png.jpeg",
+    approachPhotoSrc: "/media/services/facial-rejuvenation1.png.jpeg",
     includedItems: {
       fa: [
         "جوان‌سازی اطراف چشم و ابرو",
@@ -329,6 +347,8 @@ export const SERVICES: readonly ServiceTaxonomyItem[] = [
     },
     footerLabel: { fa: "جراحی فک و چانه", en: "Orthognathic Surgery", ar: "جراحة الفك والذقن" },
     assistantLabel: { fa: "جراحی فک و چانه", en: "Orthognathic Surgery", ar: "جراحة الفك والذقن" },
+    heroPhotoSrc: "/media/services/orthognathic-surgery.png.jpeg",
+    // approachPhotoSrc unchanged, per doctor's explicit "عکس دوم تغییر نکند".
     approachPhotoSrc: "/media/services-orthognathic-surgery.jpeg",
     approachPhotoPosition: "center 25%",
     // Round 2026-08-18 (doctor feedback, per Hamid) — condensed from his
@@ -399,6 +419,8 @@ export const SERVICES: readonly ServiceTaxonomyItem[] = [
     },
     footerLabel: { fa: "جراحی زیبایی بینی", en: "Rhinoplasty", ar: "تجميل الأنف" },
     assistantLabel: { fa: "جراحی زیبایی بینی", en: "Rhinoplasty", ar: "تجميل الأنف" },
+    heroPhotoSrc: "/media/services/rhinoplasty.png.jpeg",
+    // No approachPhotoSrc — doctor's explicit "عکس دوم تغییر نکند" (keeps the shared default).
     includedItems: {
       fa: [
         "جراحی زیبایی بینی",
@@ -459,6 +481,8 @@ export const SERVICES: readonly ServiceTaxonomyItem[] = [
     },
     footerLabel: { fa: "جراحی تروما و شکستگی‌های صورت", en: "Facial Trauma & Fracture Surgery", ar: "جراحة إصابات وكسور الوجه" },
     assistantLabel: { fa: "جراحی تروما و شکستگی‌های صورت", en: "Facial Trauma & Fracture Surgery", ar: "جراحة إصابات وكسور الوجه" },
+    heroPhotoSrc: "/media/services/facial-trauma-surgery.png.jpeg",
+    approachPhotoSrc: "/media/services/facial-trauma-surgery1.png.jpeg",
     // Round 2026-08-18 (doctor feedback, per Hamid) — added "شکستگی
     // پیشانی و ناحیه اربیتال" (frontal bone + orbital region), distinct
     // from the existing eye-socket item, ordered right after the nasal
@@ -524,6 +548,8 @@ export const SERVICES: readonly ServiceTaxonomyItem[] = [
     },
     footerLabel: { fa: "جراحی بازسازی صورت", en: "Facial Reconstruction Surgery", ar: "جراحة إعادة بناء الوجه" },
     assistantLabel: { fa: "جراحی بازسازی صورت", en: "Facial Reconstruction Surgery", ar: "جراحة إعادة بناء الوجه" },
+    heroPhotoSrc: "/media/services/facial-reconstruction-surgery.png.jpeg",
+    approachPhotoSrc: "/media/services/facial-reconstruction-surgery2.png.jpeg",
     includedItems: {
       fa: [
         "بازسازی فک پس از آسیب یا نقص استخوانی",

@@ -72,6 +72,16 @@ export default async function ServiceDetailPage({ params }: { params: Promise<{ 
   const servicePhoto = galleryCategory ? REAL_PHOTOS[galleryCategory] : undefined;
   const servicePhotoPosition = galleryCategory ? PHOTO_POSITION[galleryCategory] : undefined;
   const beforeAfterHref = getBeforeAfterHref(locale, galleryCategory);
+  // Round 2026-08-20 (doctor-provided image swap): the hero photo is now
+  // per-service via `taxonomyItem.heroPhotoSrc`, falling back to the
+  // gallery-category photo used everywhere else (before/after band
+  // included) when unset — see that field's doc-comment in
+  // `content/services.ts`. The new photos are all authored at the hero
+  // frame's own 16:10, so they use `cover` (edge-to-edge, no letterboxed
+  // frame) instead of the shared `contain` default.
+  const heroPhotoSrc = taxonomyItem?.heroPhotoSrc ?? servicePhoto;
+  const heroPhotoPosition = taxonomyItem?.heroPhotoSrc ? (taxonomyItem.heroPhotoPosition ?? "center") : servicePhotoPosition;
+  const heroPhotoFit = taxonomyItem?.heroPhotoSrc ? "cover" : "contain";
   const careTopics = taxonomyItem ? getCareTopicsForService(taxonomyItem.id) : [];
   const arrow = LOCALE_DIRECTION[locale] === "rtl" ? "←" : "→";
 
@@ -82,8 +92,9 @@ export default async function ServiceDetailPage({ params }: { params: Promise<{ 
         title={service.title}
         subtitle={service.subtitle}
         iconKey={iconKey}
-        photoSrc={servicePhoto}
-        photoPosition={servicePhotoPosition}
+        photoSrc={heroPhotoSrc}
+        photoPosition={heroPhotoPosition}
+        photoFit={heroPhotoFit}
         locale={locale}
         breadcrumb={[{ label: dict.eyebrow, href: `/${locale}/services` }, { label: service.title }]}
         ctaPrimaryLabel={dict.heroCtaPrimary}

@@ -84,6 +84,21 @@ public/media/.DS_Store
 !public/media/services/facial-cosmetic-surgery/procedure-jawline-contouring.png
 !public/media/services/facial-cosmetic-surgery/procedure-blepharoplasty.png
 !public/media/services/facial-cosmetic-surgery/procedure-chin-surgery.png
+
+# 2026-08-20 — doctor-provided hero + approach-section photo swap across
+# 7 service pages. Same per-file exception pattern as everything above.
+!public/media/services/advanced-dental-implant.jpeg
+!public/media/services/advanced-dental-implant1.png.jpeg
+!public/media/services/facial-rejuvenation.png.jpeg
+!public/media/services/facial-rejuvenation1.png.jpeg
+!public/media/services/impacted-tooth-surgery.png.jpeg
+!public/media/services/impacted-tooth-surgery1.png.jpeg
+!public/media/services/orthognathic-surgery.png.jpeg
+!public/media/services/rhinoplasty.png.jpeg
+!public/media/services/facial-trauma-surgery.png.jpeg
+!public/media/services/facial-trauma-surgery1.png.jpeg
+!public/media/services/facial-reconstruction-surgery.png.jpeg
+!public/media/services/facial-reconstruction-surgery2.png.jpeg
 !public/media/gallery/dental-implant.jpeg
 !public/media/gallery/dr-sadighi-logo.png
 !public/media/gallery/facial-cosmetic.png

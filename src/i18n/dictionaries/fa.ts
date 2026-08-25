@@ -524,7 +524,7 @@ export const fa = {
     navItems: [
       { href: "/about", label: "دکتر صدیقی" },
       { href: "#services", label: "خدمات" },
-      { href: "#before-after", label: "قبل و بعد" },
+      { href: "/before-after", label: "قبل و بعد" },
       { href: "#faq", label: "سوالات متداول" },
       { href: "#videos", label: "ویدئوها" },
       { href: "/knowledge", label: "دانشنامه" },
@@ -1058,7 +1058,7 @@ export const fa = {
     ],
     guide: [
       { label: "دکتر صدیقی", href: "#why-dr-sadighi" },
-      { label: "قبل و بعد", href: "#before-after" },
+      { label: "قبل و بعد", href: "/before-after" },
       { label: "سوالات متداول", href: "#faq" },
       { label: "ویدئوها", href: "#videos" },
       { label: "دانشنامه", href: "/knowledge" },

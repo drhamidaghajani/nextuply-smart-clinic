@@ -47,7 +47,7 @@ export const header = {
   navItems: [
     { href: "/ar/about", label: "د. صديقي" },
     { href: "#services", label: "الخدمات" },
-    { href: "#before-after", label: "قبل وبعد" },
+    { href: "/ar/before-after", label: "قبل وبعد" },
     { href: "#faq", label: "الأسئلة الشائعة" },
     { href: "#videos", label: "الفيديوهات" },
     { href: "/ar/knowledge", label: "مركز المعرفة" },
@@ -71,7 +71,7 @@ export const footer = {
   ],
   guide: [
     { label: "د. صديقي", href: "#why-dr-sadighi" },
-    { label: "قبل وبعد", href: "#before-after" },
+    { label: "قبل وبعد", href: "/ar/before-after" },
     { label: "الأسئلة الشائعة", href: "#faq" },
     { label: "الفيديوهات", href: "#videos" },
     { label: "مركز المعرفة", href: "/ar/knowledge" },

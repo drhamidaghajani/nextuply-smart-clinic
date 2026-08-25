@@ -47,7 +47,7 @@ export const header = {
   navItems: [
     { href: "/en/about", label: "Dr. Sadighi" },
     { href: "#services", label: "Services" },
-    { href: "#before-after", label: "Before & After" },
+    { href: "/en/before-after", label: "Before & After" },
     { href: "#faq", label: "FAQ" },
     { href: "#videos", label: "Videos" },
     { href: "/en/knowledge", label: "Knowledge Center" },
@@ -72,7 +72,7 @@ export const footer = {
   ],
   guide: [
     { label: "Dr. Sadighi", href: "#why-dr-sadighi" },
-    { label: "Before & After", href: "#before-after" },
+    { label: "Before & After", href: "/en/before-after" },
     { label: "FAQ", href: "#faq" },
     { label: "Videos", href: "#videos" },
     { label: "Knowledge Center", href: "/en/knowledge" },

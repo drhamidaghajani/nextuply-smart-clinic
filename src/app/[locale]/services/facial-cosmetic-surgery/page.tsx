@@ -8,6 +8,7 @@ import { ProceduresExplorer } from "@/components/page/facial-cosmetic/procedures
 import { PageFaq } from "@/components/page/page-faq";
 import { ServiceHero } from "@/components/page/service-hero";
 import { Reveal } from "@/components/motion/reveal";
+import { SERVICE_SLUG_TO_CATEGORY } from "@/content/before-after-cases";
 import { FACIAL_PROCEDURES } from "@/content/facial-cosmetic-procedures";
 import { getBeforeAfterHref, getServiceById } from "@/content/services";
 import { getDictionary } from "@/i18n/get-dictionary";
@@ -83,7 +84,12 @@ export default async function FacialCosmeticSurgeryPage({ params }: { params: Pr
   if (!service) notFound();
 
   const taxonomyItem = getServiceById(SERVICE_SLUG);
-  const beforeAfterHref = getBeforeAfterHref(locale, taxonomyItem?.galleryCategory ?? null);
+  // Round 2026-08-25 (before/after rebuild): no real case category
+  // clearly matches facial-cosmetic-surgery among the 4 uploaded
+  // categories (implant/facial-reconstruction/rhinoplasty/jaw-surgery) —
+  // per Hamid's explicit "do not force it" instruction, this falls back
+  // to the general /before-after index rather than an invented filter.
+  const beforeAfterHref = getBeforeAfterHref(locale, (taxonomyItem && SERVICE_SLUG_TO_CATEGORY[taxonomyItem.slug]) ?? null);
   const arrow = LOCALE_DIRECTION[locale] === "rtl" ? "→" : "←";
 
   return (

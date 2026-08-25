@@ -11,6 +11,7 @@ import { ServiceSplitStory } from "@/components/page/service-split-story";
 import { ServiceVisualPanel } from "@/components/page/service-visual-panel";
 import { Reveal } from "@/components/motion/reveal";
 import { PHOTO_POSITION, REAL_PHOTOS } from "@/components/sections/gallery-photos";
+import { SERVICE_SLUG_TO_CATEGORY } from "@/content/before-after-cases";
 import { getCareInstructionHref, getCareTopicsForService } from "@/content/care-instructions";
 import { getBeforeAfterHref, getServiceById, SERVICE_TAXONOMY_IDS } from "@/content/services";
 import { localeHref } from "@/i18n/locale-href";
@@ -72,7 +73,14 @@ export default async function ServiceDetailPage({ params }: { params: Promise<{ 
   const galleryCategory = taxonomyItem?.galleryCategory ?? null;
   const servicePhoto = galleryCategory ? REAL_PHOTOS[galleryCategory] : undefined;
   const servicePhotoPosition = galleryCategory ? PHOTO_POSITION[galleryCategory] : undefined;
-  const beforeAfterHref = getBeforeAfterHref(locale, galleryCategory);
+  // Round 2026-08-25 (before/after rebuild): points at the NEW 4-category
+  // real-case taxonomy (`content/before-after-cases.ts`), not the older
+  // 8-value `galleryCategory` used for this page's own hero/gallery
+  // photos — those are a different, unrelated system. A service with no
+  // entry in `SERVICE_SLUG_TO_CATEGORY` (no matching real case category)
+  // falls back to the general `/before-after` index, never an
+  // invented/mismatched filter.
+  const beforeAfterHref = getBeforeAfterHref(locale, (taxonomyItem && SERVICE_SLUG_TO_CATEGORY[taxonomyItem.slug]) ?? null);
   // Round 2026-08-20 (doctor-provided image swap): the hero photo is now
   // per-service via `taxonomyItem.heroPhotoSrc`, falling back to the
   // gallery-category photo used everywhere else (before/after band

@@ -50,7 +50,7 @@ export const header = {
     { href: "#before-after", label: "قبل وبعد" },
     { href: "#faq", label: "الأسئلة الشائعة" },
     { href: "#videos", label: "الفيديوهات" },
-    { href: "#knowledge-center", label: "مركز المعرفة" },
+    { href: "/ar/knowledge", label: "مركز المعرفة" },
     { href: "#contact", label: "تواصل معنا" },
   ],
   ctaLabel: "احجز استشارة",
@@ -74,7 +74,7 @@ export const footer = {
     { label: "قبل وبعد", href: "#before-after" },
     { label: "الأسئلة الشائعة", href: "#faq" },
     { label: "الفيديوهات", href: "#videos" },
-    { label: "مركز المعرفة", href: "#knowledge-center" },
+    { label: "مركز المعرفة", href: "/ar/knowledge" },
     { label: "تواصل معنا", href: "#contact" },
     { label: "عن الطبيب", href: "/ar/about" },
     { label: "الخدمات العلاجية", href: "/ar/services" },
@@ -227,38 +227,9 @@ export const knowledgeCenter = {
   eyebrow: "مركز المعرفة",
   heading: "المجلة العلمية ودليل مرضى الدكتور صديقي",
   subheading: "مقالات علمية، فيديوهات تثقيفية، وإجابات عن أكثر أسئلة المرضى شيوعًا.",
-  articles: {
-    feature: {
-      iconId: "rhinoplasty",
-      label: "جراحة تجميل الأنف",
-      title: "كيف نستعد لجراحة أنف علمية وآمنة؟",
-      lead: "الاستعداد الصحيح قبل جراحة الأنف، من اختيار الجراح إلى العناية في الأيام التي تسبق العملية، له دور مباشر في السلامة وجودة النتيجة النهائية. في هذا المقال نستعرض الخطوات العلمية لهذا الاستعداد.",
-      href: "/blog/rhinoplasty-preparation",
-    },
-    side: [
-      {
-        iconId: "dental-implant",
-        label: "زراعة الأسنان المتقدمة",
-        title: "الدليل الكامل لزراعة الأسنان للمرضى ذوي كثافة العظم المنخفضة",
-        summary: "مراجعة علمية لتحديات زراعة الأسنان لدى المرضى ذوي الكثافة العظمية المنخفضة، وأحدث الطرق للوصول إلى نتيجة ثابتة.",
-        href: "/blog/dental-implant-low-bone-density",
-      },
-      {
-        iconId: "jaw-surgery",
-        label: "جراحة الفك (ارتوگناتيك)",
-        title: "ما هي علامات الحاجة لجراحة الفك والذقن؟",
-        summary: "من مشاكل المضغ والتنفس إلى عدم تناسق الوجه؛ ما هي العلامات التي تستدعي تقييمًا تخصصيًا لجراحة الفك؟",
-        href: "/blog/orthognathic-signs",
-      },
-      {
-        iconId: "facial-rejuvenation",
-        label: "تجديد شباب الوجه",
-        title: "متى يجب التفكير في تجديد شباب الوجه؟",
-        summary: "علامات الفقدان الطبيعي لحجم ومرونة جلد الوجه، والطرق العلمية المتوازنة المتاحة اليوم لتجديد الشباب.",
-        href: "/blog/facial-rejuvenation-signs",
-      },
-    ],
-  },
+  // Round 2026-08-25: `articles: { feature, side }` — demo copy with fake
+  // `/blog/...` hrefs — removed; the section now reads real content
+  // straight from `KNOWLEDGE_ARTICLES` (see that component's doc-comment).
   readMoreCta: "متابعة القراءة",
 } satisfies KnowledgeCenterDictionary;
 

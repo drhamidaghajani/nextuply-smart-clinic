@@ -123,23 +123,17 @@ export interface PatientStoriesDictionary {
   verifiedOnGoogleLabel: string;
 }
 
-export interface KnowledgeCenterArticle {
-  iconId: string;
-  label: string;
-  title: string;
-  lead?: string;
-  summary?: string;
-  href: string;
-}
-
+/**
+ * Round 2026-08-25 (pre-launch fix): `articles: { feature, side }` — a
+ * placeholder shape carrying fake `/blog/...` demo hrefs — removed.
+ * `KnowledgeCenterSection` now derives its real content directly from
+ * `KNOWLEDGE_ARTICLES` (see that component's own doc-comment); this
+ * dictionary only owns the section's editorial copy.
+ */
 export interface KnowledgeCenterDictionary {
   eyebrow: string;
   heading: string;
   subheading: string;
-  articles: {
-    feature: KnowledgeCenterArticle;
-    side: readonly KnowledgeCenterArticle[];
-  };
   readMoreCta: string;
 }
 

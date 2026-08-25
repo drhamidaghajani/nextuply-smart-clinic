@@ -205,6 +205,7 @@ export const KNOWLEDGE_ARTICLES: readonly KnowledgeArticle[] = [
       { question: "آیا تزریق فیلر می‌تواند به افزایش اعتماد به نفس کمک کند؟", answer: "بله، تزریق فیلر صورت با بهبود ظاهر و جوانسازی پوست، می‌تواند به افزایش اعتماد به نفس و رضایت فرد از ظاهر خود کمک کند." },
     ],
     structuredDataType: "MedicalWebPage",
+    heroImage: { src: "/media/knowledge/25-سوال-متداول-در-مورد-تزریق-فیلر-به-ناحی/hero.jpg", alt: "25 سوال متداول در مورد تزریق فیلر به ناحیه صورت" },
     translations: {
       en: {
       slug: "facial-filler-injection-25-faq",
@@ -285,10 +286,10 @@ export const KNOWLEDGE_ARTICLES: readonly KnowledgeArticle[] = [
     // sourceImageUrl is provenance ONLY, never rendered as a live <img src> —
     // per Hamid's "do not hotlink old WordPress images permanently" rule,
     // only heroImage.src (a downloaded local /media/knowledge/... file) is ever used for display.
-    mediaStatus: "missing",
-    needsMediaReview: true,
-    sourceImageUrl: "",
-    localImagePath: "",
+    mediaStatus: "migrated",
+    needsMediaReview: false,
+    sourceImageUrl: "https://dralirezasadighi.com/wp-content/uploads/2024/07/25-frequently-asked10.jpg",
+    localImagePath: "/media/knowledge/25-سوال-متداول-در-مورد-تزریق-فیلر-به-ناحی/hero.jpg",
   },
   {
     // fat-injection FAQ collision — Persian only, English post_id 13413 excluded from phase 1
@@ -350,6 +351,7 @@ export const KNOWLEDGE_ARTICLES: readonly KnowledgeArticle[] = [
       { question: "چگونه می‌توانم بهترین جراح تزریق چربی به صورت را انتخاب کنم؟", answer: "برای انتخاب بهترین جراح تزریق چربی به صورت، به تجربه و تخصص جراح، نظرات بیماران قبلی، و نمونه‌های کارهای قبلی او توجه کنید. مشاوره حضوری نیز می‌تواند به شما در انتخاب بهتر کمک کند." },
     ],
     structuredDataType: "MedicalWebPage",
+    heroImage: { src: "/media/knowledge/25-سوال-متداول-در-مورد-جراحی-تزریق-چربی/hero.jpg", alt: "25 سوال متداول در مورد جراحی تزریق چربی" },
     translations: {
       en: {
       slug: "facial-fat-transfer-25-faq",
@@ -430,10 +432,10 @@ export const KNOWLEDGE_ARTICLES: readonly KnowledgeArticle[] = [
     // sourceImageUrl is provenance ONLY, never rendered as a live <img src> —
     // per Hamid's "do not hotlink old WordPress images permanently" rule,
     // only heroImage.src (a downloaded local /media/knowledge/... file) is ever used for display.
-    mediaStatus: "missing",
-    needsMediaReview: true,
-    sourceImageUrl: "",
-    localImagePath: "",
+    mediaStatus: "migrated",
+    needsMediaReview: false,
+    sourceImageUrl: "https://dralirezasadighi.com/wp-content/uploads/2024/07/25-frequently-asked19.jpg",
+    localImagePath: "/media/knowledge/25-سوال-متداول-در-مورد-جراحی-تزریق-چربی/hero.jpg",
   },
   {
     postId: "8415",
@@ -494,6 +496,7 @@ export const KNOWLEDGE_ARTICLES: readonly KnowledgeArticle[] = [
       { question: "چگونه می‌توانم بهترین جراح برای جراحی دندان عقل نهفته را انتخاب کنم؟", answer: "برای انتخاب بهترین جراح برای جراحی دندان عقل نهفته، به تجربه و تخصص جراح، نظرات بیماران قبلی و نمونه‌های کارهای قبلی او توجه کنید. مشاوره حضوری نیز می‌تواند به شما در انتخاب بهتر کمک کند." },
     ],
     structuredDataType: "MedicalWebPage",
+    heroImage: { src: "/media/knowledge/25-سوال-متداول-در-مورد-جراحی-دندان-عقل-نه/hero.png", alt: "25 سوال متداول در مورد جراحی دندان عقل نهفته" },
     translations: {
       en: {
       slug: "impacted-wisdom-tooth-surgery-25-faq",
@@ -574,10 +577,10 @@ export const KNOWLEDGE_ARTICLES: readonly KnowledgeArticle[] = [
     // sourceImageUrl is provenance ONLY, never rendered as a live <img src> —
     // per Hamid's "do not hotlink old WordPress images permanently" rule,
     // only heroImage.src (a downloaded local /media/knowledge/... file) is ever used for display.
-    mediaStatus: "missing",
-    needsMediaReview: true,
-    sourceImageUrl: "",
-    localImagePath: "",
+    mediaStatus: "migrated",
+    needsMediaReview: false,
+    sourceImageUrl: "https://dralirezasadighi.com/wp-content/uploads/2024/07/Designer-33.png",
+    localImagePath: "/media/knowledge/25-سوال-متداول-در-مورد-جراحی-دندان-عقل-نه/hero.png",
   },
   {
     postId: "8392",
@@ -639,6 +642,7 @@ export const KNOWLEDGE_ARTICLES: readonly KnowledgeArticle[] = [
       { question: "چگونه می‌توانم بهترین جراح زیبایی بینی را انتخاب کنم؟", answer: "برای انتخاب بهترین جراح زیبایی بینی، به تجربه و تخصص جراح، نظرات بیماران قبلی، و نمونه‌های کارهای قبلی او توجه کنید. مشاوره حضوری نیز می‌تواند به شما در انتخاب بهتر کمک کند." },
     ],
     structuredDataType: "MedicalWebPage",
+    heroImage: { src: "/media/knowledge/25-سوال-متداول-در-مورد-جراحی-زیبایی-بین/hero.jpg", alt: " 25 سوال متداول در مورد جراحی زیبایی بینی" },
     translations: {
       en: {
       slug: "rhinoplasty-nose-job-25-faq",
@@ -719,10 +723,10 @@ export const KNOWLEDGE_ARTICLES: readonly KnowledgeArticle[] = [
     // sourceImageUrl is provenance ONLY, never rendered as a live <img src> —
     // per Hamid's "do not hotlink old WordPress images permanently" rule,
     // only heroImage.src (a downloaded local /media/knowledge/... file) is ever used for display.
-    mediaStatus: "missing",
-    needsMediaReview: true,
-    sourceImageUrl: "",
-    localImagePath: "",
+    mediaStatus: "migrated",
+    needsMediaReview: false,
+    sourceImageUrl: "https://dralirezasadighi.com/wp-content/uploads/2024/07/photo_2024-07-15_21-02-52.jpg",
+    localImagePath: "/media/knowledge/25-سوال-متداول-در-مورد-جراحی-زیبایی-بین/hero.jpg",
   },
   {
     postId: "8594",
@@ -784,6 +788,7 @@ export const KNOWLEDGE_ARTICLES: readonly KnowledgeArticle[] = [
       { question: "چگونه می‌توانم بهترین جراح لیفت ابرو و شقیقه را انتخاب کنم؟", answer: "برای انتخاب بهترین جراح لیفت ابرو و شقیقه، به تجربه و تخصص جراح، نظرات بیماران قبلی، و نمونه‌های کارهای قبلی او توجه کنید. مشاوره حضوری نیز می‌تواند به شما در انتخاب بهتر کمک کند." },
     ],
     structuredDataType: "MedicalWebPage",
+    heroImage: { src: "/media/knowledge/25-سوال-متداول-در-مورد-جراحی-لیفت-ابرو-و-ش/hero.jpg", alt: "25 سوال متداول در مورد جراحی لیفت ابرو و شقیقه" },
     translations: {
       en: {
       slug: "brow-temple-lift-surgery-25-faq",
@@ -864,10 +869,10 @@ export const KNOWLEDGE_ARTICLES: readonly KnowledgeArticle[] = [
     // sourceImageUrl is provenance ONLY, never rendered as a live <img src> —
     // per Hamid's "do not hotlink old WordPress images permanently" rule,
     // only heroImage.src (a downloaded local /media/knowledge/... file) is ever used for display.
-    mediaStatus: "missing",
-    needsMediaReview: true,
-    sourceImageUrl: "",
-    localImagePath: "",
+    mediaStatus: "migrated",
+    needsMediaReview: false,
+    sourceImageUrl: "https://dralirezasadighi.com/wp-content/uploads/2024/07/25-frequently-asked13.jpg",
+    localImagePath: "/media/knowledge/25-سوال-متداول-در-مورد-جراحی-لیفت-ابرو-و-ش/hero.jpg",
   },
   {
     postId: "8409",
@@ -930,6 +935,7 @@ export const KNOWLEDGE_ARTICLES: readonly KnowledgeArticle[] = [
       { question: "آیا نتیجه جراحی چانه دائمی است؟", answer: "بله . نتیجه جراحی چانه دائمی است و نتیجه نهایی آن پس از شش ماه مشخص می شود ." },
     ],
     structuredDataType: "MedicalWebPage",
+    heroImage: { src: "/media/knowledge/25-سوال-متداول-در-مورد-جراحی-چانه-و-زاویه/hero.png", alt: "26 سوال متداول در مورد جراحی چانه و زاویه‌سازی فک" },
     translations: {
       en: {
       slug: "chin-surgery-jaw-angle-contouring-26-faq",
@@ -1012,10 +1018,10 @@ export const KNOWLEDGE_ARTICLES: readonly KnowledgeArticle[] = [
     // sourceImageUrl is provenance ONLY, never rendered as a live <img src> —
     // per Hamid's "do not hotlink old WordPress images permanently" rule,
     // only heroImage.src (a downloaded local /media/knowledge/... file) is ever used for display.
-    mediaStatus: "missing",
-    needsMediaReview: true,
-    sourceImageUrl: "",
-    localImagePath: "",
+    mediaStatus: "migrated",
+    needsMediaReview: false,
+    sourceImageUrl: "https://dralirezasadighi.com/wp-content/uploads/2024/07/Designer-31.png",
+    localImagePath: "/media/knowledge/25-سوال-متداول-در-مورد-جراحی-چانه-و-زاویه/hero.png",
   },
   {
     postId: "14781",
@@ -1078,6 +1084,7 @@ export const KNOWLEDGE_ARTICLES: readonly KnowledgeArticle[] = [
       { heading: "۶. برای رزرو نوبت مشاوره عمل بینی اروپایی چه کاری باید انجام دهم؟", paragraphs: ["برای رزرو نوبت در کلینیک زیبایی دکتر علیرضا صدیقی در تبریز یا تهران، می‌توانید از طریق شماره‌های تماس، واتساپ یا فرم نوبت‌گیری سایت اقدام کنید. در اولین جلسه، چهره شما به‌طور کامل بررسی می‌شود و مناسب‌ترین سبک جراحی بینی (از جمله مدل اروپایی) متناسب با صورت و سلیقه‌تان پیشنهاد خواهد شد."] },
     ],
     structuredDataType: "MedicalWebPage",
+    heroImage: { src: "/media/knowledge/european-nose-job/hero.png", alt: "عمل بینی اروپایی چیست و برای چه چهره‌هایی مناسب است؟" },
     translations: {
       en: {
       slug: "what-is-european-style-rhinoplasty",
@@ -1162,10 +1169,10 @@ export const KNOWLEDGE_ARTICLES: readonly KnowledgeArticle[] = [
     // sourceImageUrl is provenance ONLY, never rendered as a live <img src> —
     // per Hamid's "do not hotlink old WordPress images permanently" rule,
     // only heroImage.src (a downloaded local /media/knowledge/... file) is ever used for display.
-    mediaStatus: "missing",
-    needsMediaReview: true,
-    sourceImageUrl: "",
-    localImagePath: "",
+    mediaStatus: "migrated",
+    needsMediaReview: false,
+    sourceImageUrl: "https://dralirezasadighi.com/wp-content/uploads/2026/05/عمل-بینی-اروپایی-دکتر-علیرضا-صدیقی.png",
+    localImagePath: "/media/knowledge/european-nose-job/hero.png",
   },
   {
     postId: "8558",
@@ -1218,6 +1225,7 @@ export const KNOWLEDGE_ARTICLES: readonly KnowledgeArticle[] = [
       { heading: "انتخاب کلینیک مناسب", paragraphs: ["برای انتخاب بهترین کلینیک ایمپلنت دندان پیشرفته در تبریز، می‌توانید به نکات زیر توجه کنید:", "تجهیزات و تکنولوژی: کلینیکی که از تجهیزات و تکنولوژی‌های مدرن استفاده می‌کند، می‌تواند خدمات با کیفیت‌تری ارائه دهد.", "تجربه و تخصص دندانپزشکان: کلینیکی که دندانپزشکان با تجربه و متخصص دارد، می‌تواند نتایج بهتری برای بیماران خود فراهم کند.", "نظرات و تجربیات بیماران: بررسی نظرات و تجربیات بیماران قبلی می‌تواند به شما در انتخاب بهترین کلینیک کمک کند.", "محیط و خدمات پس از درمان: کلینیکی که محیط مناسبی دارد و خدمات پس از درمان خوبی ارائه می‌دهد"] },
     ],
     structuredDataType: "MedicalWebPage",
+    heroImage: { src: "/media/knowledge/ایمپلنت-اشترومن-در-تبریز/hero.jpg", alt: "ایمپلنت اشترومن در تبریز" },
     translations: {
       en: {
       slug: "straumann-dental-implants-tabriz",
@@ -1282,10 +1290,10 @@ export const KNOWLEDGE_ARTICLES: readonly KnowledgeArticle[] = [
     // sourceImageUrl is provenance ONLY, never rendered as a live <img src> —
     // per Hamid's "do not hotlink old WordPress images permanently" rule,
     // only heroImage.src (a downloaded local /media/knowledge/... file) is ever used for display.
-    mediaStatus: "missing",
-    needsMediaReview: true,
-    sourceImageUrl: "",
-    localImagePath: "",
+    mediaStatus: "migrated",
+    needsMediaReview: false,
+    sourceImageUrl: "https://dralirezasadighi.com/wp-content/uploads/2024/07/photo_2024-07-22_01-20-46.jpg",
+    localImagePath: "/media/knowledge/ایمپلنت-اشترومن-در-تبریز/hero.jpg",
   },
   {
     postId: "13920",
@@ -1335,6 +1343,7 @@ export const KNOWLEDGE_ARTICLES: readonly KnowledgeArticle[] = [
       { heading: "4. آیا برای اطلاع از شرایط اقساط باید حتماً حضوری مراجعه کنم؟", paragraphs: ["برای تصمیم‌گیری نهایی، معاینه حضوری لازم است؛ اما در بسیاری از موارد، می‌توان بررسی اولیه را با ارسال رادیوگرافی یا CBCT از طریق واتس‌اپ انجام داد و حدود طرح درمان را مشخص کرد. سپس در ویزیت حضوری، جزئیات نهایی و برنامه پرداخت با شما تنظیم می‌شود."] },
     ],
     structuredDataType: "MedicalWebPage",
+    heroImage: { src: "/media/knowledge/ایمپلنت-اقساطی-در-تبریز-با-دکتر-علیرضا/hero.jpeg", alt: "ایمپلنت اقساطی در تبریز؛ راهی برای انجام درمان باکیفیت بدون فشار مالی" },
     translations: {
       en: {
       slug: "installment-dental-implants-in-tabriz",
@@ -1393,10 +1402,10 @@ export const KNOWLEDGE_ARTICLES: readonly KnowledgeArticle[] = [
     // sourceImageUrl is provenance ONLY, never rendered as a live <img src> —
     // per Hamid's "do not hotlink old WordPress images permanently" rule,
     // only heroImage.src (a downloaded local /media/knowledge/... file) is ever used for display.
-    mediaStatus: "missing",
-    needsMediaReview: true,
-    sourceImageUrl: "",
-    localImagePath: "",
+    mediaStatus: "migrated",
+    needsMediaReview: false,
+    sourceImageUrl: "https://dralirezasadighi.com/wp-content/uploads/2024/12/ایمپلنت-اقساطی-در-تبریز.jpeg",
+    localImagePath: "/media/knowledge/ایمپلنت-اقساطی-در-تبریز-با-دکتر-علیرضا/hero.jpeg",
   },
   {
     postId: "14594",
@@ -1442,6 +1451,7 @@ export const KNOWLEDGE_ARTICLES: readonly KnowledgeArticle[] = [
       { heading: "جمع‌بندی", paragraphs: ["اگر ساکن تبریز یا تهران هستید و به‌دنبال کاشت ایمپلنت باکیفیت، بدون درد و با ماندگاری بالا هستید، پیشنهاد ما مراجعه به کلینیک تخصصی دکتر علیرضا صدیقی است. این کلینیک با بهره‌گیری از تجهیزات پیشرفته، تیم درمانی مجرب، و سابقه‌ی درخشان در انجام ایمپلنت‌های موفق، یکی از مطمئن‌ترین گزینه‌ها در تبریز و تهران به شمار می‌رود.", "✅ برای دریافت وقت مشاوره رایگان با دکتر صدیقی همین حالا از طریق سایت رسمی www.dralirezasadighi.com اقدام کنید."] },
     ],
     structuredDataType: "MedicalWebPage",
+    heroImage: { src: "/media/knowledge/ایمپلنت-دندان-در-تبریز-پرسش-پاسخ/hero.jpg", alt: "ایمپلنت دندان در تبریز؛ پرسش‌های پرتکرار بیماران و پاسخ‌های تخصصی دکتر علیرضا صدیقی" },
     translations: {
       en: {
       slug: "dental-implants-tabriz-patient-faq-dr-sadighi",
@@ -1492,10 +1502,10 @@ export const KNOWLEDGE_ARTICLES: readonly KnowledgeArticle[] = [
     // sourceImageUrl is provenance ONLY, never rendered as a live <img src> —
     // per Hamid's "do not hotlink old WordPress images permanently" rule,
     // only heroImage.src (a downloaded local /media/knowledge/... file) is ever used for display.
-    mediaStatus: "missing",
-    needsMediaReview: true,
-    sourceImageUrl: "",
-    localImagePath: "",
+    mediaStatus: "migrated",
+    needsMediaReview: false,
+    sourceImageUrl: "https://dralirezasadighi.com/wp-content/uploads/2025/05/ایمپلنت-دندان-در-تبریز-1.jpg",
+    localImagePath: "/media/knowledge/ایمپلنت-دندان-در-تبریز-پرسش-پاسخ/hero.jpg",
   },
   {
     postId: "14134",
@@ -1539,6 +1549,7 @@ export const KNOWLEDGE_ARTICLES: readonly KnowledgeArticle[] = [
       { heading: "جمع‌بندی", paragraphs: ["ایمپلنت فوری در تبریز روشی مدرن، سریع و مؤثر برای جایگزینی دندان‌های از دست‌رفته است. اگر به‌دنبال لبخندی زیبا و درمانی کم‌درد هستید، کلینیک دکتر علیرضا صدیقی با بهره‌گیری از دانش روز و تجهیزات پیشرفته، بهترین گزینه برای شماست."] },
     ],
     structuredDataType: "MedicalWebPage",
+    heroImage: { src: "/media/knowledge/ایمپلنت-فوری-در-تبریز/hero.jpg", alt: "ایمپلنت فوری در تبریز: کاشت دندان در یک روز با تکنولوژی پیشرفته در کلینیک دکتر صدیقی" },
     translations: {
       en: {
       slug: "same-day-dental-implant-tabriz",
@@ -1585,10 +1596,10 @@ export const KNOWLEDGE_ARTICLES: readonly KnowledgeArticle[] = [
     // sourceImageUrl is provenance ONLY, never rendered as a live <img src> —
     // per Hamid's "do not hotlink old WordPress images permanently" rule,
     // only heroImage.src (a downloaded local /media/knowledge/... file) is ever used for display.
-    mediaStatus: "missing",
-    needsMediaReview: true,
-    sourceImageUrl: "",
-    localImagePath: "",
+    mediaStatus: "migrated",
+    needsMediaReview: false,
+    sourceImageUrl: "https://dralirezasadighi.com/wp-content/uploads/2025/03/ایمپلنت-فوری-در-تبریز.jpg",
+    localImagePath: "/media/knowledge/ایمپلنت-فوری-در-تبریز/hero.jpg",
   },
   {
     postId: "7212",
@@ -1636,6 +1647,7 @@ export const KNOWLEDGE_ARTICLES: readonly KnowledgeArticle[] = [
       { heading: "مسائل پزشکی مرتبط با بلفاروپلاستی", paragraphs: ["قبل از عمل بلفاروپلاستی، شما باید طیف وسیعی از مسائل پزشکی را با پزشک خود در میان بگذارید. از جمله موارد زیر:", "سلامت جسمانی: معاینه به پزشک شما کمک می کند تا تصمیم بگیرد که آیا این درمان برای شما مناسب است یا خیر.", "سابقه پزشکی: برخی از شرایط پزشکی و جراحی هایی که در گذشته انجام داده اید ممکن است بر تصمیم گیری در مورد این عمل تأثیرگذار باشد، از جمله نوع بیهوشی مورد استفاده. به ویژه، در صورت داشتن هر گونه بیماری چشمی مانند گلوکوم، خشکی چشم، خیس شدن چشم یا جدا شدن شبکیه، هرگونه اختلال تیروئید مانند بیماری گریوز و کم کاری یا پرکاری تیروئید، هر بیماری قلبی عروقی، دیابت، فشار خون بالا و … را باید به پزشک خود اطلاع دهید.", "معاینه چشم: ممکن است لازم باشد قبل از جراحی، توسط چشم پزشک یا متخصص چشم ارزیابی شوید.", "خطرات و عوارض احتمالی: مهم است که خطرات و عوارض را درک کنید تا بتوانید بررسی کنید که آیا بلفاروپلاستی برای شما مناسب است یا خیر.", "دارو: پزشک خود را در مورد هر دارویی که به طور منظم مصرف می کنید یا اخیرا مصرف کرده اید، از جمله داروهای بدون نسخه مانند روغن ماهی و مکمل های ویتامینی را به پزشک خود اطلاع دهید.", "واکنش های دارویی: اگر تا به حال واکنش بد یا عارضه جانبی از هر دارویی از جمله بیهوشی داشته اید به پزشک خود اطلاع دهید.", "آماده سازی برای جراحی: پزشک دستورالعمل های دقیقی را در مورد آنچه که باید در خانه انجام دهید تا برای جراحی آماده شوید به شما ارائه می دهد. به عنوان مثال، ممکن است به شما توصیه شود که یک داروی خاص مصرف کنید یا دوز داروی موجود را تغییر دهید. تمام دستورالعمل ها را به دقت دنبال کنید."] },
     ],
     structuredDataType: "MedicalWebPage",
+    heroImage: { src: "/media/knowledge/بلفاروپلاستی/hero.jpg", alt: "بلفاروپلاستی" },
     translations: {
       en: {
       slug: "blepharoplasty-eyelid-surgery",
@@ -1690,10 +1702,10 @@ export const KNOWLEDGE_ARTICLES: readonly KnowledgeArticle[] = [
     // sourceImageUrl is provenance ONLY, never rendered as a live <img src> —
     // per Hamid's "do not hotlink old WordPress images permanently" rule,
     // only heroImage.src (a downloaded local /media/knowledge/... file) is ever used for display.
-    mediaStatus: "missing",
-    needsMediaReview: true,
-    sourceImageUrl: "",
-    localImagePath: "",
+    mediaStatus: "migrated",
+    needsMediaReview: false,
+    sourceImageUrl: "https://dralirezasadighi.com/wp-content/uploads/2023/12/plastic-surgery-scaled.jpg",
+    localImagePath: "/media/knowledge/بلفاروپلاستی/hero.jpg",
   },
   {
     postId: "8713",
@@ -1734,6 +1746,7 @@ export const KNOWLEDGE_ARTICLES: readonly KnowledgeArticle[] = [
       { heading: "نتیجه‌گیری", paragraphs: ["اگر به دنبال بهترین متخصص ایمپلنت تبریز هستید، دکتر علیرضا صدیقی یکی از بهترین گزینه‌ها برای شماست. تجربه و تخصص بالای او در زمینه ایمپلنت دندان، استفاده از تکنولوژی‌های نوین و رضایت بالای بیماران از خدمات او، دکتر صدیقی را به عنوان بهترین متخصص ایمپلنت تبریز معرفی می‌کند. با مراجعه به دکتر صدیقی، می‌توانید از لبخندی زیبا و دندان‌هایی سالم و ماندگار برخوردار شوید."] },
     ],
     structuredDataType: "Article",
+    heroImage: { src: "/media/knowledge/بهترین-متخصص-ایمپلنت-تبریز-و-معرفی-دکت/hero.png", alt: "بهترین متخصص ایمپلنت تبریز و معرفی دکتر علیرضا صدیقی" },
     translations: {
       en: {
       slug: "best-dental-implant-specialist-tabriz-dr-sadighi",
@@ -1774,10 +1787,10 @@ export const KNOWLEDGE_ARTICLES: readonly KnowledgeArticle[] = [
     // sourceImageUrl is provenance ONLY, never rendered as a live <img src> —
     // per Hamid's "do not hotlink old WordPress images permanently" rule,
     // only heroImage.src (a downloaded local /media/knowledge/... file) is ever used for display.
-    mediaStatus: "missing",
-    needsMediaReview: true,
-    sourceImageUrl: "",
-    localImagePath: "",
+    mediaStatus: "migrated",
+    needsMediaReview: false,
+    sourceImageUrl: "https://dralirezasadighi.com/wp-content/uploads/2024/06/ud7sens02-2.png",
+    localImagePath: "/media/knowledge/بهترین-متخصص-ایمپلنت-تبریز-و-معرفی-دکت/hero.png",
   },
   {
     postId: "14126",
@@ -1823,6 +1836,7 @@ export const KNOWLEDGE_ARTICLES: readonly KnowledgeArticle[] = [
       { heading: "نتیجه‌گیری", paragraphs: ["کشیدن دندان و جراحی دندان عقل هرچند هر دو با هدف حذف دندان آسیب‌دیده انجام می‌شوند، اما از نظر مراحل انجام، میزان درد، مدت زمان بهبودی و مراقبت‌های لازم تفاوت‌های زیادی دارند. آگاهی از این تفاوت‌ها می‌تواند به شما کمک کند تا تصمیم بهتری بگیرید و دوران نقاهت را با کمترین عارضه سپری کنید.", "اگر به دنبال مشاوره تخصصی و درمان اصولی در زمینه جراحی دندان هستید، توصیه می‌کنیم از طریق راه های ارتباطی مشخص شده، با دکتر علیرضا صدیقی مشورت نمایید."] },
     ],
     structuredDataType: "MedicalWebPage",
+    heroImage: { src: "/media/knowledge/تفاوت-کشیدن-دندان-و-جراحی-دندان-عقل/hero.jpg", alt: "تفاوت کشیدن دندان و جراحی دندان عقل | بررسی کامل و علمی" },
     translations: {
       en: {
       slug: "tooth-extraction-vs-wisdom-tooth-surgery-difference",
@@ -1873,10 +1887,10 @@ export const KNOWLEDGE_ARTICLES: readonly KnowledgeArticle[] = [
     // sourceImageUrl is provenance ONLY, never rendered as a live <img src> —
     // per Hamid's "do not hotlink old WordPress images permanently" rule,
     // only heroImage.src (a downloaded local /media/knowledge/... file) is ever used for display.
-    mediaStatus: "missing",
-    needsMediaReview: true,
-    sourceImageUrl: "",
-    localImagePath: "",
+    mediaStatus: "migrated",
+    needsMediaReview: false,
+    sourceImageUrl: "https://dralirezasadighi.com/wp-content/uploads/2025/03/جراحی-دندان-عقل-نهفته-1.jpg",
+    localImagePath: "/media/knowledge/تفاوت-کشیدن-دندان-و-جراحی-دندان-عقل/hero.jpg",
   },
   {
     postId: "8564",
@@ -1942,6 +1956,7 @@ export const KNOWLEDGE_ARTICLES: readonly KnowledgeArticle[] = [
       { heading: "نتیجه‌گیری", paragraphs: ["شکل بینی اروپایی با ویژگی‌های خاص و منحصر به فرد خود، یکی از ایده‌آل‌ترین الگوهای جراحی بینی به حساب می‌آید. انتخاب این سبک برای جراحی زیبایی بینی می‌تواند به بهبود زیبایی چهره و افزایش اعتماد به نفس افراد کمک کند. با توجه به این ویژگی‌ها، بسیاری از افراد به دنبال انجام جراحی بینی به سبک اروپایی هستند تا به ظاهری طبیعی و هماهنگ دست یابند.", "[video width=\"720\" height=\"1280\" mp4=\"https://dralirezasadighi.com/wp-content/uploads/2024/07/video_2024-07-31_13-44-45.mp4\" autoplay=\"true\"][/video]", "[gallery columns=\"4\" link=\"file\" size=\"full\" ids=\"8692,8691,8690,8689\"]"] },
     ],
     structuredDataType: "MedicalWebPage",
+    heroImage: { src: "/media/knowledge/جراحی-بینی-به-سبک-اروپایی-زیبایی-و-تقا/hero.jpg", alt: "جراحی بینی به سبک اروپایی : زیبایی و تقارن در اوج هنر پزشکی" },
     translations: {
       en: {
       slug: "european-style-rhinoplasty-beauty-symmetry",
@@ -2032,10 +2047,10 @@ export const KNOWLEDGE_ARTICLES: readonly KnowledgeArticle[] = [
     // sourceImageUrl is provenance ONLY, never rendered as a live <img src> —
     // per Hamid's "do not hotlink old WordPress images permanently" rule,
     // only heroImage.src (a downloaded local /media/knowledge/... file) is ever used for display.
-    mediaStatus: "missing",
-    needsMediaReview: true,
-    sourceImageUrl: "",
-    localImagePath: "",
+    mediaStatus: "migrated",
+    needsMediaReview: false,
+    sourceImageUrl: "https://dralirezasadighi.com/wp-content/uploads/2024/07/photo_2024-07-29_12-16-45.jpg",
+    localImagePath: "/media/knowledge/جراحی-بینی-به-سبک-اروپایی-زیبایی-و-تقا/hero.jpg",
   },
   {
     postId: "14138",
@@ -2082,6 +2097,7 @@ export const KNOWLEDGE_ARTICLES: readonly KnowledgeArticle[] = [
       { heading: "جمع‌بندی", paragraphs: ["اگر به دنبال انجام جراحی دندان عقل با بیهوشی در تبریز بدون درد و استرس هستید، دکتر علیرضا صدیقی و تیم حرفه‌ای ایشان بهترین انتخاب برای شما هستند. با بهره‌گیری از تجهیزات مدرن و تجربه تخصصی، می‌توانید با آرامش خاطر این جراحی را انجام دهید و دوران نقاهت آسانی را تجربه کنید."] },
     ],
     structuredDataType: "MedicalWebPage",
+    heroImage: { src: "/media/knowledge/جراحی-دندان-عقل-با-بیهوشی-در-تبریز/hero.jpg", alt: "جراحی دندان عقل با بیهوشی در تبریز؛ تجربه‌ای بدون درد با دکتر علیرضا صدیقی" },
     translations: {
       en: {
       slug: "impacted-wisdom-tooth-surgery-under-anesthesia-tabriz",
@@ -2134,10 +2150,10 @@ export const KNOWLEDGE_ARTICLES: readonly KnowledgeArticle[] = [
     // sourceImageUrl is provenance ONLY, never rendered as a live <img src> —
     // per Hamid's "do not hotlink old WordPress images permanently" rule,
     // only heroImage.src (a downloaded local /media/knowledge/... file) is ever used for display.
-    mediaStatus: "missing",
-    needsMediaReview: true,
-    sourceImageUrl: "",
-    localImagePath: "",
+    mediaStatus: "migrated",
+    needsMediaReview: false,
+    sourceImageUrl: "https://dralirezasadighi.com/wp-content/uploads/2025/03/جراحی-دندان-عقل-با-بیهوشی-در-تبریز.jpg",
+    localImagePath: "/media/knowledge/جراحی-دندان-عقل-با-بیهوشی-در-تبریز/hero.jpg",
   },
   {
     postId: "14141",
@@ -2192,6 +2208,7 @@ export const KNOWLEDGE_ARTICLES: readonly KnowledgeArticle[] = [
       { heading: "آیا جراحی فک فقط برای زیبایی است؟", paragraphs: ["خیر. بسیاری از موارد، هدف اصلی اصلاح عملکرد و بایت است و زیبایی به‌عنوان نتیجه مهم همراه آن بهبود پیدا می‌کند."] },
     ],
     structuredDataType: "MedicalWebPage",
+    heroImage: { src: "/media/knowledge/جراحی-فک-نی-نی-سایت/hero.jpg", alt: "جراحی فک نی نی سایت؛ تجربه‌ای موفق با روش‌های دیجیتال دکتر علیرضا صدیقی" },
     translations: {
       en: {
       slug: "jaw-surgery-ninisite-forum-experiences",
@@ -2260,10 +2277,10 @@ export const KNOWLEDGE_ARTICLES: readonly KnowledgeArticle[] = [
     // sourceImageUrl is provenance ONLY, never rendered as a live <img src> —
     // per Hamid's "do not hotlink old WordPress images permanently" rule,
     // only heroImage.src (a downloaded local /media/knowledge/... file) is ever used for display.
-    mediaStatus: "missing",
-    needsMediaReview: true,
-    sourceImageUrl: "",
-    localImagePath: "",
+    mediaStatus: "migrated",
+    needsMediaReview: false,
+    sourceImageUrl: "https://dralirezasadighi.com/wp-content/uploads/2025/03/جراحی-فک-نی-نی-سایت.jpg",
+    localImagePath: "/media/knowledge/جراحی-فک-نی-نی-سایت/hero.jpg",
   },
   {
     postId: "13949",
@@ -2311,6 +2328,7 @@ export const KNOWLEDGE_ARTICLES: readonly KnowledgeArticle[] = [
       { heading: "نتیجه‌گیری", paragraphs: ["جراحی فک پایین جلو آمده یکی از راهکارهای مؤثر برای بهبود ظاهر، عملکرد دهان و سلامت فک است. با انتخاب پزشک متخصص و رعایت مراحل درمان، می‌توانید به ظاهری زیبا و عملکردی طبیعی دست یابید. اگر از ناهنجاری فک پایین رنج می‌برید، مشورت با یک جراح فک و صورت مجرب می‌تواند اولین قدم در مسیر درمان شما باشد."] },
     ],
     structuredDataType: "MedicalWebPage",
+    heroImage: { src: "/media/knowledge/جراحی-فک-پایین-جلو-آمده/hero.jpg", alt: "راهنمای جامع جراحی فک پایین جلو آمده: هر آنچه باید بدانید" },
     translations: {
       en: {
       slug: "protruding-lower-jaw-surgery-mandibular-prognathism",
@@ -2365,10 +2383,10 @@ export const KNOWLEDGE_ARTICLES: readonly KnowledgeArticle[] = [
     // sourceImageUrl is provenance ONLY, never rendered as a live <img src> —
     // per Hamid's "do not hotlink old WordPress images permanently" rule,
     // only heroImage.src (a downloaded local /media/knowledge/... file) is ever used for display.
-    mediaStatus: "missing",
-    needsMediaReview: true,
-    sourceImageUrl: "",
-    localImagePath: "",
+    mediaStatus: "migrated",
+    needsMediaReview: false,
+    sourceImageUrl: "https://dralirezasadighi.com/wp-content/uploads/2024/12/راهنمای-جامع-جراحی-فک-پایین-جلو-آمده-هر-آنچه-باید-بدانید.jpg",
+    localImagePath: "/media/knowledge/جراحی-فک-پایین-جلو-آمده/hero.jpg",
   },
   {
     postId: "13976",
@@ -2418,6 +2436,7 @@ export const KNOWLEDGE_ARTICLES: readonly KnowledgeArticle[] = [
       { heading: "نتیجه‌گیری", paragraphs: ["جراحی فک پایین عقب رفته یک تصمیم مهم درمانی و زیبایی است که می‌تواند تأثیر زیادی بر ظاهر، عملکرد و کیفیت زندگی داشته باشد. آگاهی از مراحل بهبودی، رعایت مراقبت‌های دقیق پس از عمل، مدیریت عوارض احتمالی و پیروی از توصیه‌های پزشک از مهم‌ترین عوامل موفقیت در این مسیر هستند. با صبر، دقت و همراهی تیم پزشکی، می‌توانید به نتایج بلندمدت مطلوب برسید و به‌راحتی به زندگی عادی بازگردید.", "جهت دریافت قیمت و مشاوره رایگان با دکتر علیرضا صدیقی، با شماره های ثبت شده تماس بگیرید."] },
     ],
     structuredDataType: "MedicalWebPage",
+    heroImage: { src: "/media/knowledge/جراحی-فک-پایین-عقب-رفته/hero.jpg", alt: "جراحی فک پایین عقب رفته: بهبودی و نتایج بلندمدت" },
     translations: {
       en: {
       slug: "retruded-lower-jaw-surgery-recovery-long-term-results",
@@ -2476,10 +2495,10 @@ export const KNOWLEDGE_ARTICLES: readonly KnowledgeArticle[] = [
     // sourceImageUrl is provenance ONLY, never rendered as a live <img src> —
     // per Hamid's "do not hotlink old WordPress images permanently" rule,
     // only heroImage.src (a downloaded local /media/knowledge/... file) is ever used for display.
-    mediaStatus: "missing",
-    needsMediaReview: true,
-    sourceImageUrl: "",
-    localImagePath: "",
+    mediaStatus: "migrated",
+    needsMediaReview: false,
+    sourceImageUrl: "https://dralirezasadighi.com/wp-content/uploads/2024/12/جراحی-فک-پایین-عقب-رفته.jpg",
+    localImagePath: "/media/knowledge/جراحی-فک-پایین-عقب-رفته/hero.jpg",
   },
   {
     postId: "13739",
@@ -2622,6 +2641,7 @@ export const KNOWLEDGE_ARTICLES: readonly KnowledgeArticle[] = [
       { heading: "نتیجه‌گیری", paragraphs: ["فیزیوتراپی بعد از جراحی فک مرحله‌ای بسیار مهم در روند بازتوانی بیمار است. این فرآیند نه‌تنها در تسریع بهبودی و کاهش درد مؤثر است، بلکه نقش کلیدی در جلوگیری از عوارض جدی مانند خشکی فک و ناهنجاری‌های عملکردی ایفا می‌کند.", "اگر به‌تازگی جراحی فک انجام داده‌اید، توصیه می‌کنیم حتماً با کلینیک دکتر علیرضا صدیقی مشورت کرده و برای شروع فیزیوتراپی تخصصی برنامه‌ریزی کنید."] },
     ],
     structuredDataType: "MedicalWebPage",
+    heroImage: { src: "/media/knowledge/فیزیوتراپی-بعد-از-جراحی-فک/hero.jpeg", alt: "فیزیوتراپی بعد از جراحی فک: چرا ضروری است و چه مزایایی دارد؟" },
     translations: {
       en: {
       slug: "physiotherapy-after-jaw-surgery-benefits",
@@ -2692,10 +2712,10 @@ export const KNOWLEDGE_ARTICLES: readonly KnowledgeArticle[] = [
     // sourceImageUrl is provenance ONLY, never rendered as a live <img src> —
     // per Hamid's "do not hotlink old WordPress images permanently" rule,
     // only heroImage.src (a downloaded local /media/knowledge/... file) is ever used for display.
-    mediaStatus: "missing",
-    needsMediaReview: true,
-    sourceImageUrl: "",
-    localImagePath: "",
+    mediaStatus: "migrated",
+    needsMediaReview: false,
+    sourceImageUrl: "https://dralirezasadighi.com/wp-content/uploads/2025/05/فیزیوتراپی-بعد-از-جراحی-فک.jpeg",
+    localImagePath: "/media/knowledge/فیزیوتراپی-بعد-از-جراحی-فک/hero.jpeg",
   },
   {
     postId: "13531",
@@ -2754,6 +2774,7 @@ export const KNOWLEDGE_ARTICLES: readonly KnowledgeArticle[] = [
       { heading: "4. درد هنگام انجام تمرین‌های فیزیوتراپی فک طبیعی است؟", paragraphs: ["احساس کشش یا کمی ناراحتی خفیف هنگام انجام برخی تمرین‌های فیزیوتراپی فک (در محدوده‌ای که جراح مشخص کرده) می‌تواند تا حدی طبیعی باشد؛ اما درد شدید، تیرکشنده یا درد ماندگار بعد از تمرین، طبیعی نیست و باید جدی گرفته شود. در صورت بروز درد شدید، بهتر است تمرین را متوقف کرده و موضوع را با جراح یا فیزیوتراپیست خود در میان بگذارید تا در صورت نیاز، برنامه تمرین اصلاح شود.\nاین مطلب با هدف آشنایی عمومی با اصول کلی فیزیوتراپی بعد از جراحی فک تهیه شده است و جایگزین معاینه، تشخیص و نسخه اختصاصی پزشک یا فیزیوتراپیست شما نیست.\nنوع، زمان و شدت تمرین‌ها باید حتماً توسط جراح فک و صورت و/یا فیزیوتراپیست شما تعیین شود. انجام خودسرانه هر گونه تمرین ممکن است برای برخی بیماران مناسب نباشد.\n\n×"] },
     ],
     structuredDataType: "MedicalWebPage",
+    heroImage: { src: "/media/knowledge/فیزیوتراپی-بعد-از-جراحی-فک-راهنمای-کام/hero.jpg", alt: "فیزیوتراپی بعد از جراحی فک: راهنمای کامل برای بهبود حرکت و کاهش خشکی مفصل" },
     translations: {
       en: {
       slug: "physiotherapy-after-jaw-surgery-complete-guide",
@@ -2830,10 +2851,10 @@ export const KNOWLEDGE_ARTICLES: readonly KnowledgeArticle[] = [
     // sourceImageUrl is provenance ONLY, never rendered as a live <img src> —
     // per Hamid's "do not hotlink old WordPress images permanently" rule,
     // only heroImage.src (a downloaded local /media/knowledge/... file) is ever used for display.
-    mediaStatus: "missing",
-    needsMediaReview: true,
-    sourceImageUrl: "",
-    localImagePath: "",
+    mediaStatus: "migrated",
+    needsMediaReview: false,
+    sourceImageUrl: "https://dralirezasadighi.com/wp-content/uploads/2024/08/Default_A_detailed_illustration_of_a_persons_face_in_profile_h_3.jpg",
+    localImagePath: "/media/knowledge/فیزیوتراپی-بعد-از-جراحی-فک-راهنمای-کام/hero.jpg",
   },
   {
     postId: "14033",
@@ -2879,6 +2900,7 @@ export const KNOWLEDGE_ARTICLES: readonly KnowledgeArticle[] = [
       { heading: "جمع‌بندی", paragraphs: ["مشاهده فیلم واقعی جراحی فک می‌تواند به شما کمک کند با مراحل درمان آشنا شوید، استرستان را کاهش دهید و تصمیمی آگاهانه بگیرید.", "اگر قصد انجام جراحی فک را دارید و به دنبال بهترین نتایج هستید، می‌توانید با تیم حرفه‌ای دکتر علیرضا صدیقی تماس بگیرید و اولین قدم به سوی چهره‌ای متقارن‌تر و زندگی بهتر را بردارید.", "https://dralirezasadighi.com/wp-content/uploads/2025/01/1-2-1.m4v"] },
     ],
     structuredDataType: "MedicalWebPage",
+    heroImage: { src: "/media/knowledge/فیلم_جراحی_فک_در_اتاق_عمل/hero.jpg", alt: "فیلم جراحی فک در اتاق عمل: از مراحل درمان تا نتایج واقعی" },
     translations: {
       en: {
       slug: "jaw-surgery-operating-room-video",
@@ -2929,10 +2951,10 @@ export const KNOWLEDGE_ARTICLES: readonly KnowledgeArticle[] = [
     // sourceImageUrl is provenance ONLY, never rendered as a live <img src> —
     // per Hamid's "do not hotlink old WordPress images permanently" rule,
     // only heroImage.src (a downloaded local /media/knowledge/... file) is ever used for display.
-    mediaStatus: "missing",
-    needsMediaReview: true,
-    sourceImageUrl: "",
-    localImagePath: "",
+    mediaStatus: "migrated",
+    needsMediaReview: false,
+    sourceImageUrl: "https://dralirezasadighi.com/wp-content/uploads/2025/01/فیلم-جراحی-فک.jpg",
+    localImagePath: "/media/knowledge/فیلم_جراحی_فک_در_اتاق_عمل/hero.jpg",
   },
   {
     postId: "7226",
@@ -2971,6 +2993,7 @@ export const KNOWLEDGE_ARTICLES: readonly KnowledgeArticle[] = [
       { heading: "لیفت ابرو و شقیقه مناسب برای چه کسانی است", paragraphs: ["لیفت ابرو و شقیقه مناسب برای افرادی است که از کاهش انعطاف و جوانه پوست برای برطرف کردن موهبت زیر چشم شکایت دارند و مایل به اصلاح شکل ابرو شکایت دارند."] },
     ],
     structuredDataType: "MedicalWebPage",
+    heroImage: { src: "/media/knowledge/لیفت-ابرو-و-شقیقه/hero.jpg", alt: "لیفت ابرو و شقیقه" },
     translations: {
       en: {
       slug: "brow-and-temple-lift",
@@ -3007,10 +3030,10 @@ export const KNOWLEDGE_ARTICLES: readonly KnowledgeArticle[] = [
     // sourceImageUrl is provenance ONLY, never rendered as a live <img src> —
     // per Hamid's "do not hotlink old WordPress images permanently" rule,
     // only heroImage.src (a downloaded local /media/knowledge/... file) is ever used for display.
-    mediaStatus: "missing",
-    needsMediaReview: true,
-    sourceImageUrl: "",
-    localImagePath: "",
+    mediaStatus: "migrated",
+    needsMediaReview: false,
+    sourceImageUrl: "https://dralirezasadighi.com/wp-content/uploads/2023/12/plastic-surgery-scaled.jpg",
+    localImagePath: "/media/knowledge/لیفت-ابرو-و-شقیقه/hero.jpg",
   },
   {
     postId: "13924",
@@ -3054,6 +3077,7 @@ export const KNOWLEDGE_ARTICLES: readonly KnowledgeArticle[] = [
       { heading: "جمع‌بندی", paragraphs: ["لیفت شقیقه گلایدینگ یک راهکار مدرن و غیرتهاجمی برای جوانسازی ناحیه فوقانی صورت است که با نتایج طبیعی، دوران نقاهت کوتاه و عدم نیاز به جراحی، به گزینه‌ای محبوب میان متقاضیان زیبایی تبدیل شده است.", "اگر به‌دنبال روشی مطمئن برای رفع افتادگی گوشه چشم و لیفت ابرو هستید، لیفت شقیقه گلایدینگ در کلینیک دکتر علیرضا صدیقی می‌تواند انتخابی ایده‌آل و کم‌ریسک برای شما باشد."] },
     ],
     structuredDataType: "MedicalWebPage",
+    heroImage: { src: "/media/knowledge/لیفت-شقیقه-گلایدینگ/hero.jpg", alt: "لیفت شقیقه گلایدینگ؛ روش کم‌تهاجمی برای جوانسازی اطراف چشم و شقیقه" },
     translations: {
       en: {
       slug: "gliding-temporal-lift",
@@ -3100,10 +3124,10 @@ export const KNOWLEDGE_ARTICLES: readonly KnowledgeArticle[] = [
     // sourceImageUrl is provenance ONLY, never rendered as a live <img src> —
     // per Hamid's "do not hotlink old WordPress images permanently" rule,
     // only heroImage.src (a downloaded local /media/knowledge/... file) is ever used for display.
-    mediaStatus: "missing",
-    needsMediaReview: true,
-    sourceImageUrl: "",
-    localImagePath: "",
+    mediaStatus: "migrated",
+    needsMediaReview: false,
+    sourceImageUrl: "https://dralirezasadighi.com/wp-content/uploads/2024/12/لیفت-شقیقه-گلایدینگ.jpg",
+    localImagePath: "/media/knowledge/لیفت-شقیقه-گلایدینگ/hero.jpg",
   },
 ];
 

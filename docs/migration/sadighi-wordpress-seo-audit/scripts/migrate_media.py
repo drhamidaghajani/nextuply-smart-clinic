@@ -151,6 +151,22 @@ def is_plausible_hero_photo(data: bytes) -> tuple[bool, str]:
     return True, f"{w}x{h} — plausible hero photo"
 
 
+OG_IMAGE_PATTERN = re.compile(r'<meta[^>]+property=["\']og:image["\'][^>]+content=["\']([^"\']+)["\']', re.IGNORECASE)
+
+
+def extract_og_image_url(html_bytes: bytes) -> str | None:
+    """Source 4 (last resort, per Hamid's brief 2026-08-25): the live
+    article page's own Open Graph image — only ever tried when sources
+    1-3 (thumbnail/content:encoded/Elementor) found NOTHING to fetch at
+    all, not as a substitute for a rejected candidate."""
+    try:
+        html = html_bytes.decode("utf-8", errors="replace")
+    except Exception:
+        return None
+    m = OG_IMAGE_PATTERN.search(html)
+    return normalize_url(m.group(1)) if m else None
+
+
 def fetch_bytes(url: str, timeout=20) -> bytes | None:
     """Shell out to curl rather than Python's urllib — verified directly that
     the server's TLS cert is valid (openssl s_client confirms "Verify return
@@ -194,6 +210,38 @@ def main():
         post_id = art["postId"]
         slug = art["slug"]
         item = items_by_id.get(post_id)
+
+        # Idempotent re-run guard (added 2026-08-25, per Hamid's "do not
+        # scrape aggressively" instruction): if this article was already
+        # successfully migrated in a PRIOR run and the local file is still
+        # on disk, carry its existing result forward without any new
+        # network request — re-running this script to pick up ONE
+        # newly-added source (e.g. the OG-image fallback below) for the
+        # few articles that still need it must not re-download the ones
+        # that already succeeded.
+        existing_media = art.get("media") or {}
+        if existing_media.get("mediaStatus") == "migrated" and existing_media.get("localImagePath"):
+            existing_file = REPO_ROOT / existing_media["localImagePath"].lstrip("/")
+            if existing_file.is_file():
+                media_status_by_slug[slug] = {
+                    "mediaStatus": existing_media["mediaStatus"],
+                    "needsMediaReview": existing_media.get("needsMediaReview", False),
+                    "sourceImageUrl": existing_media.get("sourceImageUrl", ""),
+                    "localImagePath": existing_media["localImagePath"],
+                }
+                report_rows.append({
+                    "article_title": art["title"],
+                    "article_slug": slug,
+                    "legacy_url": art["legacyUrls"][0] if art["legacyUrls"] else "",
+                    "featured_image_id": "",
+                    "found_image_urls": "",
+                    "selected_source_image_url": existing_media.get("sourceImageUrl", ""),
+                    "local_image_path": existing_media["localImagePath"],
+                    "media_status": "migrated",
+                    "needs_media_review": "no",
+                    "notes": "Already migrated in a prior run — skipped re-fetching (file verified still on disk).",
+                })
+                continue
 
         candidates = []  # (source_url, source_label)
 
@@ -242,7 +290,39 @@ def main():
         rejected_notes = []
 
         if not candidates:
-            notes = "No _thumbnail_id, no inline <img>, no Elementor image reference found — nothing to fetch."
+            # Source 4 (last resort): the live article page's own OG image —
+            # only reached when sources 1-3 found NOTHING at all to fetch.
+            legacy_url = art["legacyUrls"][0] if art["legacyUrls"] else ""
+            og_note = "No _thumbnail_id, no inline <img>, no Elementor image reference found."
+            page_bytes = fetch_bytes(legacy_url) if legacy_url else None
+            og_url = extract_og_image_url(page_bytes) if page_bytes else None
+            if og_url and is_allowed_image_url(og_url):
+                data = fetch_bytes(og_url)
+                if data is None:
+                    notes = f"{og_note} Live-page OG image found ({og_url}) but download failed."
+                elif len(data) < MIN_BYTES:
+                    notes = f"{og_note} Live-page OG image found but only {len(data)} bytes — rejected as broken/placeholder."
+                else:
+                    plausible, reason = is_plausible_hero_photo(data)
+                    if not plausible:
+                        media_status = "low-confidence"
+                        notes = f"{og_note} Live-page OG image found but rejected: {reason}."
+                    else:
+                        ext = Path(urlparse(og_url).path).suffix.lower() or ".jpg"
+                        article_dir = PUBLIC_MEDIA_DIR / slug
+                        article_dir.mkdir(parents=True, exist_ok=True)
+                        out_file = article_dir / f"hero{ext}"
+                        out_file.write_bytes(data)
+                        selected_url = og_url
+                        selected_label = "live-page og:image (source 4, last resort)"
+                        local_path = f"/media/knowledge/{slug}/hero{ext}"
+                        media_status = "migrated"
+                        needs_review = "no"
+                        notes = f"{og_note} Downloaded live-page OG image, {len(data)} bytes ({reason}), saved to {local_path}."
+            elif og_url:
+                notes = f"{og_note} Live-page OG image found ({og_url}) but it's off the allowed dralirezasadighi.com/wp-content/uploads/ domain/path — not downloaded."
+            else:
+                notes = f"{og_note} Live page had no usable og:image meta tag either — nothing to fetch."
         elif not verified_candidates:
             media_status = "low-confidence"
             notes = f"Found {len(candidates)} candidate URL(s) but none matched the allowed dralirezasadighi.com/wp-content/uploads/*.{{jpg,png,webp}} pattern (e.g. off-domain, SVG icon, or a non-upload path) — not downloaded."

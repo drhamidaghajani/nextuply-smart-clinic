@@ -130,3 +130,33 @@ public/media/.DS_Store
 !public/media/certificates/certificate-12.png
 !public/media/certificates/certificate-13.png
 !public/media/certificates/certificate-14.png
+
+# 2026-08-25 — Knowledge Center article hero images (Track 4 media
+# migration, 24 of 25 articles; the 25th has no verified source image
+# and stays in the premium no-image state). Same per-file exception
+# pattern as everything above — do not broaden to a folder-level
+# re-include of public/media/knowledge/**.
+!public/media/knowledge/25-سوال-متداول-در-مورد-تزریق-فیلر-به-ناحی/hero.jpg
+!public/media/knowledge/25-سوال-متداول-در-مورد-جراحی-تزریق-چربی/hero.jpg
+!public/media/knowledge/25-سوال-متداول-در-مورد-جراحی-دندان-عقل-نه/hero.png
+!public/media/knowledge/25-سوال-متداول-در-مورد-جراحی-زیبایی-بین/hero.jpg
+!public/media/knowledge/25-سوال-متداول-در-مورد-جراحی-لیفت-ابرو-و-ش/hero.jpg
+!public/media/knowledge/25-سوال-متداول-در-مورد-جراحی-چانه-و-زاویه/hero.png
+!public/media/knowledge/european-nose-job/hero.png
+!public/media/knowledge/ایمپلنت-اشترومن-در-تبریز/hero.jpg
+!public/media/knowledge/ایمپلنت-اقساطی-در-تبریز-با-دکتر-علیرضا/hero.jpeg
+!public/media/knowledge/ایمپلنت-دندان-در-تبریز-پرسش-پاسخ/hero.jpg
+!public/media/knowledge/ایمپلنت-فوری-در-تبریز/hero.jpg
+!public/media/knowledge/بلفاروپلاستی/hero.jpg
+!public/media/knowledge/بهترین-متخصص-ایمپلنت-تبریز-و-معرفی-دکت/hero.png
+!public/media/knowledge/تفاوت-کشیدن-دندان-و-جراحی-دندان-عقل/hero.jpg
+!public/media/knowledge/جراحی-بینی-به-سبک-اروپایی-زیبایی-و-تقا/hero.jpg
+!public/media/knowledge/جراحی-دندان-عقل-با-بیهوشی-در-تبریز/hero.jpg
+!public/media/knowledge/جراحی-فک-نی-نی-سایت/hero.jpg
+!public/media/knowledge/جراحی-فک-پایین-جلو-آمده/hero.jpg
+!public/media/knowledge/جراحی-فک-پایین-عقب-رفته/hero.jpg
+!public/media/knowledge/فیزیوتراپی-بعد-از-جراحی-فک/hero.jpeg
+!public/media/knowledge/فیزیوتراپی-بعد-از-جراحی-فک-راهنمای-کام/hero.jpg
+!public/media/knowledge/فیلم_جراحی_فک_در_اتاق_عمل/hero.jpg
+!public/media/knowledge/لیفت-ابرو-و-شقیقه/hero.jpg
+!public/media/knowledge/لیفت-شقیقه-گلایدینگ/hero.jpg

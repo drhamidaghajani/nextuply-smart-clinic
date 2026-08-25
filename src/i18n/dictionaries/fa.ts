@@ -527,7 +527,7 @@ export const fa = {
       { href: "#before-after", label: "قبل و بعد" },
       { href: "#faq", label: "سوالات متداول" },
       { href: "#videos", label: "ویدئوها" },
-      { href: "#knowledge-center", label: "دانشنامه" },
+      { href: "/knowledge", label: "دانشنامه" },
       { href: "#contact", label: "تماس" },
     ],
     ctaLabel: "رزرو مشاوره",
@@ -860,42 +860,11 @@ export const fa = {
     // new standing 30px/22px heading/subheading rule (DESIGN_SYSTEM.md §3).
     heading: "مجله علمی و راهنمای بیماران دکتر صدیقی",
     subheading: "مقالات علمی، ویدئوهای آموزشی و پاسخ به پرسش‌های رایج بیماران",
-    articles: {
-      feature: {
-        iconId: "rhinoplasty",
-        label: "جراحی زیبایی بینی",
-        title: "چطور برای جراحی بینی علمی و ایمن آماده شویم؟",
-        lead: "آمادگی درست پیش از جراحی بینی، از انتخاب جراح تا مراقبت‌های چند روز قبل از عمل، نقش مستقیمی در ایمنی و کیفیت نتیجه نهایی دارد. در این یادداشت، مراحل علمی این آمادگی را مرور می‌کنیم.",
-        href: "/blog/rhinoplasty-preparation",
-      },
-      side: [
-        {
-          iconId: "dental-implant",
-          label: "ایمپلنت دندانی پیشرفته",
-          title: "راهنمای کامل ایمپلنت دندانی پیشرفته برای بیماران پرتراکم استخوان",
-          summary: "بررسی علمی چالش‌های ایمپلنت در بیماران با تراکم استخوانی پایین و روش‌های امروزی برای دستیابی به نتیجه‌ای پایدار.",
-          href: "/blog/dental-implant-low-bone-density",
-        },
-        {
-          iconId: "jaw-surgery",
-          label: "ارتوگناتیک",
-          title: "علائم نیاز به جراحی فک و چانه (ارتوگناتیک) چیست؟",
-          summary: "از مشکلات جویدن و تنفس تا عدم تقارن چهره؛ چه نشانه‌هایی بیانگر نیاز به بررسی تخصصی ارتوگناتیک هستند.",
-          href: "/blog/orthognathic-signs",
-        },
-        // Round 2026-07-07: 3rd side article added per Hamid ("سه مقاله
-        // به جای دو تا") — draft title/summary, same TODO(content) flag.
-        {
-          iconId: "facial-rejuvenation",
-          label: "جوان‌سازی صورت",
-          title: "چه زمانی باید به فکر جوان‌سازی صورت باشیم؟",
-          summary: "نشانه‌های افت طبیعی حجم و کشش پوست صورت، و روش‌های علمی و متعادل جوان‌سازی که امروز در دسترس‌اند.",
-          href: "/blog/facial-rejuvenation-signs",
-        },
-      ],
-    },
     // Added 2026-07-13 (full locale-rollout round) — extracted verbatim
     // from `knowledge-center-section.tsx`'s hardcoded "read more" link text.
+    // Round 2026-08-25: `articles: { feature, side }` — demo copy with fake
+    // `/blog/...` hrefs — removed; the section now reads real content
+    // straight from `KNOWLEDGE_ARTICLES` (see that component's doc-comment).
     readMoreCta: "ادامه مطالعه",
   },
   // Round 2026-07-07: pulled out of `knowledgeCenter` into its own
@@ -1092,7 +1061,7 @@ export const fa = {
       { label: "قبل و بعد", href: "#before-after" },
       { label: "سوالات متداول", href: "#faq" },
       { label: "ویدئوها", href: "#videos" },
-      { label: "دانشنامه", href: "#knowledge-center" },
+      { label: "دانشنامه", href: "/knowledge" },
       { label: "تماس", href: "#contact" },
       // Added 2026-07-13 (delivery-mode round) — real dedicated pages now
       // exist; these are absolute (locale-prefixed) paths, not in-page

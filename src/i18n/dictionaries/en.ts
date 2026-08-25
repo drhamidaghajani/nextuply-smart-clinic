@@ -50,7 +50,7 @@ export const header = {
     { href: "#before-after", label: "Before & After" },
     { href: "#faq", label: "FAQ" },
     { href: "#videos", label: "Videos" },
-    { href: "#knowledge-center", label: "Knowledge Center" },
+    { href: "/en/knowledge", label: "Knowledge Center" },
     { href: "#contact", label: "Contact" },
   ],
   ctaLabel: "Book a Consultation",
@@ -75,7 +75,7 @@ export const footer = {
     { label: "Before & After", href: "#before-after" },
     { label: "FAQ", href: "#faq" },
     { label: "Videos", href: "#videos" },
-    { label: "Knowledge Center", href: "#knowledge-center" },
+    { label: "Knowledge Center", href: "/en/knowledge" },
     { label: "Contact", href: "#contact" },
     { label: "About the Doctor", href: "/en/about" },
     { label: "Treatments", href: "/en/services" },
@@ -238,38 +238,9 @@ export const knowledgeCenter = {
   eyebrow: "Knowledge Center",
   heading: "Dr. Sadighi's Clinical Journal & Patient Guide",
   subheading: "Clinical articles, educational videos, and answers to patients' most common questions.",
-  articles: {
-    feature: {
-      iconId: "rhinoplasty",
-      label: "Rhinoplasty",
-      title: "How to Prepare for Safe, Evidence-Based Rhinoplasty",
-      lead: "The right preparation before rhinoplasty — from choosing a surgeon to the days-before checklist — has a direct bearing on safety and the quality of the final result. In this article, we walk through that preparation step by step.",
-      href: "/blog/rhinoplasty-preparation",
-    },
-    side: [
-      {
-        iconId: "dental-implant",
-        label: "Advanced Dental Implants",
-        title: "The Complete Guide to Dental Implants for Patients with Low Bone Density",
-        summary: "A clinical look at the challenges of implant placement in patients with reduced bone density, and today's methods for a durable result.",
-        href: "/blog/dental-implant-low-bone-density",
-      },
-      {
-        iconId: "jaw-surgery",
-        label: "Orthognathic Surgery",
-        title: "Signs You May Need Jaw & Chin (Orthognathic) Surgery",
-        summary: "From chewing and breathing difficulties to facial asymmetry — the signs worth a specialist orthognathic evaluation.",
-        href: "/blog/orthognathic-signs",
-      },
-      {
-        iconId: "facial-rejuvenation",
-        label: "Facial Rejuvenation",
-        title: "When Should You Consider Facial Rejuvenation?",
-        summary: "The natural signs of volume and elasticity loss in facial skin, and today's evidence-based, measured approaches to renewal.",
-        href: "/blog/facial-rejuvenation-signs",
-      },
-    ],
-  },
+  // Round 2026-08-25: `articles: { feature, side }` — demo copy with fake
+  // `/blog/...` hrefs — removed; the section now reads real content
+  // straight from `KNOWLEDGE_ARTICLES` (see that component's doc-comment).
   readMoreCta: "Continue Reading",
 } satisfies KnowledgeCenterDictionary;
 

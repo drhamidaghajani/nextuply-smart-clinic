@@ -1,4 +1,5 @@
 import type { ServiceTaxonomyId } from "./services";
+import type { Locale } from "@/i18n/locales";
 
 /**
  * SINGLE SOURCE OF TRUTH for Knowledge Center articles — phase-1 migration
@@ -3156,24 +3157,58 @@ export function getKnowledgeArticleByLocalizedSlug(
   return undefined;
 }
 
-export function getRelatedKnowledgeArticles(article: KnowledgeArticle, limit = 3): readonly KnowledgeArticle[] {
-  return KNOWLEDGE_ARTICLES.filter(
-    (candidate) => candidate.slug !== article.slug && candidate.topicCluster === article.topicCluster
-  ).slice(0, limit);
+/** True when two articles are "related": same topic cluster, or — when both name one — the same related service. Shared by both `getRelatedKnowledgeArticles` variants below so fa and en/ar can never quietly diverge on what counts as related. */
+function isRelatedArticle(article: KnowledgeArticle, candidate: KnowledgeArticle): boolean {
+  if (candidate.slug === article.slug) return false;
+  if (candidate.topicCluster === article.topicCluster) return true;
+  return Boolean(article.serviceRelation) && candidate.serviceRelation === article.serviceRelation;
 }
 
-/** Same-topic articles that ALSO have a translation for `locale` — used by the `/en`/`/ar` knowledge index and article "related" rail, which must never link to an untranslated article. */
+export function getRelatedKnowledgeArticles(article: KnowledgeArticle, limit = 4): readonly KnowledgeArticle[] {
+  return KNOWLEDGE_ARTICLES.filter((candidate) => isRelatedArticle(article, candidate)).slice(0, limit);
+}
+
+/** Same-topic-or-service articles that ALSO have a translation for `locale` — used by the `/en`/`/ar` knowledge index and article "related" rail, which must never link to an untranslated article. */
 export function getRelatedKnowledgeArticlesForLocale(
   article: KnowledgeArticle,
   locale: "en" | "ar",
-  limit = 3
+  limit = 4
 ): readonly { article: KnowledgeArticle; content: KnowledgeArticleTranslation }[] {
   const related: { article: KnowledgeArticle; content: KnowledgeArticleTranslation }[] = [];
   for (const candidate of KNOWLEDGE_ARTICLES) {
-    if (candidate.slug === article.slug || candidate.topicCluster !== article.topicCluster) continue;
+    if (!isRelatedArticle(article, candidate)) continue;
     const content = candidate.translations?.[locale];
     if (content) related.push({ article: candidate, content });
     if (related.length >= limit) break;
   }
   return related;
+}
+
+/**
+ * Most-recently-updated articles for a locale, excluding the current one —
+ * powers the article detail page's sidebar "Latest articles" block
+ * (2026-08-25 staging QA pass). `fa` reads every article's own top-level
+ * fields; `en`/`ar` only ever include articles that actually have a
+ * translation for that locale — same "never link to an untranslated
+ * article" rule as `getRelatedKnowledgeArticlesForLocale`. Sorted by
+ * `updatedAt` (an ISO `YYYY-MM-DD` string, so a plain string comparison
+ * already sorts chronologically — no `Date` parsing needed).
+ */
+export function getLatestKnowledgeArticles(
+  locale: Locale,
+  limit = 4,
+  excludeSlug?: string
+): readonly { article: KnowledgeArticle; content: KnowledgeArticleTranslation }[] {
+  const candidates: { article: KnowledgeArticle; content: KnowledgeArticleTranslation }[] = [];
+  for (const article of KNOWLEDGE_ARTICLES) {
+    if (locale === "fa") {
+      if (article.slug === excludeSlug) continue;
+      candidates.push({ article, content: { ...article, translationStatus: article.translationStatus } });
+    } else {
+      const content = article.translations?.[locale];
+      if (!content || content.slug === excludeSlug) continue;
+      candidates.push({ article, content });
+    }
+  }
+  return candidates.sort((a, b) => (a.article.updatedAt < b.article.updatedAt ? 1 : -1)).slice(0, limit);
 }

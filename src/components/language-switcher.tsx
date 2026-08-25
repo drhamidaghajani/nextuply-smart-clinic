@@ -5,6 +5,7 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useEffect, useId, useState } from "react";
 
+import { resolveKnowledgeArticleLocaleHref } from "@/components/page/knowledge-article-locale-href";
 import { localeFromPathname, localeHref, pathWithoutLocalePrefix } from "@/i18n/locale-href";
 import { SUPPORTED_LOCALES, type Locale } from "@/i18n/locales";
 
@@ -70,6 +71,19 @@ function hrefForLocale(pathname: string, targetLocale: Locale): string {
  * rendered HTML (no hydration mismatch); the effect then fills in
  * `?query#hash` a moment after mount, which is a normal re-render, not a
  * hydration error.
+ *
+ * Round 2026-08-25 (staging QA, real bug): the path-based swap above
+ * assumes a page's slug is IDENTICAL across all three locales, true for
+ * every page except Knowledge Center articles — English/Arabic
+ * translations have their OWN slug (see `content/knowledge-articles.ts`),
+ * so naively re-prefixing the Persian/English/Arabic slug under a
+ * different locale produced a URL matching no translation, i.e. a 404.
+ * `resolveKnowledgeArticleLocaleHref` (a pure function of the pathname,
+ * backed by the same static article data — see
+ * `knowledge-article-locale-href.ts` for why it's pure rather than a
+ * context populated after the fact) is checked first for every locale;
+ * the path-based fallback below still handles every other page on the
+ * site, where it's correct.
  */
 export function LanguageSwitcher({ tone = "dark", className }: { tone?: "dark" | "light"; className?: string }) {
   const pathname = usePathname();
@@ -91,10 +105,12 @@ export function LanguageSwitcher({ tone = "dark", className }: { tone?: "dark" |
     >
       {SUPPORTED_LOCALES.map((locale) => {
         const isActive = locale === currentLocale;
+        const articleHref = resolveKnowledgeArticleLocaleHref(pathname, locale);
+        const href = articleHref ?? `${hrefForLocale(pathname, locale)}${queryAndHash}`;
         return (
           <Link
             key={locale}
-            href={`${hrefForLocale(pathname, locale)}${queryAndHash}`}
+            href={href}
             aria-current={isActive ? "true" : undefined}
             className="relative rounded-full px-2.5 py-1 text-xs font-semibold"
           >

@@ -10,6 +10,7 @@ import { ServiceTile } from "@/components/sections/service-tile";
 import { AssistantTriggerButton } from "@/modules/smart-clinic-assistant/ui/assistant-trigger-button";
 import { SERVICES } from "@/content/services";
 import { getDictionary } from "@/i18n/get-dictionary";
+import { localeHref } from "@/i18n/locale-href";
 import { isSupportedLocale, LOCALE_DIRECTION } from "@/i18n/locales";
 
 export async function generateMetadata({ params }: { params: Promise<{ locale: string }> }): Promise<Metadata> {
@@ -158,7 +159,7 @@ export default async function AboutPage({ params }: { params: Promise<{ locale: 
                   {dict.heroCtaPrimary}
                 </AssistantTriggerButton>
                 <Link
-                  href={`/${locale}/services`}
+                  href={localeHref(locale, "/services")}
                   className="inline-flex min-h-14 items-center justify-center rounded-full border border-warm-white/25 px-9 py-4 text-sm font-semibold text-warm-white transition-colors duration-200 hover:border-warm-white/50"
                 >
                   {dict.heroCtaSecondary}
@@ -426,9 +427,9 @@ export default async function AboutPage({ params }: { params: Promise<{ locale: 
           </Reveal>
           <div className="grid grid-cols-1 gap-5 sm:grid-cols-3 sm:gap-6">
             {[
-              { label: dict.exploreServicesLabel, sub: dict.exploreServicesSub, href: `/${locale}/services`, icon: "M4 6h16M4 12h16M4 18h10" },
-              { label: dict.exploreCareLabel, sub: dict.exploreCareSub, href: `/${locale}/care-instructions`, icon: "M12 4v16M4 12h16" },
-              { label: dict.exploreBeforeAfterLabel, sub: dict.exploreBeforeAfterSub, href: `/${locale}/before-after`, icon: "M4 4h7v16H4zM13 4h7v16h-7z" },
+              { label: dict.exploreServicesLabel, sub: dict.exploreServicesSub, href: localeHref(locale, "/services"), icon: "M4 6h16M4 12h16M4 18h10" },
+              { label: dict.exploreCareLabel, sub: dict.exploreCareSub, href: localeHref(locale, "/care-instructions"), icon: "M12 4v16M4 12h16" },
+              { label: dict.exploreBeforeAfterLabel, sub: dict.exploreBeforeAfterSub, href: localeHref(locale, "/before-after"), icon: "M4 4h7v16H4zM13 4h7v16h-7z" },
             ].map((tile, index) => (
               <Reveal key={tile.href} delay={index * 0.08}>
                 <Link
@@ -479,7 +480,7 @@ export default async function AboutPage({ params }: { params: Promise<{ locale: 
               {dict.ctaButton}
             </AssistantTriggerButton>
             <Link
-              href={`/${locale}/services`}
+              href={localeHref(locale, "/services")}
               className="inline-flex min-h-14 items-center justify-center rounded-full border border-warm-white/25 px-9 py-4 text-sm font-semibold text-warm-white transition-colors duration-200 hover:border-warm-white/50"
             >
               {dict.ctaSecondaryLabel}

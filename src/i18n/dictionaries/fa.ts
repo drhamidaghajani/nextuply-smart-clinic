@@ -522,7 +522,7 @@ export const fa = {
   header: {
     logoSubtitle: "جراحی تخصصی فک و صورت",
     navItems: [
-      { href: "/fa/about", label: "دکتر صدیقی" },
+      { href: "/about", label: "دکتر صدیقی" },
       { href: "#services", label: "خدمات" },
       { href: "#before-after", label: "قبل و بعد" },
       { href: "#faq", label: "سوالات متداول" },
@@ -1085,7 +1085,7 @@ export const fa = {
     // after the 6 real service links, not replacing any of them.
     services: [
       ...SERVICES.map((service) => ({ label: service.footerLabel.fa, href: getServiceHref("fa", service.slug) })),
-      { label: "مراقبت‌های قبل و بعد عمل", href: "/fa/care-instructions" },
+      { label: "مراقبت‌های قبل و بعد عمل", href: "/care-instructions" },
     ],
     guide: [
       { label: "دکتر صدیقی", href: "#why-dr-sadighi" },
@@ -1097,9 +1097,9 @@ export const fa = {
       // Added 2026-07-13 (delivery-mode round) — real dedicated pages now
       // exist; these are absolute (locale-prefixed) paths, not in-page
       // anchors like the entries above.
-      { label: "درباره دکتر", href: "/fa/about" },
-      { label: "خدمات درمانی", href: "/fa/services" },
-      { label: "گردشگری سلامت", href: "/fa/health-tourism" },
+      { label: "درباره دکتر", href: "/about" },
+      { label: "خدمات درمانی", href: "/services" },
+      { label: "گردشگری سلامت", href: "/health-tourism" },
       // TODO(content): no privacy/terms pages exist yet — real scope, not this correction pass.
       { label: "حریم خصوصی", href: null },
       { label: "قوانین استفاده", href: null },
@@ -2146,6 +2146,15 @@ export const fa = {
     ctaButton: "رزرو مشاوره",
   },
 
+  // Round 2026-08-23 (WordPress → Knowledge Center phase-1 migration): the
+  // 3 demo `articles` this section used to carry inline are gone — real
+  // article content (25 migrated pieces) now lives in
+  // `content/knowledge-articles.ts`, the same content/dictionary split
+  // `careInstructions`'s `topics` vs `content/care-instructions.ts` already
+  // uses, chosen here because of real volume (see that file's own
+  // doc-comment, and docs/migration/sadighi-wordpress-seo-audit/
+  // implementation-spec/knowledge-article-model.md for the reasoning).
+  // This section is chrome only from here on.
   knowledge: {
     eyebrow: "دانشنامه",
     heading: "راهنمای علمی بیماران",
@@ -2155,44 +2164,6 @@ export const fa = {
     ctaHeading: "پرسشی دارید که پاسخش را در مقالات پیدا نکردید؟",
     ctaBody: "دستیار هوشمند کلینیک می‌تواند به پرسش‌های رایج شما پاسخ دهد یا مسیر مشاوره را آغاز کند.",
     ctaButton: "پرسیدن از دستیار هوشمند",
-    articles: [
-      {
-        slug: "preparing-for-consultation",
-        category: "مشاوره",
-        readTime: "۴ دقیقه",
-        title: "چطور برای مشاوره زیبایی آماده شویم؟",
-        summary: "چند گام ساده برای داشتن مشاوره‌ای مفیدتر و تصمیم‌گیری آگاهانه‌تر.",
-        body: [
-          "پیش از مراجعه به مشاوره، فهرستی از دغدغه‌ها و پرسش‌های خود را یادداشت کنید. این کار کمک می‌کند در طول جلسه هیچ نکته مهمی فراموش نشود.",
-          "تصاویر واقعی و به‌روز از وضعیت فعلی، در صورت وجود سابقه پزشکی یا عمل قبلی، به پزشک کمک می‌کند ارزیابی دقیق‌تری داشته باشد.",
-          "مهم‌تر از همه، انتظار خود را واقع‌بینانه نگه دارید. هدف یک مشاوره خوب، رسیدن به تفاهم مشترک درباره امکانات واقعی درمان است، نه وعده یک نتیجه از پیش تعیین‌شده.",
-        ],
-      },
-      {
-        slug: "what-to-ask-before-facial-procedures",
-        category: "تصمیم‌گیری آگاهانه",
-        readTime: "۵ دقیقه",
-        title: "چه سؤالاتی را پیش از روش‌های زیبایی صورت بپرسیم؟",
-        summary: "پرسش‌های کلیدی که به شما کمک می‌کند تصمیمی روشن و مطمئن بگیرید.",
-        body: [
-          "بپرسید که روش پیشنهادی دقیقاً چه مراحلی دارد و دوره نقاهت آن معمولاً چقدر طول می‌کشد.",
-          "از پزشک بخواهید ریسک‌ها و محدودیت‌های واقعی روش را برایتان توضیح دهد، نه فقط جنبه‌های مثبت آن را.",
-          "درباره تجربه و تخصص پزشک در همان روش خاص، و همچنین مراقبت‌های پس از عمل، سؤال کنید تا مسیر درمان برایتان شفاف باشد.",
-        ],
-      },
-      {
-        slug: "understanding-before-after-results",
-        category: "نتایج درمان",
-        readTime: "۴ دقیقه",
-        title: "چگونه تصاویر قبل و بعد را مسئولانه تفسیر کنیم؟",
-        summary: "نکاتی برای نگاه واقع‌بینانه به نمونه‌های قبل و بعد در تصمیم‌گیری درمانی.",
-        body: [
-          "تصاویر قبل و بعد باید بیمار واقعی و روش واقعی انجام‌شده در همان کلینیک را نشان دهند، نه نمونه‌های عمومی یا غیرمرتبط.",
-          "نتیجه هر بیمار به ساختار صورت، سن، پوست و اهداف فردی او بستگی دارد؛ نتیجه یک نمونه لزوماً برای فرد دیگر تکرار نمی‌شود.",
-          "بهترین استفاده از این تصاویر، به‌عنوان مرجعی برای گفتگو با پزشک است، نه معیاری قطعی برای پیش‌بینی نتیجه شخصی شما.",
-        ],
-      },
-    ],
   },
 
   // Added 2026-07-13 (patient-care hub) — extracted to a top-level

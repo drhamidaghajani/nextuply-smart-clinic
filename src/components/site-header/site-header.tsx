@@ -6,6 +6,7 @@ import { useState } from "react";
 import { ClinicLogo } from "@/components/clinic-logo";
 import { LanguageSwitcher } from "@/components/language-switcher";
 import type { HeaderDictionary } from "@/i18n/dictionary-types";
+import { localeHref } from "@/i18n/locale-href";
 import { resolveNavHref } from "@/i18n/resolve-nav-href";
 import type { Locale } from "@/i18n/locales";
 import { AssistantTriggerButton } from "@/modules/smart-clinic-assistant";
@@ -108,8 +109,8 @@ export function SiteHeader({ dict, locale }: { dict: HeaderDictionary; locale: L
         style={{ backgroundColor: background }}
       >
         <div className="mx-auto grid h-[68px] max-w-6xl grid-cols-[auto_1fr_auto] items-center gap-4 px-4 sm:px-8 lg:h-[88px]">
-          <Link href={`/${locale}`} aria-label={dict.logoSubtitle}>
-            <ClinicLogo tone={isDark ? "light" : "dark"} subtitle={dict.logoSubtitle} priority />
+          <Link href={localeHref(locale)} aria-label={dict.logoSubtitle}>
+            <ClinicLogo tone={isDark ? "light" : "dark"} subtitle={dict.logoSubtitle} priority locale={locale} />
           </Link>
 
           <nav className="hidden items-center justify-center gap-4 lg:flex xl:gap-6">

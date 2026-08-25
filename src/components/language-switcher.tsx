@@ -5,23 +5,23 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useEffect, useId, useState } from "react";
 
+import { localeFromPathname, localeHref, pathWithoutLocalePrefix } from "@/i18n/locale-href";
 import { SUPPORTED_LOCALES, type Locale } from "@/i18n/locales";
 
 const LOCALE_LABELS: Record<Locale, string> = { fa: "فا", en: "EN", ar: "AR" };
 
 /**
- * Replaces only the leading `/{locale}` segment of `pathname`, keeping
- * every other segment intact — `/fa/services/rhinoplasty` → `en` becomes
- * `/en/services/rhinoplasty`, not `/en`. `filter(Boolean)` drops the
- * empty strings a leading/trailing slash produces so the rebuilt path
- * never doubles up slashes, and a bare `/fa` (no further segments)
- * correctly becomes just `/en`.
+ * Round 2026-08-23 (final production URL restructuring): rebuilt on top
+ * of `pathWithoutLocalePrefix`/`localeHref` instead of blindly replacing
+ * `pathname.split("/")[1]` — that assumed the first path segment was
+ * ALWAYS a locale, which broke the instant Persian became unprefixed:
+ * on `/knowledge/x`, `segments[0]` is `"knowledge"`, page content, not a
+ * locale, so the old code would have silently mangled it into
+ * `/en/x` (dropping "knowledge" entirely) instead of `/en/knowledge/x`.
  */
-function replaceLocaleSegment(pathname: string, targetLocale: Locale): string {
-  const segments = pathname.split("/").filter(Boolean);
-  if (segments.length === 0) return `/${targetLocale}`;
-  segments[0] = targetLocale;
-  return `/${segments.join("/")}`;
+function hrefForLocale(pathname: string, targetLocale: Locale): string {
+  const bare = pathWithoutLocalePrefix(pathname);
+  return localeHref(targetLocale, bare === "/" ? "" : bare);
 }
 
 /**
@@ -61,7 +61,7 @@ function replaceLocaleSegment(pathname: string, targetLocale: Locale): string {
  * page other than the homepage silently dropped the user back to it,
  * e.g. `/fa/services/rhinoplasty` → EN landed on `/en` instead of
  * `/en/services/rhinoplasty`). Now built from the actual current
- * pathname via `replaceLocaleSegment` (above), plus the current query
+ * pathname via `hrefForLocale` (above), plus the current query
  * string/hash (read client-side via `window.location` into state — not
  * `useSearchParams()`, which would force this component's whole subtree
  * into a Suspense boundary / opt out of static rendering for every page
@@ -73,7 +73,7 @@ function replaceLocaleSegment(pathname: string, targetLocale: Locale): string {
  */
 export function LanguageSwitcher({ tone = "dark", className }: { tone?: "dark" | "light"; className?: string }) {
   const pathname = usePathname();
-  const currentLocale = (pathname.split("/")[1] as Locale) || "fa";
+  const currentLocale = localeFromPathname(pathname);
   const uid = useId();
   const shouldReduceMotion = useReducedMotion();
 
@@ -94,7 +94,7 @@ export function LanguageSwitcher({ tone = "dark", className }: { tone?: "dark" |
         return (
           <Link
             key={locale}
-            href={`${replaceLocaleSegment(pathname, locale)}${queryAndHash}`}
+            href={`${hrefForLocale(pathname, locale)}${queryAndHash}`}
             aria-current={isActive ? "true" : undefined}
             className="relative rounded-full px-2.5 py-1 text-xs font-semibold"
           >

@@ -1,3 +1,4 @@
+import { localeHref } from "@/i18n/locale-href";
 import type { Locale } from "@/i18n/locales";
 
 /**
@@ -583,7 +584,7 @@ export const SERVICES: readonly ServiceTaxonomyItem[] = [
 ] as const;
 
 export function getServiceHref(locale: Locale, slug: string): string {
-  return `/${locale}/services/${slug}`;
+  return localeHref(locale, `/services/${slug}`);
 }
 
 export function getServiceById(id: string): ServiceTaxonomyItem | undefined {
@@ -592,5 +593,5 @@ export function getServiceById(id: string): ServiceTaxonomyItem | undefined {
 
 /** `/[locale]/before-after?category=<galleryCategory>` — see that page's `searchParams` handling. */
 export function getBeforeAfterHref(locale: Locale, galleryCategory: string | null): string {
-  return galleryCategory ? `/${locale}/before-after?category=${galleryCategory}` : `/${locale}/before-after`;
+  return galleryCategory ? `${localeHref(locale, "/before-after")}?category=${galleryCategory}` : localeHref(locale, "/before-after");
 }

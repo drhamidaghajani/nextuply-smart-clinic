@@ -7,6 +7,7 @@ import { PageHero } from "@/components/page/page-hero";
 import { ServiceIndexList } from "@/components/page/service-index-list";
 import { SERVICES } from "@/content/services";
 import { getDictionary } from "@/i18n/get-dictionary";
+import { localeHref } from "@/i18n/locale-href";
 import { isSupportedLocale, LOCALE_DIRECTION } from "@/i18n/locales";
 
 /**
@@ -33,7 +34,7 @@ export default async function ServicesIndexPage({ params }: { params: Promise<{ 
 
         <div className="mx-auto mt-16 flex max-w-4xl flex-col items-center gap-6 text-center">
           <DisclaimerBanner text={dict.disclaimer} />
-          <Link href={`/${locale}/before-after`} className="text-sm text-gold hover:text-gold-hover">
+          <Link href={localeHref(locale, "/before-after")} className="text-sm text-gold hover:text-gold-hover">
             {dict.beforeAfterCta} {arrow}
           </Link>
         </div>

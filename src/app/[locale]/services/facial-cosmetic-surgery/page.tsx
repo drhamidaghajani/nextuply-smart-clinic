@@ -11,6 +11,7 @@ import { Reveal } from "@/components/motion/reveal";
 import { FACIAL_PROCEDURES } from "@/content/facial-cosmetic-procedures";
 import { getBeforeAfterHref, getServiceById } from "@/content/services";
 import { getDictionary } from "@/i18n/get-dictionary";
+import { localeHref } from "@/i18n/locale-href";
 import { isSupportedLocale, LOCALE_DIRECTION, SUPPORTED_LOCALES } from "@/i18n/locales";
 
 export function generateStaticParams() {
@@ -99,7 +100,7 @@ export default async function FacialCosmeticSurgeryPage({ params }: { params: Pr
         // `cover` fills it edge-to-edge and still crops nothing.
         photoFit="cover"
         locale={locale}
-        breadcrumb={[{ label: dict.eyebrow, href: `/${locale}/services` }, { label: service.title }]}
+        breadcrumb={[{ label: dict.eyebrow, href: localeHref(locale, "/services") }, { label: service.title }]}
         ctaPrimaryLabel={dict.heroCtaPrimary}
         ctaSecondaryLabel={page.heroCtaProcedures}
         ctaSecondaryHref="#procedures"
@@ -168,7 +169,7 @@ export default async function FacialCosmeticSurgeryPage({ params }: { params: Pr
         <div className="mx-auto max-w-2xl text-center">
           <DisclaimerBanner text={dict.disclaimer} />
           <div className="mt-4 flex flex-wrap items-center justify-center gap-x-6 gap-y-2">
-            <Link href={`/${locale}/services`} className="text-sm text-charcoal/40 transition-colors duration-200 hover:text-gold">
+            <Link href={localeHref(locale, "/services")} className="text-sm text-charcoal/40 transition-colors duration-200 hover:text-gold">
               {arrow} {dict.eyebrow}
             </Link>
             <Link href={beforeAfterHref} className="text-sm text-charcoal/40 transition-colors duration-200 hover:text-gold">

@@ -13,7 +13,8 @@
     "prisma:studio": "prisma studio",
     "verify:staging-db": "tsx scripts/verify-staging-db.ts",
     "verify:sms-config": "tsx scripts/verify-sms-config.ts",
-    "verify:ai-gateway": "tsx scripts/verify-ai-gateway.ts"
+    "verify:ai-gateway": "tsx scripts/verify-ai-gateway.ts",
+    "verify:legacy-redirects": "tsx scripts/verify-legacy-redirects.ts"
   },
   "dependencies": {
     "@prisma/client": "^6.19.3",

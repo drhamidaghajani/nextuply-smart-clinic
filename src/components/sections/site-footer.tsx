@@ -3,6 +3,7 @@ import Link from "next/link";
 import { ClinicLogo } from "@/components/clinic-logo";
 import { LanguageSwitcher } from "@/components/language-switcher";
 import type { FooterDictionary } from "@/i18n/dictionary-types";
+import { localeHref } from "@/i18n/locale-href";
 import { LOCALE_DIRECTION, type Locale } from "@/i18n/locales";
 import { resolveNavHref } from "@/i18n/resolve-nav-href";
 
@@ -98,8 +99,8 @@ export function SiteFooter({ dict, locale }: { dict: FooterDictionary; locale: L
           <p className="text-sm font-medium text-warm-white/80">{dict.tagline}</p>
           <p className="mx-auto mt-3 max-w-xs text-sm leading-7 text-warm-white/55 lg:mx-0">{dict.description}</p>
           <div className="mt-6 flex justify-center lg:justify-center">
-            <Link href={`/${locale}`}>
-              <ClinicLogo tone="light" size="lg" />
+            <Link href={localeHref(locale)}>
+              <ClinicLogo tone="light" size="lg" locale={locale} />
             </Link>
           </div>
         </div>

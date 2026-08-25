@@ -13,6 +13,7 @@ import { Reveal } from "@/components/motion/reveal";
 import { PHOTO_POSITION, REAL_PHOTOS } from "@/components/sections/gallery-photos";
 import { getCareInstructionHref, getCareTopicsForService } from "@/content/care-instructions";
 import { getBeforeAfterHref, getServiceById, SERVICE_TAXONOMY_IDS } from "@/content/services";
+import { localeHref } from "@/i18n/locale-href";
 import { getDictionary } from "@/i18n/get-dictionary";
 import { isSupportedLocale, LOCALE_DIRECTION, SUPPORTED_LOCALES } from "@/i18n/locales";
 
@@ -96,7 +97,7 @@ export default async function ServiceDetailPage({ params }: { params: Promise<{ 
         photoPosition={heroPhotoPosition}
         photoFit={heroPhotoFit}
         locale={locale}
-        breadcrumb={[{ label: dict.eyebrow, href: `/${locale}/services` }, { label: service.title }]}
+        breadcrumb={[{ label: dict.eyebrow, href: localeHref(locale, "/services") }, { label: service.title }]}
         ctaPrimaryLabel={dict.heroCtaPrimary}
         ctaSecondaryLabel={dict.heroCtaSecondary}
         ctaSecondaryHref={beforeAfterHref}
@@ -230,7 +231,7 @@ export default async function ServiceDetailPage({ params }: { params: Promise<{ 
       <section data-header-bg="#faf7f1" className="bg-warm-white px-6 py-10 sm:px-8">
         <div className="mx-auto max-w-2xl text-center">
           <DisclaimerBanner text={dict.disclaimer} />
-          <Link href={`/${locale}/services`} className="mt-4 inline-block text-sm text-charcoal/40 transition-colors duration-200 hover:text-gold">
+          <Link href={localeHref(locale, "/services")} className="mt-4 inline-block text-sm text-charcoal/40 transition-colors duration-200 hover:text-gold">
             {arrow === "←" ? "→" : "←"} {dict.eyebrow}
           </Link>
         </div>

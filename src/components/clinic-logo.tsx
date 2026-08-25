@@ -1,4 +1,6 @@
 import Image from "next/image";
+import { DOCTOR_NAME } from "@/core/structured-data";
+import type { Locale } from "@/i18n/locales";
 
 /**
  * Round 2026-07-11 (per Hamid — real logo asset now exists): replaces the
@@ -38,6 +40,14 @@ import Image from "next/image";
  * (a `flex justify-center` wrapper), not this component's — it stays a
  * plain inline element so both Header's left-aligned-with-text lockup and
  * Footer's centered-alone placement both work without a layout prop here.
+ *
+ * Round 2026-08-24 (pre-deployment fix): `alt` was a hardcoded Persian
+ * string rendered on every page in every locale — found while sweeping
+ * for Persian text leaking onto `/en`/`/ar` pages. `locale` is now
+ * required (not optional/defaulted) so this can't silently regress back
+ * to a single hardcoded language; the name itself comes from
+ * `DOCTOR_NAME` in `core/structured-data.ts`, the same locale-keyed
+ * source already used for JSON-LD and the knowledge-article byline.
  */
 export function ClinicLogo({
   tone = "dark",
@@ -45,12 +55,14 @@ export function ClinicLogo({
   size = "sm",
   priority = false,
   className,
+  locale,
 }: {
   tone?: "dark" | "light";
   subtitle?: string;
   size?: "sm" | "lg";
   priority?: boolean;
   className?: string;
+  locale: Locale;
 }) {
   const subtitleColor = tone === "light" ? "text-warm-white/55" : "text-charcoal/50";
   const imageSizeClass = size === "lg" ? "h-20 w-20 lg:h-24 lg:w-24" : "h-10 w-10 lg:h-12 lg:w-12";
@@ -61,7 +73,7 @@ export function ClinicLogo({
       <span className={`relative block shrink-0 drop-shadow-[0_1px_3px_rgba(0,0,0,0.18)] ${imageSizeClass}`}>
         <Image
           src="/media/gallery/dr-sadighi-logo.png"
-          alt="دکتر علیرضا صدیقی"
+          alt={DOCTOR_NAME[locale]}
           fill
           sizes={imageSizesAttr}
           priority={priority}

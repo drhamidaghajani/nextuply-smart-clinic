@@ -9,8 +9,9 @@ import { PageFaq } from "@/components/page/page-faq";
 import { PageHero } from "@/components/page/page-hero";
 import { Reveal } from "@/components/motion/reveal";
 import { CARE_TOPIC_IDS, getCareTopicBySlug } from "@/content/care-instructions";
-import { getServiceById } from "@/content/services";
+import { getServiceById, getServiceHref } from "@/content/services";
 import { getDictionary } from "@/i18n/get-dictionary";
+import { localeHref } from "@/i18n/locale-href";
 import { isSupportedLocale, SUPPORTED_LOCALES } from "@/i18n/locales";
 
 export function generateStaticParams() {
@@ -105,7 +106,7 @@ export default async function CareInstructionDetailPage({ params }: { params: Pr
         title={topic.title[locale]}
         subtitle={topic.shortDescription[locale]}
         locale={locale}
-        breadcrumb={[{ label: dict.heading, href: `/${locale}/care-instructions` }, { label: topic.title[locale] }]}
+        breadcrumb={[{ label: dict.heading, href: localeHref(locale, "/care-instructions") }, { label: topic.title[locale] }]}
       />
 
       {topic.imagePath ? (
@@ -135,7 +136,7 @@ export default async function CareInstructionDetailPage({ params }: { params: Pr
               {relatedServices.map((service) => (
                 <Link
                   key={service.id}
-                  href={`/${locale}/services/${service.slug}`}
+                  href={getServiceHref(locale, service.slug)}
                   className="whitespace-nowrap rounded-full border border-charcoal/15 px-4 py-1.5 text-xs text-charcoal/60 transition-colors duration-200 hover:border-gold/40 hover:text-gold"
                 >
                   {service.title[locale]}
@@ -143,7 +144,7 @@ export default async function CareInstructionDetailPage({ params }: { params: Pr
               ))}
             </div>
           ) : null}
-          <Link href={`/${locale}/care-instructions`} className="text-sm text-gold hover:text-gold-hover">
+          <Link href={localeHref(locale, "/care-instructions")} className="text-sm text-gold hover:text-gold-hover">
             ← {dict.backToHubCta}
           </Link>
         </div>

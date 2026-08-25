@@ -5,6 +5,7 @@ import Image from "next/image";
 import Link from "next/link";
 
 import type { DoctorStoryDictionary } from "@/i18n/dictionary-types";
+import { localeHref } from "@/i18n/locale-href";
 import type { Locale } from "@/i18n/locales";
 
 /**
@@ -273,7 +274,7 @@ export function WhyDrSadighiSection({ dict, locale }: { dict: DoctorStoryDiction
           <motion.div {...fadeUp(shouldReduceMotion ? 0 : 0.75)} className="mt-3 sm:mt-6 lg:mt-10">
             <motion.div whileHover={shouldReduceMotion ? undefined : { scale: 1.03 }} transition={{ duration: 0.2 }} className="inline-block">
               <Link
-                href={`/${locale}/about`}
+                href={localeHref(locale, "/about")}
                 className="inline-flex items-center justify-center rounded-full border border-gold px-5 py-2 text-xs font-semibold text-warm-white transition-colors duration-200 hover:bg-gold/10 hover:text-gold sm:px-8 sm:py-3.5 sm:text-sm"
               >
                 {dict.cta}

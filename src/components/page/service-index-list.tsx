@@ -1,6 +1,6 @@
 import Link from "next/link";
 import { Reveal } from "@/components/motion/reveal";
-import type { ServiceTaxonomyItem } from "@/content/services";
+import { getServiceHref, type ServiceTaxonomyItem } from "@/content/services";
 import { LOCALE_DIRECTION, type Locale } from "@/i18n/locales";
 
 /**
@@ -34,7 +34,7 @@ export function ServiceIndexList({
         return (
           <Reveal key={item.id} delay={index * 0.06}>
             <Link
-              href={`/${locale}/services/${item.slug}`}
+              href={getServiceHref(locale, item.slug)}
               className="group relative flex flex-col gap-6 overflow-hidden border-b border-charcoal/10 py-10 transition-colors duration-300 ease-out hover:bg-charcoal/[0.015] sm:py-14 md:flex-row md:items-center md:gap-10"
             >
               <span

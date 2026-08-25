@@ -1274,44 +1274,6 @@ const knowledge = {
   ctaHeading: "Have a question the articles didn't answer?",
   ctaBody: "The Smart Clinic Assistant can answer common questions or start your consultation path.",
   ctaButton: "Ask the Assistant",
-  articles: [
-    {
-      slug: "preparing-for-consultation",
-      category: "Consultation",
-      readTime: "4 min",
-      title: "How to Prepare for a Cosmetic Consultation",
-      summary: "A few simple steps for a more useful consultation and a more informed decision.",
-      body: [
-        "Before your consultation, write down your concerns and questions. This helps make sure nothing important gets missed during the session.",
-        "Recent, real photos of your current condition — along with any relevant medical history or prior procedures — help your doctor make a more accurate assessment.",
-        "Most importantly, keep your expectations realistic. A good consultation aims for a shared understanding of what treatment can genuinely achieve, not a promise of a predetermined result.",
-      ],
-    },
-    {
-      slug: "what-to-ask-before-facial-procedures",
-      category: "Informed Decisions",
-      readTime: "5 min",
-      title: "What to Ask Before a Facial Aesthetic Procedure",
-      summary: "Key questions that help you make a clear, confident decision.",
-      body: [
-        "Ask exactly what steps the proposed procedure involves, and how long recovery typically takes.",
-        "Ask your doctor to explain the real risks and limitations of the procedure, not just its benefits.",
-        "Ask about the doctor's experience with that specific procedure, and about aftercare — so your treatment path is fully transparent.",
-      ],
-    },
-    {
-      slug: "understanding-before-after-results",
-      category: "Treatment Results",
-      readTime: "4 min",
-      title: "How to Interpret Before & After Photos Responsibly",
-      summary: "Notes on viewing before/after examples realistically when making a treatment decision.",
-      body: [
-        "Before/after photos should show a real patient and a real procedure performed at that same clinic — not generic or unrelated examples.",
-        "Every patient's result depends on their own facial structure, age, skin, and individual goals; one example's outcome won't necessarily repeat for someone else.",
-        "The best use of these images is as a starting point for conversation with your doctor, not a definitive predictor of your own personal result.",
-      ],
-    },
-  ],
 } satisfies KnowledgePageDictionary;
 
 // Added 2026-07-13 (patient-care hub); real content integrated same day

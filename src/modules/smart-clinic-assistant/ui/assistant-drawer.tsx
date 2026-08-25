@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 import { useEffect, useRef, useState } from "react";
 
 import { getDictionary } from "@/i18n/get-dictionary";
+import { localeHref } from "@/i18n/locale-href";
 import { LOCALE_DIRECTION, type Locale } from "@/i18n/locales";
 import { formatPersianDigits } from "@/i18n/persian-format";
 
@@ -1009,7 +1010,7 @@ export function AssistantDrawer() {
               label: dict.steps.careGuidance.cta,
               onClick: () => {
                 close();
-                router.push(`/${locale}/care-instructions`);
+                router.push(localeHref(locale, "/care-instructions"));
               },
               emphasized: true,
             },

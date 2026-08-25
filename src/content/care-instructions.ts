@@ -1,3 +1,4 @@
+import { localeHref } from "@/i18n/locale-href";
 import type { Locale } from "@/i18n/locales";
 import type { ServiceTaxonomyId } from "./services";
 
@@ -167,7 +168,7 @@ export const CARE_TOPICS: readonly CareTopicItem[] = [
 ] as const;
 
 export function getCareInstructionHref(locale: Locale, slug: string): string {
-  return `/${locale}/care-instructions/${slug}`;
+  return localeHref(locale, `/care-instructions/${slug}`);
 }
 
 export function getCareTopicBySlug(slug: string): CareTopicItem | undefined {

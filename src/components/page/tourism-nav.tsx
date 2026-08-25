@@ -1,5 +1,6 @@
 import Link from "next/link";
 import type { HealthTourismPageDictionary } from "@/i18n/dictionary-types";
+import { localeHref } from "@/i18n/locale-href";
 import type { Locale } from "@/i18n/locales";
 
 /** Shared sub-nav for the 4 health-tourism pages (overview/visa/hotel/transfer). */
@@ -13,10 +14,10 @@ export function TourismNav({
   active: "overview" | "visa" | "hotel" | "transfer";
 }) {
   const tabs = [
-    { id: "overview" as const, label: nav.overview, href: `/${locale}/health-tourism` },
-    { id: "visa" as const, label: nav.visa, href: `/${locale}/health-tourism/visa` },
-    { id: "hotel" as const, label: nav.hotel, href: `/${locale}/health-tourism/hotel` },
-    { id: "transfer" as const, label: nav.transfer, href: `/${locale}/health-tourism/transfer` },
+    { id: "overview" as const, label: nav.overview, href: localeHref(locale, "/health-tourism") },
+    { id: "visa" as const, label: nav.visa, href: localeHref(locale, "/health-tourism/visa") },
+    { id: "hotel" as const, label: nav.hotel, href: localeHref(locale, "/health-tourism/hotel") },
+    { id: "transfer" as const, label: nav.transfer, href: localeHref(locale, "/health-tourism/transfer") },
   ];
 
   return (

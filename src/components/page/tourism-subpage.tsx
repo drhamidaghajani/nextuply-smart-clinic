@@ -4,6 +4,7 @@ import { DisclaimerBanner } from "@/components/page/disclaimer-banner";
 import { PageHero } from "@/components/page/page-hero";
 import { TourismNav } from "@/components/page/tourism-nav";
 import type { HealthTourismPageDictionary, HealthTourismSubpage } from "@/i18n/dictionary-types";
+import { localeHref } from "@/i18n/locale-href";
 import type { Locale } from "@/i18n/locales";
 
 /**
@@ -37,7 +38,7 @@ export function TourismSubpage({
         title={section.title}
         subtitle={section.subtitle}
         locale={locale}
-        breadcrumb={[{ label: nav.overview, href: `/${locale}/health-tourism` }, { label: section.eyebrow }]}
+        breadcrumb={[{ label: nav.overview, href: localeHref(locale, "/health-tourism") }, { label: section.eyebrow }]}
       />
       <TourismNav nav={nav} locale={locale} active={active} />
       <ContentSection lead={section.intro} tone="cream">

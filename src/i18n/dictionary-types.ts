@@ -659,15 +659,6 @@ export interface BeforeAfterPageDictionary {
   ctaButton: string;
 }
 
-export interface KnowledgeArticle {
-  slug: string;
-  category: string;
-  readTime: string;
-  title: string;
-  summary: string;
-  body: readonly string[];
-}
-
 /**
  * Round 2026-07-13 (patient-care hub, per Hamid's "مراقبت‌های قبل و بعد
  * عمل" brief) — page-level chrome only, shared across the hub and every
@@ -733,13 +724,13 @@ export interface CareInstructionsPageDictionary {
   topics: readonly CareTopicDetail[];
 }
 
+/** Page-level chrome only — real article content lives in `content/knowledge-articles.ts` (see that file's doc-comment). */
 export interface KnowledgePageDictionary {
   eyebrow: string;
   heading: string;
   subheading: string;
   readMoreCta: string;
   backToIndexCta: string;
-  articles: readonly KnowledgeArticle[];
   ctaHeading: string;
   ctaBody: string;
   ctaButton: string;

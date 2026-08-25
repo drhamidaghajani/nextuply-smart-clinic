@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { localeHref } from "@/i18n/locale-href";
 import type { Locale } from "@/i18n/locales";
 
 /**
@@ -15,7 +16,7 @@ export interface BreadcrumbItem {
 }
 
 export function PremiumBreadcrumb({ items, locale }: { items: readonly BreadcrumbItem[]; locale: Locale }) {
-  const trail: BreadcrumbItem[] = [{ label: HOME_LABEL[locale], href: `/${locale}` }, ...items];
+  const trail: BreadcrumbItem[] = [{ label: HOME_LABEL[locale], href: localeHref(locale) }, ...items];
 
   return (
     <nav aria-label="breadcrumb" className="flex items-center justify-center gap-2 text-[11px] uppercase tracking-[0.15em] sm:text-xs">

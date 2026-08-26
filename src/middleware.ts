@@ -45,7 +45,7 @@ function normalizeTrailingSlash(pathname: string): string {
  * request, or `null` if `pathname` isn't such a request OR is specifically
  * `/fa/internal/...` (left alone entirely — see the doc-comment above).
  */
-function stripNonInternalFaPrefix(pathname: string): string | null {
+export function stripNonInternalFaPrefix(pathname: string): string | null {
   if (pathname !== "/fa" && !pathname.startsWith("/fa/")) return null;
   if (pathname.startsWith("/fa/internal")) return null;
   const stripped = pathname.slice("/fa".length);
@@ -136,7 +136,25 @@ export function normalizeLegacyPath(pathname: string): string {
 }
 
 export function resolveLegacyPath(pathname: string): string | null {
-  return LEGACY_REDIRECTS[normalizeLegacyPath(pathname)] ?? null;
+  const normalized = normalizeLegacyPath(pathname);
+  const target = LEGACY_REDIRECTS[normalized] ?? null;
+  // P0 production incident (2026-08-26): a bad LEGACY_REDIRECTS row once
+  // read `"/contact": "/contact"` — an old WordPress path that happened
+  // to normalize to the SAME string as its own (correct) new-site target.
+  // This function had no check for "the target IS the request," and the
+  // caller below redirects unconditionally whenever this returns
+  // non-null, so that one entry caused an infinite self-redirect on live
+  // production (see docs/migration/sadighi-wordpress-seo-audit/
+  // production-redirect-audit.csv). The generator now filters this out at
+  // the data source too (generate_legacy_redirects_ts.py), but the
+  // invariant "never redirect a request to itself" belongs here, at the
+  // one place every caller goes through — not only in the data that feeds
+  // it, which could regain this bug from a future source we don't control
+  // as tightly (e.g. a new Rank Math export).
+  if (target !== null && normalizeLegacyPath(target) === normalized) {
+    return null;
+  }
+  return target;
 }
 
 /**

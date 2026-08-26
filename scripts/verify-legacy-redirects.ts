@@ -35,7 +35,7 @@
  * Run: npm run verify:legacy-redirects
  */
 import { readFileSync } from "node:fs";
-import { resolveLegacyPath, resolveHostCanonicalization, normalizeLegacyPath } from "../src/middleware";
+import { resolveLegacyPath, resolveHostCanonicalization, normalizeLegacyPath, stripNonInternalFaPrefix } from "../src/middleware";
 import { LEGACY_REDIRECTS } from "../src/content/legacy-redirects";
 
 const SPEC_CSV = "docs/migration/sadighi-wordpress-seo-audit/implementation-spec/legacy-redirects-spec.csv";
@@ -49,6 +49,10 @@ const DECISION_OVERRIDES: Record<string, string> = {
   "/25-سوال-متداول-در-مورد-جراحی-تزریق-چربی": "/knowledge/25-سوال-متداول-در-مورد-جراحی-تزریق-چربی",
   "/بلفاروپلاستی": "/knowledge/بلفاروپلاستی",
   "/tag/متخصص-دندان-تبریز": "/about",
+  // P0 production incident (2026-08-26) — reverses the earlier "keep
+  // blocked" decision for this one URL specifically; see STILL_BLOCKED
+  // below and production-redirect-audit.csv for the full incident.
+  "/نمونه-درمان": "/before-after",
 };
 
 /**
@@ -66,8 +70,12 @@ function stripFaPrefix(path: string): string {
   return path;
 }
 
-// Hamid's explicit "keep blocked" instruction (2026-08-23) — must have NO map entry.
-const STILL_BLOCKED = new Set(["/جراحی-برجستگی-پیشانی", "/نمونه-درمان"]);
+// Hamid's explicit "keep blocked" instruction (2026-08-23) — must have NO
+// map entry. نمونه-درمان REMOVED 2026-08-26 (P0 incident, see
+// DECISION_OVERRIDES above) — a later, more specific instruction on that
+// exact URL reversed the earlier decision; جراحی-برجستگی-پیشانی wasn't
+// mentioned in the newer instruction and stays blocked.
+const STILL_BLOCKED = new Set(["/جراحی-برجستگی-پیشانی"]);
 
 function parseCsv(text: string): Record<string, string>[] {
   const rows: string[][] = [];
@@ -135,6 +143,16 @@ function main() {
       continue;
     }
 
+    if (oldPath === "/contact") {
+      // P0 production incident (2026-08-26): the spec's own new_path for
+      // this row (/fa/contact) strips to /contact — identical to the old
+      // path — which is exactly the self-redirect bug that looped
+      // production. resolveLegacyPath's self-redirect guard makes this
+      // null on purpose; see the REGRESSION check below for the full story.
+      check(`${oldPath} falls through (self-redirect guard, not a map entry)`, resolveLegacyPath(oldPath), null);
+      continue;
+    }
+
     if (STILL_BLOCKED.has(oldPath)) {
       check(`BLOCKED (kept out per decision 7): ${oldPath}`, resolveLegacyPath(oldPath), null);
       continue;
@@ -156,6 +174,90 @@ function main() {
     resolveLegacyPath("/جراحی-فک-پایین-عقب-رفته-راهی-برای-بهبود/"),
     "/knowledge/جراحی-فک-پایین-عقب-رفته"
   );
+
+  // P0 production incident (2026-08-26) — see production-redirect-audit.csv.
+  // Critical regression test: this exact bug (a bad LEGACY_REDIRECTS row
+  // whose target equalled its own source) caused an infinite self-redirect
+  // on live production. resolveLegacyPath must return null for /contact —
+  // meaning "no legacy redirect," so the request falls through to the real
+  // page — not a redirect back to itself.
+  check("REGRESSION: /contact must NOT self-redirect", resolveLegacyPath("/contact"), null);
+
+  // The 3 P0 fixes that don't exist as legacy-redirects-spec.csv rows at
+  // all (so the main spec-row loop above never exercises them) — injected
+  // directly via P0_INCIDENT_FIXES_20260826 in the generator.
+  check("P0 fix: /جراحی-زیبایی-بینی/", resolveLegacyPath("/جراحی-زیبایی-بینی/"), "/services/rhinoplasty");
+  check("P0 fix: /زیبایی-بینی/", resolveLegacyPath("/زیبایی-بینی/"), "/services/rhinoplasty");
+  check("P0 fix: /خدمات-زیبایی/", resolveLegacyPath("/خدمات-زیبایی/"), "/services");
+
+  // No LEGACY_REDIRECTS target may ever be a /fa/... path — Persian
+  // canonical targets are always root paths (src/i18n/locale-href.ts).
+  for (const [source, target] of Object.entries(LEGACY_REDIRECTS)) {
+    check(`no /fa target: ${source} -> ${target}`, target === "/fa" || target.startsWith("/fa/"), false);
+  }
+
+  // Every entry actually in the generated map resolves to itself through
+  // resolveLegacyPath — catches any future drift between the map's own
+  // data and the function that reads it (normalization bugs, stale
+  // rebuilds), independent of the CSV-derived spot-checks above.
+  for (const [source, target] of Object.entries(LEGACY_REDIRECTS)) {
+    check(`map entry resolves: ${source}`, resolveLegacyPath(source), target);
+  }
+
+  // /fa (bare, no further path) must still collapse to root Persian, not
+  // stay /fa or become /fa/internal-guarded — internal/* is the one
+  // carve-out stripNonInternalFaPrefix itself makes (returns null there).
+  check("/fa -> / (bare)", stripNonInternalFaPrefix("/fa"), "/");
+  check("/fa/about -> /about", stripNonInternalFaPrefix("/fa/about"), "/about");
+  check("/fa/internal/... untouched (returns null)", stripNonInternalFaPrefix("/fa/internal/dashboard"), null);
+
+  // Top 30 highest-click legacy URLs (search-console-url-performance.csv,
+  // cross-referenced against wordpress-content-inventory.csv/migration-map-
+  // draft.csv during the 2026-08-26 P0 audit) — each must resolve to a real
+  // redirect target, UNLESS it's one of the two rows Hamid keeps
+  // deliberately blocked (STILL_BLOCKED) or a path the new site already
+  // serves natively (no redirect needed at all).
+  const NATIVE_NO_REDIRECT_NEEDED = new Set(["/contact"]);
+  const TOP_CLICK_LEGACY_URLS: readonly string[] = [
+    "/ایمپلنت-اقساطی-در-تبریز-با-دکتر-علیرضا",
+    "/جراحی-فک-نی-نی-سایت",
+    "/جراحی-بینی-به-سبک-اروپایی-زیبایی-و-تقا",
+    "/جراحی-دندان-عقل-با-بیهوشی-در-تبریز",
+    "/فیزیوتراپی-بعد-از-جراحی-فک-راهنمای-کام",
+    "/tag/متخصص-دندان-تبریز",
+    "/فیلم_جراحی_فک_در_اتاق_عمل",
+    "/25-سوال-متداول-در-مورد-جراحی-لیفت-ابرو-و-ش",
+    "/tag/جراحی-ایمپلنت-تبریز",
+    "/بهترین-متخصص-ایمپلنت-تبریز-و-معرفی-دکت",
+    "/contact",
+    "/ایمپلنت-فوری-در-تبریز",
+    "/about-us",
+    "/ریلپس-یا-بازگشت-پس-از-عمل-جراحی-فک-با-تا",
+    "/25-سوال-متداول-در-مورد-جراحی-دندان-عقل-نه",
+    "/لیفت-شقیقه-گلایدینگ",
+    "/european-nose-job",
+    "/25-سوال-متداول-در-مورد-جراحی-تزریق-چربی",
+    "/25-سوال-متداول-در-مورد-تزریق-فیلر-به-ناحی",
+    "/تفاوت-کشیدن-دندان-و-جراحی-دندان-عقل",
+    "/25-سوال-متداول-در-مورد-جراحی-چانه-و-زاویه",
+    "/جراحی-برجستگی-پیشانی",
+    "/فیزیوتراپی-بعد-از-جراحی-فک",
+    "/لیفت-ابرو-و-شقیقه",
+    "/جراحی-فک-پایین-عقب-رفته",
+    "/جراحی-فک-پایین-جلو-آمده",
+    "/نمونه-درمان",
+    "/ایمپلنت-دندان-در-تبریز-پرسش-پاسخ",
+    "/ایمپلنت-اشترومن-در-تبریز",
+    "/25-سوال-متداول-در-مورد-جراحی-زیبایی-بین",
+  ];
+  for (const path of TOP_CLICK_LEGACY_URLS) {
+    const normalized = normalizeLegacyPath(path);
+    if (STILL_BLOCKED.has(normalized) || NATIVE_NO_REDIRECT_NEEDED.has(normalized)) {
+      continue; // asserted elsewhere (BLOCKED loop above / the /contact regression check)
+    }
+    const target = resolveLegacyPath(path);
+    check(`top-click URL has a redirect: ${path}`, target !== null, true);
+  }
 
   // Rank Math redirect audit merge — see rank-math-redirects-summary.md.
   const rankMathText = readFileSync(RANK_MATH_MERGE_CSV, "utf-8");

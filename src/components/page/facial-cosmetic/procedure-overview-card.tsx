@@ -9,6 +9,7 @@ import type { Locale } from "@/i18n/locales";
 
 import { ProcedureDetailPanel } from "./procedure-detail-panel";
 
+/** SUPERSEDED (2026-08-26) — see `procedures-explorer.tsx`'s own doc-comment; kept per "do not delete files," no longer imported by any page. */
 /** Same fade+height transition `PageFaq` uses elsewhere on this page — one motion language, not a second one invented here. */
 const PANEL_TRANSITION = { duration: 0.3, ease: [0.22, 1, 0.36, 1] as const };
 

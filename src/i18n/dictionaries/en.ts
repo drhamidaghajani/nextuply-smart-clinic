@@ -202,36 +202,20 @@ export const patientJourney = {
   cta: "Start My Journey",
 } satisfies PatientJourneyDictionary;
 
+// Round 2026-08-26 (Patient Stories redesign, per Dr. Sadighi) — rebuilt;
+// see fa.ts's patientStories comment and PatientStoriesDictionary's own
+// doc-comment for why the previous review/video/Instagram-mosaic content
+// was removed rather than translated forward.
 export const patientStories = {
   heading: "Real Patient Stories",
   subheading:
-    "At Dr. Alireza Sadighi's clinic, no surgery is just a “procedure” — each one marks the beginning of a new chapter in someone's life. Here you'll find short documentaries, real footage, verified Google reviews, and moments shared on Instagram — no actors, no exaggeration, only real patient stories.",
-  videoLabel: "A real documentary — no actors",
-  moreThanLabel: "More than",
-  googleReviewCount: "X",
-  googleBadge: "five-star Google reviews",
-  instagramBadge: "Dozens of before-and-after stories on Instagram",
-  evidence: [
-    { id: "video-1", type: "video", caption: "Pre-Rhinoplasty Nerves" },
-    {
-      id: "review-1",
-      type: "review",
-      name: "Maryam, 32",
-      quote: "“I felt at ease from the very first consultation — the result was exactly what I wanted.”",
-    },
-    { id: "instagram-1", type: "instagram", caption: "Before / After – Nose Surgery" },
-    { id: "video-2", type: "video", caption: "First Look at the New Result" },
-    { id: "photo-1", type: "photo" },
-  ],
-  photoStories: [
-    { quote: "After years, I can finally stand in front of a camera at ease again.", meta: "Treatment record — Rebuilding confidence" },
-    { quote: "For the first time, I actually enjoy seeing photos of myself.", meta: "Treatment record — Rhinoplasty" },
-    { quote: "My face finally feels like it matches who I am inside.", meta: "Treatment record — Jaw & chin surgery" },
-    { quote: "I found the confidence I had been searching for, for years.", meta: "Treatment record — Facial rejuvenation" },
-    { quote: "I no longer look away from my old photos.", meta: "Treatment record — Facial cosmetic surgery" },
-  ],
-  playAriaLabel: "Play documentary",
-  verifiedOnGoogleLabel: "Verified on Google",
+    "At Dr. Alireza Sadighi's clinic, the result of every surgery is one person's real story. Below are real before-and-after cases from real patients — no actors, no exaggeration.",
+  beforeLabel: "Before",
+  afterLabel: "After",
+  viewCaseCta: "View this case",
+  beforeAfterCta: "View the full before-and-after gallery",
+  instagramCta: "Follow on Instagram",
+  assistantCta: "Start with the Smart Clinic Assistant",
 } satisfies PatientStoriesDictionary;
 
 export const knowledgeCenter = {
@@ -519,6 +503,7 @@ export const assistantFlow = {
   ui: {
     openButtonLabel: "Open the clinic's smart assistant",
     closeButtonLabel: "Close assistant",
+    back: "Back",
     backToMenu: "Back to main menu",
     chooseServiceCta: "Choose a Service",
     serviceSelectionEyebrow: "Choose a Service",
@@ -905,6 +890,9 @@ const servicesPage = {
     finalCtaBody:
       "In facial cosmetic surgery, choosing the right approach matters more than the operation itself. Carefully reviewing facial anatomy, personal expectations, and treatment limits helps you take a safer, more natural path.",
     finalCtaButton: "Start with the Smart Clinic Assistant",
+    procedureCardCta: "View details",
+    relatedProceduresHeading: "Other Facial Cosmetic Procedures",
+    backToParentCta: "Back to Facial Cosmetic Surgery",
   },
   // Round 2026-07-13 (taxonomy correction): exactly the 6 canonical
   // services from `src/content/services.ts` — see fa.ts's matching

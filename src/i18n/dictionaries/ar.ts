@@ -191,36 +191,20 @@ export const patientJourney = {
   cta: "ابدأ رحلتي",
 } satisfies PatientJourneyDictionary;
 
+// Round 2026-08-26 (Patient Stories redesign, per Dr. Sadighi) — rebuilt;
+// see fa.ts's patientStories comment and PatientStoriesDictionary's own
+// doc-comment for why the previous review/video/Instagram-mosaic content
+// was removed rather than translated forward.
 export const patientStories = {
   heading: "قصص حقيقية لمرضانا",
   subheading:
-    "في عيادة الدكتور عليرضا صديقي، لا تُعدّ أي جراحة مجرد «عملية»؛ بل بداية فصل جديد في حياة إنسان. في هذا القسم ستشاهدون مقاطع وثائقية قصيرة وفيديوهات حقيقية وتقييمات موثقة على Google ولحظات موثقة على Instagram؛ دون ممثلين، ودون مبالغة، بقصص حقيقية لمرضانا.",
-  videoLabel: "توثيق حقيقي — دون ممثلين",
-  moreThanLabel: "أكثر من",
-  googleReviewCount: "X",
-  googleBadge: "تقييم بخمس نجوم على Google",
-  instagramBadge: "عشرات القصص قبل وبعد على Instagram",
-  evidence: [
-    { id: "video-1", type: "video", caption: "القلق قبل عملية الأنف" },
-    {
-      id: "review-1",
-      type: "review",
-      name: "مريم، 32 عامًا",
-      quote: "«شعرت بالطمأنينة منذ جلسة الاستشارة الأولى؛ وكانت النتيجة بالضبط كما تمنيت.»",
-    },
-    { id: "instagram-1", type: "instagram", caption: "Before / After – Nose Surgery" },
-    { id: "video-2", type: "video", caption: "أول نظرة على الملامح الجديدة" },
-    { id: "photo-1", type: "photo" },
-  ],
-  photoStories: [
-    { quote: "بعد سنوات، أقف من جديد أمام الكاميرا بكل ثقة وهدوء.", meta: "سجل علاجي — استعادة الثقة بالنفس" },
-    { quote: "لأول مرة، أشعر بالسعادة عند رؤية صوري.", meta: "سجل علاجي — جراحة تجميل الأنف" },
-    { quote: "أشعر أن ملامح وجهي أصبحت أخيرًا منسجمة مع روحي.", meta: "سجل علاجي — جراحة الفك والذقن" },
-    { quote: "وجدت الثقة بالنفس التي كنت أبحث عنها منذ سنوات.", meta: "سجل علاجي — تجديد شباب الوجه" },
-    { quote: "لم أعد أتجنب النظر إلى صوري القديمة.", meta: "سجل علاجي — جراحات تجميل الوجه" },
-  ],
-  playAriaLabel: "تشغيل الفيلم الوثائقي",
-  verifiedOnGoogleLabel: "موثّق على Google",
+    "في عيادة الدكتور عليرضا صديقي، نتيجة كل جراحة هي قصة حقيقية لإنسان. فيما يلي نماذج من نتائج حقيقية لمرضى حقيقيين — دون ممثلين، ودون مبالغة.",
+  beforeLabel: "قبل",
+  afterLabel: "بعد",
+  viewCaseCta: "عرض هذه الحالة",
+  beforeAfterCta: "عرض معرض قبل وبعد الكامل",
+  instagramCta: "المتابعة على إنستغرام",
+  assistantCta: "ابدأ الاستشارة مع مساعد العيادة الذكي",
 } satisfies PatientStoriesDictionary;
 
 export const knowledgeCenter = {
@@ -506,6 +490,7 @@ export const assistantFlow = {
   ui: {
     openButtonLabel: "فتح المساعد الذكي للعيادة",
     closeButtonLabel: "إغلاق المساعد",
+    back: "رجوع",
     backToMenu: "العودة إلى القائمة الرئيسية",
     chooseServiceCta: "اختر خدمة",
     serviceSelectionEyebrow: "اختيار الخدمة",
@@ -887,6 +872,9 @@ const servicesPage = {
     finalCtaBody:
       "في جراحات تجميل الوجه، اختيار الطريقة الصحيحة أهم من الجراحة نفسها. تساعد المراجعة الدقيقة لتشريح الوجه وتوقعات الشخص وحدود العلاج على اختيار مسار أكثر أماناً وطبيعية.",
     finalCtaButton: "ابدأ الاستشارة مع مساعد العيادة الذكي",
+    procedureCardCta: "عرض التفاصيل",
+    relatedProceduresHeading: "جراحات تجميل الوجه الأخرى",
+    backToParentCta: "العودة إلى جراحات تجميل الوجه",
   },
   // Round 2026-07-13 (taxonomy correction): exactly the 6 canonical
   // services from `src/content/services.ts` — see fa.ts's matching

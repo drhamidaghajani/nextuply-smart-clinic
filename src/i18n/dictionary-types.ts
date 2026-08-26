@@ -103,24 +103,33 @@ export interface PatientJourneyDictionary {
   cta: string;
 }
 
-export type PatientStoryEvidence =
-  | { id: string; type: "video"; caption: string }
-  | { id: string; type: "review"; name: string; quote: string }
-  | { id: string; type: "instagram"; caption: string }
-  | { id: string; type: "photo" };
-
+/**
+ * Round 2026-08-26 (Patient Stories redesign, per Dr. Sadighi — "does not
+ * feel unfinished / does not read as fabricated"): REPLACES the previous
+ * shape entirely. The old `PatientStoryEvidence` union had a `"review"`
+ * variant (a fabricated patient name + quote, never a real review) and a
+ * `"video"`/`"instagram"` variant standing in for media that was never
+ * actually produced; `googleReviewCount` was literally the placeholder
+ * string `"X"`, never filled in with a real number; `photoStories` was 5
+ * rotating first-person quotes, 4 of which its own code comment flagged
+ * as unapproved draft copy, never signed off as real. None of that
+ * belongs in a "no fake testimonials, no invented ratings" section — this
+ * dictionary now owns ONLY editorial copy and CTA labels; the section's
+ * real content (3 real before/after cases) is derived directly from
+ * `content/before-after-cases.ts`, the same "content file is the source
+ * of truth, dictionary owns only copy" split `KnowledgeCenterSection`
+ * already established.
+ */
 export interface PatientStoriesDictionary {
   heading: string;
   subheading: string;
-  videoLabel: string;
-  moreThanLabel: string;
-  googleReviewCount: string;
-  googleBadge: string;
-  instagramBadge: string;
-  evidence: readonly PatientStoryEvidence[];
-  photoStories: readonly { quote: string; meta: string }[];
-  playAriaLabel: string;
-  verifiedOnGoogleLabel: string;
+  /** Compact label on each before/after preview card ("قبل" / "بعد" pairing cue) — not a claim, just a caption. */
+  beforeLabel: string;
+  afterLabel: string;
+  viewCaseCta: string;
+  beforeAfterCta: string;
+  instagramCta: string;
+  assistantCta: string;
 }
 
 /**
@@ -226,6 +235,8 @@ export interface AssistantFlowDictionary {
   ui: {
     openButtonLabel: string;
     closeButtonLabel: string;
+    /** One step back within a guided flow (e.g. triage -> service selection) — distinct from `backToMenu`, which always jumps all the way to the main menu. Round 2026-08-26 (assistant Back/Main-menu UX fix). */
+    back: string;
     backToMenu: string;
     chooseServiceCta: string;
     serviceSelectionEyebrow: string;
@@ -574,6 +585,19 @@ export interface FacialCosmeticPageDictionary {
   finalCtaHeading: string;
   finalCtaBody: string;
   finalCtaButton: string;
+  /**
+   * Round 2026-08-26 (Facial Cosmetic Surgery restructuring) — the 7
+   * procedures are now real dedicated pages (`/services/facial-cosmetic-
+   * surgery/[procedure]`), not in-place expanding cards. `procedureCardCta`
+   * is the parent landing page's link label (replaces `cardCta`/
+   * `cardCtaClose`'s open/close pair, which stay defined above for the
+   * now-unused-but-not-deleted `ProcedureOverviewCard`/`ProcedureDetailPanel`
+   * components). `relatedProceduresHeading`/`backToParentCta` are new
+   * child-page-only sections.
+   */
+  procedureCardCta: string;
+  relatedProceduresHeading: string;
+  backToParentCta: string;
 }
 
 export interface ServicesPageDictionary {

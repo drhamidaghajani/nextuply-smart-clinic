@@ -63,7 +63,7 @@ export default async function HomePage({
       <WhyDrSadighiSection dict={dict.doctorStory} locale={locale} />
       <CaseGallerySection dict={dict.caseGallery} items={SERVICES} locale={locale} />
       <PatientJourneySection dict={dict.patientJourney} locale={locale} />
-      <PatientStoriesSection dict={dict.patientStories} locale={locale} />
+      <PatientStoriesSection dict={dict.patientStories} locale={locale} instagramHandle={dict.footer.instagram} />
       <KnowledgeCenterSection dict={dict.knowledgeCenter} locale={locale} />
       <VideoHubSection dict={dict.videoHub} locale={locale} />
       <FaqSection dict={dict.faqSection} locale={locale} />

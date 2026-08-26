@@ -3,6 +3,7 @@ import type { FacialCosmeticPageDictionary } from "@/i18n/dictionary-types";
 import type { Locale } from "@/i18n/locales";
 import { AssistantTriggerButton } from "@/modules/smart-clinic-assistant/ui/assistant-trigger-button";
 
+/** SUPERSEDED (2026-08-26) — see `procedures-explorer.tsx`'s own doc-comment; kept per "do not delete files," no longer imported by any page. */
 /**
  * The expanded body of ONE procedure card — rendered inside that card's
  * own border by `ProcedureOverviewCard`, never as a standalone panel.

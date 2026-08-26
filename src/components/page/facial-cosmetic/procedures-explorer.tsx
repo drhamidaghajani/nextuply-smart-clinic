@@ -10,6 +10,16 @@ import type { Locale } from "@/i18n/locales";
 import { ProcedureOverviewCard } from "./procedure-overview-card";
 
 /**
+ * SUPERSEDED (2026-08-26, Facial Cosmetic Surgery restructuring, per Dr.
+ * Sadighi): no longer imported by any page — the parent
+ * `services/facial-cosmetic-surgery/page.tsx` now renders
+ * `ProcedureLinkCard`s (plain links to each procedure's own dedicated
+ * page under `[procedure]/page.tsx`) instead of this in-place expanding
+ * explorer. Kept in the repo per his explicit "do not delete files"
+ * instruction — safe to delete in a future pass once confirmed unused
+ * elsewhere, along with `ProcedureOverviewCard`/`ProcedureDetailPanel`.
+ */
+/**
  * Holds which procedure is open and renders the card grid. The one
  * client boundary this page needs; everything else stays a Server
  * Component.

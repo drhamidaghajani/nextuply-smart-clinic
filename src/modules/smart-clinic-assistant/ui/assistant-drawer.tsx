@@ -1354,6 +1354,64 @@ export function AssistantDrawer() {
     setReturnStep(null);
   };
 
+  /**
+   * Round 2026-08-26 (assistant Back/Main-menu UX fix, per Hamid — "no
+   * clear back path, user may need to refresh"): a genuinely distinct
+   * action from `handleBackToMenu` above — moves exactly ONE step back
+   * within the current flow instead of jumping all the way to the main
+   * menu. Deliberately does not touch `sessionToken` (verified state) in
+   * any branch — going back must never force re-verification unless the
+   * patient explicitly leaves and restarts via the main menu.
+   *
+   * - `booking`: steps back through `BOOKING_STEPS` in order, mirroring
+   *   `handleServiceSelect`'s own forward skip (a `general_consultation`
+   *   pick jumps straight to `appointment_selection`, so stepping back
+   *   from there must land on `service_selection`, not the `triage` card
+   *   that was never shown going forward). Falls back to
+   *   `handleBackToMenu` once already at the first booking step.
+   * - `otp`: delegates to the existing `handleVerificationCancel` — same
+   *   as the OTP card's own internal cancel control, so this doesn't
+   *   introduce a second, divergent way to leave verification.
+   * - `identify`: mirrors `handleVerificationCancel`'s own logic (there is
+   *   no dedicated cancel on `IdentifyStep` to delegate to), and also
+   *   clears the urgent-call detour state so a "back" out of the identify
+   *   form can never later resume as an urgent call request.
+   * - `conversation`/`decision`/`confirmation`/`menu`: no finer-grained
+   *   "previous step" exists for these — same as `handleBackToMenu`.
+   */
+  const handleStepBack = () => {
+    if (mode === "otp") {
+      handleVerificationCancel();
+      return;
+    }
+    if (mode === "identify") {
+      pendingActionRef.current = null;
+      setPendingUrgentContext(null);
+      if (returnStep) {
+        setMode("booking");
+        setStep(returnStep);
+        setReturnStep(null);
+      } else {
+        setMode(modeForStep(step));
+      }
+      return;
+    }
+    if (mode === "booking") {
+      const currentIndex = BOOKING_STEPS.indexOf(step);
+      let targetIndex = currentIndex - 1;
+      if (targetIndex >= 0 && BOOKING_STEPS[targetIndex] === "triage" && state.leadInfo.selectedService === "general_consultation") {
+        targetIndex -= 1;
+      }
+      if (targetIndex < 0) {
+        handleBackToMenu();
+        return;
+      }
+      setStep(BOOKING_STEPS[targetIndex]!);
+      return;
+    }
+    handleBackToMenu();
+  };
+
   const renderBookingCard = () => {
     switch (step) {
       case "service_selection":
@@ -1516,6 +1574,26 @@ export function AssistantDrawer() {
   };
 
   const showBack = mode !== "menu";
+  /**
+   * Round 2026-08-26 (assistant Back/Main-menu UX fix) — a distinct
+   * one-step-back icon only shows up in the header when there's genuinely
+   * an earlier step to return to; otherwise "Back" and "Main menu" would
+   * be the exact same action rendered twice. Mirrors `handleStepBack`'s
+   * own branching so the two can never disagree about what "back" means
+   * right now.
+   */
+  const canStepBack =
+    mode === "otp" ||
+    mode === "identify" ||
+    (mode === "booking" &&
+      (() => {
+        const currentIndex = BOOKING_STEPS.indexOf(step);
+        let targetIndex = currentIndex - 1;
+        if (targetIndex >= 0 && BOOKING_STEPS[targetIndex] === "triage" && state.leadInfo.selectedService === "general_consultation") {
+          targetIndex -= 1;
+        }
+        return targetIndex >= 0;
+      })());
 
   /**
    * Round 2026-07-22 (V2.2 — focused full-screen assistant, item 1/2/4):
@@ -1596,13 +1674,51 @@ export function AssistantDrawer() {
             // flex children that never scroll, only the stage between them does.
             className={`absolute inset-y-0 start-0 flex h-full w-full flex-col overflow-hidden bg-warm-white sm:w-[420px] ${isRtl ? "shadow-[-20px_0_60px_rgba(0,0,0,0.25)]" : "shadow-[20px_0_60px_rgba(0,0,0,0.25)]"}`}
           >
-            <div className="flex shrink-0 items-center justify-between gap-3 border-b border-warm-white/10 bg-gradient-to-br from-deep-navy to-[#1a2540] px-5 py-4">
-              <div className="flex items-center gap-2.5">
+            <div className="flex shrink-0 items-center gap-2 border-b border-warm-white/10 bg-gradient-to-br from-deep-navy to-[#1a2540] px-3 py-4 sm:px-5">
+              {/*
+                Round 2026-08-26 (assistant Back/Main-menu UX fix, per
+                Hamid — "no clear back path, user may need to refresh"):
+                these two icon buttons live in the FIXED header, next to
+                the close button, so they stay reachable regardless of
+                how far the transcript has scrolled — the old version's
+                only back affordance was a small text link at the top of
+                the scrollable stage, easy to lose once a few messages/
+                cards had stacked up. `canStepBack`/`showBack` decide
+                whether either renders at all; while `mode === "menu"`
+                there is nowhere to go back FROM, so neither shows.
+              */}
+              {canStepBack ? (
+                <button
+                  type="button"
+                  onClick={handleStepBack}
+                  aria-label={dict.ui.back}
+                  className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full text-warm-white/70 transition-colors duration-200 hover:bg-warm-white/10 hover:text-warm-white"
+                >
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2} strokeLinecap="round" strokeLinejoin="round" className="h-4 w-4">
+                    <path d={isRtl ? "M9 6l6 6-6 6" : "M15 6l-6 6 6 6"} />
+                  </svg>
+                </button>
+              ) : null}
+              {showBack ? (
+                <button
+                  type="button"
+                  onClick={handleBackToMenu}
+                  aria-label={dict.ui.backToMenu}
+                  className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full text-warm-white/70 transition-colors duration-200 hover:bg-warm-white/10 hover:text-warm-white"
+                >
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={1.8} strokeLinecap="round" strokeLinejoin="round" className="h-4 w-4">
+                    <path d="M3 10.5L12 4l9 6.5" />
+                    <path d="M5 9.5V20h14V9.5" />
+                  </svg>
+                </button>
+              ) : null}
+
+              <div className="flex min-w-0 flex-1 items-center gap-2.5">
                 <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full border border-gold/40 bg-deep-navy/60">
                   <SparkMark className="h-4 w-4 text-gold" />
                 </span>
-                <div>
-                  <p className="text-sm font-bold leading-tight text-warm-white">{localeDict.aiConcierge.eyebrow}</p>
+                <div className="min-w-0">
+                  <p className="truncate text-sm font-bold leading-tight text-warm-white">{localeDict.aiConcierge.eyebrow}</p>
                   <p className="mt-0.5 text-[11px] text-warm-white/50">{localeDict.aiConcierge.onlineStatus}</p>
                 </div>
               </div>
@@ -1622,19 +1738,6 @@ export function AssistantDrawer() {
             {/* Round 2026-07-22 (V2.2, item 1) — the STAGE: the only region that scrolls, and only if its own content overflows. */}
             <div className="min-h-0 flex-1 overflow-y-auto px-5 py-5">
               <div ref={contentRef}>
-                {showBack ? (
-                  <button
-                    type="button"
-                    onClick={handleBackToMenu}
-                    className="mb-3 inline-flex items-center gap-1.5 text-xs font-medium text-charcoal/45 transition-colors duration-200 hover:text-gold"
-                  >
-                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2} strokeLinecap="round" strokeLinejoin="round" className="h-3.5 w-3.5">
-                      <path d="M9 6l6 6-6 6" />
-                    </svg>
-                    {dict.ui.backToMenu}
-                  </button>
-                ) : null}
-
                 {/* Round 2026-07-22 (V2.2, item 7) — one subtle, compact context line instead of a growing "✓ …" stack. */}
                 {contextSummaryLine ? <p className="mb-2 truncate text-xs text-charcoal/40">{contextSummaryLine}</p> : null}
 

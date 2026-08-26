@@ -784,54 +784,22 @@ export const fa = {
   // TODO above). `evidence[].quote`/`.caption`/`.name` are Hamid's own
   // example copy from the brief, used verbatim — real video/review/
   // Instagram assets are still an open item (see the storyboard doc).
+  // Round 2026-08-26 (Patient Stories redesign, per Dr. Sadighi — "the
+  // section looks unfinished / placeholder-like"): rebuilt from scratch.
+  // The previous copy promised Google reviews and Instagram moments this
+  // section never actually showed (they were fabricated placeholders —
+  // see PatientStoriesDictionary's own doc-comment) — this subheading
+  // only describes what's genuinely here: real before/after cases.
   patientStories: {
     heading: "روایت‌های واقعی بیماران",
     subheading:
-      "در کلینیک دکتر علیرضا صدیقی، هر جراحی فقط یک «عمل» نیست؛ آغاز یک فصل تازه در زندگی یک انسان است. در این بخش، مستندهای کوتاه، ویدئوهای واقعی، نظرهای ثبت‌شده در Google و لحظه‌های ثبت‌شده در Instagram را می‌بینید؛ بدون بازیگر، بدون اغراق، با داستان‌های واقعی بیماران.",
-    videoLabel: "مستند واقعی — بدون بازیگر",
-    // Added 2026-07-13 (full locale-rollout round) — extracted verbatim
-    // from `patient-stories-section.tsx`'s hardcoded "بیش از" prefix,
-    // missed by the initial component audit (inline JSX text, not an
-    // attribute) and caught on a second pass while writing en/ar content.
-    moreThanLabel: "بیش از",
-    googleReviewCount: "X",
-    googleBadge: "نظر ۵ ستاره در Google",
-    instagramBadge: "ده‌ها داستان قبل و بعد در Instagram",
-    evidence: [
-      { id: "video-1", type: "video", caption: "ترس قبل از عمل بینی" },
-      {
-        id: "review-1",
-        type: "review",
-        name: "مریم، ۳۲ ساله",
-        quote: "«از همون جلسه مشاوره اول آرامش گرفتم؛ نتیجه دقیقاً همون چیزی بود که می‌خواستم.»",
-      },
-      { id: "instagram-1", type: "instagram", caption: "Before / After – Nose Surgery" },
-      { id: "video-2", type: "video", caption: "اولین نگاه به چهره جدید" },
-      { id: "photo-1", type: "photo" },
-    ],
-    // Round 2026-07-06, per Hamid: the closing "photo story" card now
-    // rotates through 5 short quotes (fade in/out, one at a time) instead
-    // of showing one static quote. He asked for "۵ تا نوشته پیش‌فرض"
-    // (5 default/placeholder lines) rather than dictating all 5 himself —
-    // only the first is his own original text; the other 4 are draft
-    // copy written to match its tone (first-person, calm, no hype), same
-    // TODO(content)-style sign-off flag as `brandIntro`'s manifesto text.
-    // TODO(content): quotes 2–5 need Hamid's sign-off before treating as
-    // final/real patient quotes — not attributed to any real patient yet.
-    photoStories: [
-      { quote: "بعد از سال‌ها، دوباره با آرامش جلوی دوربین می‌ایستم.", meta: "پرونده درمانی — بازسازی اعتماد به نفس" },
-      { quote: "برای اولین‌بار، از دیدن عکس‌های خودم خوشحال می‌شوم.", meta: "پرونده درمانی — جراحی زیبایی بینی" },
-      { quote: "حس می‌کنم چهره‌ام بالاخره با روحیه‌ام یکی شده.", meta: "پرونده درمانی — جراحی فک و چانه" },
-      { quote: "اعتمادبه‌نفسی که سال‌ها دنبالش بودم را پیدا کردم.", meta: "پرونده درمانی — جوان‌سازی صورت" },
-      { quote: "دیگر از دیدن عکس‌های قدیمی‌ام فرار نمی‌کنم.", meta: "پرونده درمانی — جراحی‌های زیبایی صورت" },
-    ],
-    // Added 2026-07-13 (full locale-rollout round) — extracted verbatim
-    // from `patient-stories-section.tsx`'s hardcoded aria-label; and a
-    // real gap fixed at the same time — "Verified on Google" was
-    // hardcoded English even in the `fa` build (never translated at
-    // all), not just missing from `en`/`ar`.
-    playAriaLabel: "پخش مستند",
-    verifiedOnGoogleLabel: "تأییدشده در Google",
+      "در کلینیک دکتر علیرضا صدیقی، نتیجه هر جراحی داستان واقعی یک فرد است. در ادامه نمونه‌هایی از نتایج واقعی بیماران را می‌بینید — بدون بازیگر، بدون اغراق.",
+    beforeLabel: "قبل",
+    afterLabel: "بعد",
+    viewCaseCta: "مشاهده این نمونه",
+    beforeAfterCta: "مشاهده گالری کامل قبل و بعد",
+    instagramCta: "دنبال کردن در اینستاگرام",
+    assistantCta: "شروع مشاوره با دستیار هوشمند",
   },
   // Round 2026-07-06: "Knowledge Center" (مرکز دانش), per Hamid's full
   // editorial-magazine brief (HOMEPAGE_STORYBOARD.md §08). He gave two
@@ -1315,6 +1283,7 @@ export const fa = {
       // from `floating-assistant-trigger.tsx`'s hardcoded aria-label.
       openButtonLabel: "باز کردن دستیار هوشمند کلینیک",
       closeButtonLabel: "بستن دستیار",
+      back: "بازگشت",
       backToMenu: "بازگشت به منوی اصلی",
       chooseServiceCta: "انتخاب خدمت",
       serviceSelectionEyebrow: "انتخاب خدمت",
@@ -1747,6 +1716,9 @@ export const fa = {
       finalCtaBody:
         "در جراحی‌های زیبایی صورت، انتخاب روش درست از خود جراحی مهم‌تر است. بررسی دقیق آناتومی چهره، انتظارات فرد و محدودیت‌های درمانی کمک می‌کند مسیر ایمن‌تر و طبیعی‌تری انتخاب شود.",
       finalCtaButton: "شروع مشاوره با دستیار هوشمند کلینیک",
+      procedureCardCta: "مشاهده جزئیات",
+      relatedProceduresHeading: "سایر جراحی‌های زیبایی صورت",
+      backToParentCta: "بازگشت به جراحی‌های زیبایی صورت",
     },
     // Round 2026-07-13 (taxonomy correction, per Hamid): exactly the 6
     // canonical services from `src/content/services.ts` — the previous

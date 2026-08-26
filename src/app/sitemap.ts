@@ -1,6 +1,7 @@
 import type { MetadataRoute } from "next";
 import { SERVICES } from "@/content/services";
 import { CARE_TOPICS } from "@/content/care-instructions";
+import { FACIAL_PROCEDURES } from "@/content/facial-cosmetic-procedures";
 import { KNOWLEDGE_ARTICLES } from "@/content/knowledge-articles";
 import { SITE_URL } from "@/core/site-config";
 import { localeHref } from "@/i18n/locale-href";
@@ -42,6 +43,17 @@ export default function sitemap(): MetadataRoute.Sitemap {
     }))
   );
 
+  // Round 2026-08-26 (Facial Cosmetic Surgery restructuring) — the 7
+  // procedure pages, one slug shared across every locale (see
+  // `FacialProcedure.slug`'s own doc-comment), same pattern as `serviceRoutes`.
+  const procedureRoutes: MetadataRoute.Sitemap = SUPPORTED_LOCALES.flatMap((locale) =>
+    FACIAL_PROCEDURES.map((procedure) => ({
+      url: `${SITE_URL}${localeHref(locale, `/services/facial-cosmetic-surgery/${procedure.slug}`)}`,
+      changeFrequency: "monthly" as const,
+      priority: 0.6,
+    }))
+  );
+
   const careRoutes: MetadataRoute.Sitemap = SUPPORTED_LOCALES.flatMap((locale) =>
     CARE_TOPICS.map((topic) => ({
       url: `${SITE_URL}${localeHref(locale, `/care-instructions/${topic.slug}`)}`,
@@ -78,5 +90,5 @@ export default function sitemap(): MetadataRoute.Sitemap {
     return entries;
   });
 
-  return [...staticRoutes, ...serviceRoutes, ...careRoutes, ...articleRoutes];
+  return [...staticRoutes, ...serviceRoutes, ...procedureRoutes, ...careRoutes, ...articleRoutes];
 }

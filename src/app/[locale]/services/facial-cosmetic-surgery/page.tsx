@@ -4,7 +4,7 @@ import { notFound } from "next/navigation";
 import { AssistantCtaSection } from "@/components/page/assistant-cta-section";
 import { ContentSection } from "@/components/page/content-section";
 import { DisclaimerBanner } from "@/components/page/disclaimer-banner";
-import { ProceduresExplorer } from "@/components/page/facial-cosmetic/procedures-explorer";
+import { ProcedureLinkCard } from "@/components/page/facial-cosmetic/procedure-link-card";
 import { PageFaq } from "@/components/page/page-faq";
 import { ServiceHero } from "@/components/page/service-hero";
 import { Reveal } from "@/components/motion/reveal";
@@ -29,46 +29,52 @@ const HERO_IMAGE = "/media/services/facial-cosmetic-surgery/hero-facial-cosmetic
  * surgery, be able to click each one and jump to that surgery's own
  * section on the same page, with care guidance written separately."
  *
- * Round 2026-08-18 (same page, follow-up doctor feedback): the "click a
- * card → jump to a section further down" part of the above was itself
- * replaced — a card click now expands that procedure's detail IN PLACE
- * (`ProceduresExplorer`), no page jump at all. The 7 dedicated
- * `ProcedureSection` blocks this round 1 built are gone; their exact
- * same content (from `content/facial-cosmetic-procedures.ts`, unchanged)
- * now renders inside the shared `ProcedureDetailPanel` that
- * `ProceduresExplorer` opens. See that component's own doc-comment for
- * how the mobile-accordion-vs-desktop-shared-panel split works.
+ * Round 2026-08-18 (same page, second follow-up): the "click a card →
+ * jump to a section further down" part of the above was itself replaced
+ * — a card click expanded that procedure's detail IN PLACE
+ * (`ProceduresExplorer`), no page jump at all.
  *
- * WHY THIS IS ITS OWN ROUTE, not another branch inside
+ * Round 2026-08-26 (Facial Cosmetic Surgery restructuring, per Dr.
+ * Sadighi — reversing BOTH rounds above): the in-place expansion is gone
+ * too. Each of the 7 procedures is now a real, clickable service entry
+ * that opens its OWN dedicated page
+ * (`/services/facial-cosmetic-surgery/[procedure]`, one shared
+ * data-driven template — see that route's own doc-comment). This page is
+ * now a premium LANDING page: hero, a grid of `ProcedureLinkCard`s (link,
+ * not accordion), and the standalone care block, unchanged. This is a
+ * flagged correction of two of Hamid's own earlier rounds on this exact
+ * page, not a silent reversal — see `production-redirect-audit.csv`-style
+ * change history in this repo's commit log for the full trail.
+ * `ProceduresExplorer`/`ProcedureOverviewCard`/`ProcedureDetailPanel`
+ * still exist (kept per his "do not delete files" instruction) but are no
+ * longer imported by any page — safe to delete in a future pass once
+ * confirmed unused elsewhere.
+ *
+ * WHY THIS IS STILL ITS OWN ROUTE, not another branch inside
  * `services/[slug]/page.tsx`:
  * this page is a genuinely different page type, not a content variant.
  * The shared template is one service → one linear story (overview →
  * approach → included items → suitable-for → journey → FAQ); this one is
- * one service → seven sub-procedures, each expandable in place, plus a
- * standalone care block. Roughly three-quarters of it has no counterpart
- * in the shared template, so expressing it as a conditional there would
- * have meant a large branch that every OTHER service page still has to
- * load and reason about. A static segment also takes routing precedence
+ * one service → a grid linking to seven sub-procedure pages, plus a
+ * standalone care block. A static segment also takes routing precedence
  * over `[slug]` in the App Router, so the public URL is unchanged and
  * every existing link, card, footer entry, and the Assistant's own
  * service list keep working untouched. `[slug]`'s `generateStaticParams`
  * filters this slug out so the build doesn't also emit a shadowed,
  * unreachable copy.
  *
- * Explicitly NOT done here, per Hamid's constraints: no route, no
- * `SERVICE_TAXONOMY_IDS` entry, and no Assistant service id for any
- * sub-procedure — they exist only inside this page's own explorer. And
- * rhinoplasty is absent by design (it has its own dedicated page); the
- * FAQ answers that for patients directly rather than leaving them to
- * wonder.
+ * Explicitly NOT done here, per Hamid's constraints: no
+ * `SERVICE_TAXONOMY_IDS` entry and no Assistant service id for any
+ * sub-procedure — each procedure page's own CTA books a general
+ * `facial-cosmetic-surgery` consultation, same as this parent page,
+ * rather than introducing a new taxonomy concept. Rhinoplasty is absent
+ * by design (it has its own dedicated page); the FAQ answers that for
+ * patients directly rather than leaving them to wonder.
  *
- * `#procedures` (the overview grid's own section id) is the one
- * same-page anchor still in real use — the hero's secondary CTA jumps
- * there, which is a deliberate "take me to the list" navigation, not the
- * "card jumps to a lower section" behavior that was removed. `main`
- * keeps `.smooth-anchor-scroll` (globals.css) for exactly that one jump;
- * every individual procedure's own former anchor id (`#face-lift`, etc.)
- * is gone along with the sections they used to point to.
+ * `#procedures` (the overview grid's own section id) is still the one
+ * same-page anchor in real use — the hero's secondary CTA jumps there.
+ * `main` keeps `.smooth-anchor-scroll` (globals.css) for exactly that one
+ * jump.
  *
  * Reuses `ServiceHero`, `ContentSection`, `PageFaq`, `AssistantCtaSection`,
  * `DisclaimerBanner`, and `Reveal` unchanged so this page still reads as
@@ -112,7 +118,25 @@ export default async function FacialCosmeticSurgeryPage({ params }: { params: Pr
         ctaSecondaryHref="#procedures"
       />
 
-      <ProceduresExplorer procedures={FACIAL_PROCEDURES} locale={locale} dict={page} />
+      <section id="procedures" data-header-bg="#fcfbf4" className="scroll-mt-24 bg-cream px-6 py-16 sm:px-8 sm:py-24 lg:scroll-mt-32">
+        <div className="mx-auto max-w-6xl">
+          <Reveal>
+            <div className="mx-auto max-w-2xl text-center">
+              <p className="text-xs font-semibold uppercase tracking-[0.2em] text-gold sm:text-sm">{page.proceduresEyebrow}</p>
+              <h2 className="mt-3 text-balance text-xl font-bold leading-tight text-charcoal sm:text-2xl lg:text-[30px]">{page.proceduresHeading}</h2>
+              <p className="mt-3 text-sm leading-7 text-charcoal/70 sm:text-base">{page.proceduresLead}</p>
+            </div>
+          </Reveal>
+
+          <div className="mt-12 grid gap-5 sm:grid-cols-2 sm:gap-6 lg:grid-cols-3">
+            {FACIAL_PROCEDURES.map((procedure, index) => (
+              <Reveal key={procedure.id} delay={Math.min(index, 3) * 0.06}>
+                <ProcedureLinkCard procedure={procedure} locale={locale} ctaLabel={page.procedureCardCta} />
+              </Reveal>
+            ))}
+          </div>
+        </div>
+      </section>
 
       {/* Care guidance kept as its own block, per the doctor's "care/
           preparation guidance should be written separately" — navy, which

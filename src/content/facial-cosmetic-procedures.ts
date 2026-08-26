@@ -41,6 +41,18 @@ export type FacialProcedureId = (typeof FACIAL_PROCEDURE_IDS)[number];
 export interface FacialProcedure {
   /** Same-page anchor target (`#<id>`) — NOT a route. See this file's doc-comment. */
   id: FacialProcedureId;
+  /**
+   * Round 2026-08-26 (Facial Cosmetic Surgery restructuring, per Dr.
+   * Sadighi — these are now real dedicated pages, not same-page anchors):
+   * the route segment under `/services/facial-cosmetic-surgery/[procedure]`,
+   * identical across fa/en/ar (the same convention `services.ts` already
+   * uses — one slug per service/procedure across every locale, unlike
+   * Knowledge articles which get a distinct slug per translation). Kept
+   * as its own field rather than reusing `id` so the existing anchor id
+   * (still used as a React key and historically meaningful) never has to
+   * change to satisfy a URL requirement, and vice versa.
+   */
+  slug: string;
   title: Record<Locale, string>;
   /** One-line description shown on the overview card. */
   summary: Record<Locale, string>;
@@ -64,6 +76,7 @@ export interface FacialProcedure {
 export const FACIAL_PROCEDURES: readonly FacialProcedure[] = [
   {
     id: "face-lift",
+    slug: "temple-face-lift",
     title: { fa: "لیفت شقیقه و صورت", en: "Temporal & Face Lift", ar: "شد الصدغ والوجه" },
     summary: {
       fa: "برای بهبود افتادگی‌های ناحیه شقیقه، ابرو، گونه و بخش‌های میانی یا پایینی صورت با هدف جوان‌سازی طبیعی چهره.",
@@ -144,6 +157,7 @@ export const FACIAL_PROCEDURES: readonly FacialProcedure[] = [
   },
   {
     id: "submental-liposuction",
+    slug: "double-chin-liposuction",
     title: { fa: "ساکشن غبغب", en: "Submental Liposuction", ar: "شفط دهون الذقن المزدوجة" },
     summary: {
       fa: "برای کاهش چربی تجمع‌یافته زیر چانه و کمک به واضح‌تر شدن خط فک و زاویه پایین صورت.",
@@ -224,6 +238,7 @@ export const FACIAL_PROCEDURES: readonly FacialProcedure[] = [
   },
   {
     id: "buccal-fat",
+    slug: "buccal-fat-removal",
     title: { fa: "بوکال فت", en: "Buccal Fat Removal", ar: "إزالة الدهون الشدقية" },
     summary: {
       fa: "برای کاهش حجم گونه‌های پایینی و ایجاد فرم ظریف‌تر در بخش میانی و پایینی صورت.",
@@ -304,6 +319,7 @@ export const FACIAL_PROCEDURES: readonly FacialProcedure[] = [
   },
   {
     id: "cheek-implant",
+    slug: "cheek-implant",
     title: { fa: "پروتز گونه", en: "Cheek Implant", ar: "زراعة الخد" },
     summary: {
       fa: "برای افزایش برجستگی و تقارن گونه‌ها و بهبود کانتور میانی صورت.",
@@ -388,6 +404,7 @@ export const FACIAL_PROCEDURES: readonly FacialProcedure[] = [
   },
   {
     id: "jawline-contouring",
+    slug: "jawline-contouring",
     title: { fa: "زاویه فک", en: "Jawline Contouring", ar: "نحت زاوية الفك" },
     summary: {
       fa: "برای مشخص‌تر شدن خط فک، بهبود فرم پایین صورت و ایجاد تناسب بهتر میان فک، چانه و گردن.",
@@ -468,6 +485,7 @@ export const FACIAL_PROCEDURES: readonly FacialProcedure[] = [
   },
   {
     id: "blepharoplasty",
+    slug: "blepharoplasty",
     title: { fa: "بلفاروپلاستی", en: "Blepharoplasty", ar: "جراحة تجميل الجفون" },
     summary: {
       fa: "برای اصلاح افتادگی یا پوست اضافه پلک‌ها و کمک به جوان‌تر و شاداب‌تر دیده‌شدن اطراف چشم.",
@@ -548,6 +566,7 @@ export const FACIAL_PROCEDURES: readonly FacialProcedure[] = [
   },
   {
     id: "chin-surgery",
+    slug: "chin-surgery-implant",
     title: { fa: "جراحی چانه / پروتز چانه", en: "Chin Surgery / Chin Implant", ar: "جراحة الذقن / زراعة الذقن" },
     summary: {
       fa: "برای اصلاح فرم، اندازه یا عقب‌ماندگی چانه و ایجاد تعادل بهتر در نمای نیم‌رخ و پایین صورت.",
@@ -630,3 +649,8 @@ export const FACIAL_PROCEDURES: readonly FacialProcedure[] = [
 
 /** Overview-card key points are the first three `goals` — see `FacialProcedure.goals`. */
 export const CARD_POINT_COUNT = 3;
+
+/** Round 2026-08-26 — used by `services/facial-cosmetic-surgery/[procedure]/page.tsx`'s `generateStaticParams`/lookup, same pattern as `getServiceById`/`getKnowledgeArticleBySlug`. */
+export function getFacialProcedureBySlug(slug: string): FacialProcedure | undefined {
+  return FACIAL_PROCEDURES.find((procedure) => procedure.slug === slug);
+}

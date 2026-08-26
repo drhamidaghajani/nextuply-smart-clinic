@@ -2,16 +2,29 @@ import type { ServiceTaxonomyId } from "./services";
 import type { Locale } from "@/i18n/locales";
 
 /**
- * SINGLE SOURCE OF TRUTH for Knowledge Center articles — phase-1 migration
- * from the legacy WordPress site (dralirezasadighi.com), per
- * docs/migration/sadighi-wordpress-seo-audit/. 25 articles: the 23 approved
- * `migrate-to-knowledge-center` URLs from phase-1-plan/p0-launch-list.csv,
- * plus 2 URL-collision posts resolved by Hamid's explicit decision
- * (2026-08-23): بلفاروپلاستی canonicalized on post_id 7212 (the newer,
- * richer of two duplicate posts — see collision-review.md), and the fat-
- * injection FAQ collision migrated as its Persian post only (post_id 8597;
- * the English post_id 13413 is deliberately excluded from phase 1 pending a
+ * SINGLE SOURCE OF TRUTH for Knowledge Center articles — migration from the
+ * legacy WordPress site (dralirezasadighi.com), per
+ * docs/migration/sadighi-wordpress-seo-audit/. 40 articles:
+ *
+ * Batch 1 (25 articles, 2026-08-23): the 23 approved `migrate-to-knowledge-
+ * center` URLs from phase-1-plan/p0-launch-list.csv, plus 2 URL-collision
+ * posts resolved by Hamid's explicit decision — بلفاروپلاستی canonicalized
+ * on post_id 7212 (the newer, richer of two duplicate posts — see
+ * collision-review.md), and the fat-injection FAQ collision migrated as its
+ * Persian post only (post_id 8597; English post_id 13413 excluded pending a
  * separate /en slug decision).
+ *
+ * Batch 2 (15 articles, 2026-08-26): the highest-priority remaining
+ * WordPress posts approved for this contract — see
+ * remaining-article-migration-plan.csv, batch-2-import-list.csv, and
+ * merge-recommendations.csv. Several consolidate multiple duplicate/near-
+ * duplicate WP permalinks into ONE final article (extract_articles.py's
+ * `extra_legacy` field) — e.g. 4 posts about digital/CAS jaw surgery
+ * technology collapse into a single جراحی-فک-دیجیتال article. Two of these
+ * (Facial Asymmetry Due to Trauma, Recessed Lower Jaw) have a genuine
+ * English WordPress original as their `translations.en` — extracted
+ * mechanically from that real English post
+ * (extract_batch2_translations.py), never machine-translated from Persian.
  *
  * Content is extracted verbatim from the WordPress `content:encoded` HTML
  * (docs/migration/.../scripts/extract_articles.py) — real clinical content
@@ -30,14 +43,19 @@ import type { Locale } from "@/i18n/locales";
  *
  * `heroImage`/`mediaStatus`/`sourceImageUrl`/`localImagePath` (Track 4,
  * 2026-08-23): real photos were downloaded from dralirezasadighi.com/wp-
- * content/uploads for articles where one could be verified — see
+ * content/uploads for Batch 1 articles where one could be verified — see
  * media-migration/media-review-list.csv and migrate_media.py for the full
- * discovery/selection/rejection trail. `heroImage` is only ever set to a
- * LOCAL downloaded file path; `sourceImageUrl` is provenance metadata only
- * and must never be used as a live image src (no permanent hotlinking to
- * the old WordPress site). Articles with no verified image render the
- * premium no-image editorial hero state instead — see knowledge/[slug]/
- * page.tsx.
+ * discovery/selection/rejection trail. Batch 2 (2026-08-26): the production
+ * domain cutover means dralirezasadighi.com/wp-content/uploads/ no longer
+ * resolves to the old WordPress media library at all (verified directly —
+ * every image URL now 404s/connection-fails through the new Next.js app,
+ * not a rate limit) — every Batch 2 article is `mediaStatus: "missing"` as
+ * a result, not a rejection of the source images' quality. `heroImage` is
+ * only ever set to a LOCAL downloaded file path; `sourceImageUrl` is
+ * provenance metadata only and must never be used as a live image src (no
+ * permanent hotlinking to the old WordPress site). Articles with no
+ * verified image render the premium no-image editorial hero state instead
+ * — see knowledge/[slug]/page.tsx.
  */
 
 export interface KnowledgeArticleFaqItem {
@@ -875,6 +893,75 @@ export const KNOWLEDGE_ARTICLES: readonly KnowledgeArticle[] = [
     localImagePath: "/media/knowledge/25-سوال-متداول-در-مورد-جراحی-لیفت-ابرو-و-ش/hero.jpg",
   },
   {
+    // Batch 2: 25 FAQ — Facial Lift.
+    postId: "8381",
+    slug: "25-سوال-متداول-در-مورد-جراحی-لیفت-صورت-که",
+    legacyUrls: ["https://dralirezasadighi.com/25-سوال-متداول-در-مورد-جراحی-لیفت-صورت-که/"],
+    title: "25 سوال متداول در مورد جراحی لیفت صورت",
+    seoTitle: "25 سوال متداول در مورد جراحی لیفت صورت",
+    seoDescription: "جراحی لیفت صورت یک روش جراحی زیبایی است که برای کشیدن و سفت کردن پوست صورت و کاهش نشانه‌های پیری انجام می‌شود. این جراحی به بهبود افتادگی پوست، چین و چروک‌ها و خطوط عمیق کمک می‌کند…",
+    excerpt: "جراحی لیفت صورت یک روش جراحی زیبایی است که برای کشیدن و سفت کردن پوست صورت و کاهش نشانه‌های پیری انجام می‌شود. این جراحی به بهبود افتادگی پوست، چین و چروک‌ها و خطوط عمیق کمک می‌کند…",
+    topicCluster: "facial-cosmetic-surgery",
+    serviceRelation: "facial-cosmetic-surgery",
+    medicalReview: {
+      reviewerName: "دکتر علیرضا صدیقی",
+      reviewerCredentialsRef: "about",
+      // Inherited from the original WordPress post_modified date — this is
+      // NOT a fresh post-migration clinical re-review. Flagged in
+      // manual-decisions-needed.md-adjacent follow-up: a real medical QA
+      // pass should update this once Dr. Sadighi has re-read the migrated
+      // copy, per CLAUDE.md's "real content, not placeholder" standard.
+      reviewedAt: "2024-07-15",
+    },
+    // Content status workflow (Track 3, 2026-08-23) — every migrated article
+    // defaults to needs-doctor-review; see doctor-review-list.csv. This is
+    // internal editorial metadata, never emitted in public JSON-LD.
+    reviewStatus: "needs-doctor-review",
+    // Persian is always the source (never a translation) — see translations below.
+    translationStatus: "source",
+    publishedAt: "2024-07-11",
+    updatedAt: "2024-07-15",
+    readingTime: "5 دقیقه مطالعه",
+    contentSections: [
+    ],
+    faq: [
+      { question: "جراحی لیفت صورت چیست؟", answer: "جراحی لیفت صورت یک روش جراحی زیبایی است که برای کشیدن و سفت کردن پوست صورت و کاهش نشانه‌های پیری انجام می‌شود. این جراحی به بهبود افتادگی پوست، چین و چروک‌ها و خطوط عمیق کمک می‌کند." },
+      { question: "چه کسانی می‌توانند جراحی لیفت صورت انجام دهند؟", answer: "افرادی که دارای پوست افتاده، چین و چروک‌های عمیق و یا ساختار صورت ناصاف هستند و در سلامت عمومی خوبی قرار دارند، می‌توانند لیفت صورت انجام دهند." },
+      { question: "مراحل جراحی لیفت صورت چگونه است؟", answer: "مراحل لیفت صورت شامل مشاوره، بررسی وضعیت پوست، انجام جراحی و مراقبت‌های پس از عمل می‌باشد." },
+      { question: "عوارض جراحی لیفت صورت چیست؟", answer: "عوارض جراحی لیفت صورت ممکن است شامل کبودی، تورم، عفونت، خونریزی و جای زخم باشد. این عوارض معمولاً موقتی هستند." },
+      { question: "هزینه لیفت صورت چقدر است؟", answer: "هزینه لیفت صورت بسته به محل جغرافیایی، تجربه جراح و میزان پیچیدگی عمل متفاوت است. مشاوره با جراح برای تخمین دقیق هزینه ضروری است." },
+      { question: "چه مدت زمان لازم است تا نتایج لیفت صورت دیده شود؟", answer: "نتایج لیفت صورت معمولاً پس از چند هفته مشخص می‌شوند، اما بهبودی کامل و دیدن نتایج نهایی ممکن است چند ماه طول بکشد." },
+      { question: "نتایج لیفت صورت چه مدت ماندگار است؟", answer: "نتایج لیفت صورت می‌تواند بین 5 تا 10 سال ماندگار باشد. عوامل مختلفی مانند سبک زندگی، سن و ژنتیک می‌توانند بر ماندگاری نتایج تأثیر بگذارند." },
+      { question: "مراقبت‌های پس از لیفت صورت چیست؟", answer: "مراقبت‌های پس از لیفت صورت شامل اجتناب از فعالیت‌های شدید، استفاده از کمپرس سرد برای کاهش تورم، مصرف داروهای تجویز شده و مراجعه به پزشک برای پیگیری وضعیت می‌باشد." },
+      { question: "چه مدت بعد از جراحی می‌توان به فعالیت‌های روزمره بازگشت؟", answer: "بیشتر افراد می‌توانند پس از 1 تا 2 هفته به فعالیت‌های روزمره خود بازگردند. با این حال، فعالیت‌های سنگین باید تا چند هفته پس از جراحی محدود شود." },
+      { question: "آیا لیفت صورت دردناک است؟", answer: "جراحی لیفت صورت تحت بیهوشی عمومی یا موضعی انجام می‌شود، بنابراین در طول عمل درد احساس نمی‌شود. پس از عمل ممکن است درد و ناراحتی مختصری تجربه کنید که با داروهای مسکن کنترل می‌شود. آیا جای" },
+      { question: "زخم‌ها قابل مشاهده هستند؟", answer: "جای زخم‌های لیفت صورت معمولاً در خطوط طبیعی صورت و یا زیر موها پنهان می‌شوند و با گذر زمان کم‌رنگ‌تر می‌شوند." },
+      { question: "آیا نتایج لیفت صورت طبیعی به نظر می‌رسد؟", answer: "با انجام جراحی توسط یک جراح مجرب و با تجربه، نتایج لیفت صورت بسیار طبیعی خواهد بود و ظاهر جوان‌تری به شما می‌بخشد." },
+      { question: "آیا می‌توان جراحی لیفت صورت را با دیگر جراحی‌ها ترکیب کرد؟", answer: "بله، لیفت صورت می‌تواند با دیگر جراحی‌های زیبایی مانند لیفت ابرو، بلفاروپلاستی (جراحی پلک) و لیپوساکشن صورت ترکیب شود." },
+      { question: "آیا جراحی لیفت صورت به از بین بردن تمام چین و چروک‌ها کمک می‌کند؟", answer: "لیفت صورت به بهبود ظاهر چین و چروک‌ها کمک می‌کند، اما ممکن است تمام چین و چروک‌ها را از بین نبرد. برخی چین و چروک‌های سطحی ممکن است نیاز به درمان‌های دیگری مانند لیزر یا بوتاکس داشته باشند." },
+      { question: "آیا نیاز به بستری شدن پس از جراحی وجود دارد؟", answer: "بیشتر جراحی‌های لیفت صورت به صورت سرپایی انجام می‌شوند و نیاز به بستری شدن ندارند. بیمار پس از چند ساعت می‌تواند به خانه بازگردد." },
+      { question: "آیا جراحی لیفت صورت برای افراد سیگاری مناسب است؟", answer: "سیگار کشیدن می‌تواند بر بهبودی پس از جراحی تأثیر منفی بگذارد. به افراد سیگاری توصیه می‌شود حداقل چند هفته قبل و بعد از جراحی از سیگار کشیدن خودداری کنند." },
+      { question: "آیا لیفت صورت به ترمیم پوست شل پس از کاهش وزن کمک می‌کند؟", answer: "بله، لیفت صورت می‌تواند به ترمیم پوست شل و افتاده پس از کاهش وزن شدید کمک کند و ظاهر جوان‌تری به صورت ببخشد." },
+      { question: "آیا جراحی لیفت صورت تحت پوشش بیمه قرار می‌گیرد؟", answer: "بیشتر بیمه‌ها جراحی‌های زیبایی از جمله لیفت صورت را پوشش نمی‌دهند. این عمل به عنوان یک جراحی انتخابی محسوب می‌شود و هزینه آن معمولاً بر عهده بیمار است." },
+      { question: "چه تفاوتی بین لیفت صورت سنتی و مینی لیفت صورت وجود دارد؟", answer: "لیفت صورت سنتی معمولاً شامل جراحی گسترده‌تری است که به بهبود افتادگی و چین و چروک‌های عمیق کمک می‌کند. مینی لیفت صورت یک روش کمتر تهاجمی است که برای بهبود مشکلات جزئی‌تر و مناطق خاصی از صورت استفاده می‌شود." },
+      { question: "آیا مردان هم می‌توانند جراحی لیفت صورت انجام دهند؟", answer: "بله، مردان نیز می‌توانند از مزایای لیفت صورت بهره‌مند شوند. این جراحی می‌تواند به بهبود ظاهر مردان و جوان‌سازی چهره آن‌ها کمک کند." },
+      { question: "چه مدت قبل از یک رویداد خاص باید جراحی لیفت صورت انجام دهم؟", answer: "برای بهترین نتایج، توصیه می‌شود حداقل 6 ماه قبل از یک رویداد خاص لیفت صورت انجام دهید تا زمان کافی برای بهبودی و رسیدن به نتایج نهایی داشته باشید." },
+      { question: "نیاز به تکرار جراحی لیفت صورت وجود دارد؟", answer: "نتایج لیفت صورت معمولاً چندین سال ماندگار است، اما با گذر زمان و ادامه فرآیند پیری ممکن است نیاز به تکرار جراحی وجود داشته باشد." },
+      { question: "آیا جراحی لیفت صورت روی حساسیت‌های پوستی تأثیر می‌گذارد؟", answer: "جراحی لیفت صورت معمولاً تأثیر مستقیمی روی حساسیت‌های پوستی ندارد، اما ممکن است پوست به طور موقت حساس‌تر شود. آیا بعد" },
+      { question: "از جراحی لیفت صورت نیاز به تغییر در رژیم غذایی وجود دارد؟", answer: "پس از جراحی لیفت صورت، توصیه می‌شود از غذاهای نرم و مایعات استفاده کنید و از غذاهای سفت و خشک پرهیز کنید تا بهبودی سریع‌تر صورت گیرد." },
+      { question: "چگونه می‌توانم بهترین جراح لیفت صورت را انتخاب کنم؟", answer: "برای انتخاب بهترین جراح لیفت صورت، به تجربه و تخصص جراح، نظرات بیماران قبلی، و نمونه‌های کارهای قبلی او توجه کنید. مشاوره حضوری نیز می‌تواند به شما در انتخاب بهتر کمک کند." },
+    ],
+    structuredDataType: "MedicalWebPage",
+    // Media audit trail (Track 4, 2026-08-23) — see media-migration/media-review-list.csv.
+    // sourceImageUrl is provenance ONLY, never rendered as a live <img src> —
+    // per Hamid's "do not hotlink old WordPress images permanently" rule,
+    // only heroImage.src (a downloaded local /media/knowledge/... file) is ever used for display.
+    mediaStatus: "missing",
+    needsMediaReview: true,
+    sourceImageUrl: "",
+    localImagePath: "",
+  },
+  {
     postId: "8409",
     slug: "25-سوال-متداول-در-مورد-جراحی-چانه-و-زاویه",
     legacyUrls: ["https://dralirezasadighi.com/25-سوال-متداول-در-مورد-جراحی-چانه-و-زاویه/"],
@@ -1173,6 +1260,66 @@ export const KNOWLEDGE_ARTICLES: readonly KnowledgeArticle[] = [
     needsMediaReview: false,
     sourceImageUrl: "https://dralirezasadighi.com/wp-content/uploads/2026/05/عمل-بینی-اروپایی-دکتر-علیرضا-صدیقی.png",
     localImagePath: "/media/knowledge/european-nose-job/hero.png",
+  },
+  {
+    // Batch 2: Fat Injection Types.
+    postId: "8566",
+    slug: "انواع-تزریق-چربی-میکروفت،-نانوفت-و-سای",
+    legacyUrls: ["https://dralirezasadighi.com/انواع-تزریق-چربی-میکروفت،-نانوفت-و-سای/"],
+    title: "انواع تزریق چربی: میکروفت، نانوفت و سایرین",
+    seoTitle: "انواع تزریق چربی: میکروفت، نانوفت و سایرین",
+    seoDescription: "تزریق چربی یکی از روش‌های محبوب در جوانسازی و زیباسازی صورت و بدن است. این روش به دلیل استفاده از چربی طبیعی بدن فرد، بسیار ایمن و موثر بوده و نتایج طبیعی و ماندگاری دارد. در این م…",
+    excerpt: "تزریق چربی یکی از روش‌های محبوب در جوانسازی و زیباسازی صورت و بدن است. این روش به دلیل استفاده از چربی طبیعی بدن فرد، بسیار ایمن و موثر بوده و نتایج طبیعی و ماندگاری دارد. در این م…",
+    topicCluster: "facial-cosmetic-surgery",
+    serviceRelation: "facial-cosmetic-surgery",
+    medicalReview: {
+      reviewerName: "دکتر علیرضا صدیقی",
+      reviewerCredentialsRef: "about",
+      // Inherited from the original WordPress post_modified date — this is
+      // NOT a fresh post-migration clinical re-review. Flagged in
+      // manual-decisions-needed.md-adjacent follow-up: a real medical QA
+      // pass should update this once Dr. Sadighi has re-read the migrated
+      // copy, per CLAUDE.md's "real content, not placeholder" standard.
+      reviewedAt: "2024-07-22",
+    },
+    // Content status workflow (Track 3, 2026-08-23) — every migrated article
+    // defaults to needs-doctor-review; see doctor-review-list.csv. This is
+    // internal editorial metadata, never emitted in public JSON-LD.
+    reviewStatus: "needs-doctor-review",
+    // Persian is always the source (never a translation) — see translations below.
+    translationStatus: "source",
+    publishedAt: "2024-07-22",
+    updatedAt: "2024-07-22",
+    readingTime: "4 دقیقه مطالعه",
+    contentSections: [
+      { heading: undefined, paragraphs: ["تزریق چربی یکی از روش‌های محبوب در جوانسازی و زیباسازی صورت و بدن است. این روش به دلیل استفاده از چربی طبیعی بدن فرد، بسیار ایمن و موثر بوده و نتایج طبیعی و ماندگاری دارد. در این مقاله به بررسی انواع تزریق چربی از جمله میکروفت، نانوفت و دیگر روش‌ها می‌پردازیم و مزایا، معایب و کاربردهای هر کدام را مورد بررسی قرار می‌دهیم."] },
+      { heading: "تزریق چربی چیست؟", paragraphs: ["تزریق چربی یا پیوند چربی، فرآیندی است که در آن چربی از یک قسمت از بدن (مانند شکم یا ران) برداشت شده و پس از فرآوری به قسمت دیگری تزریق می‌شود. این روش برای حجم‌دهی، جوانسازی و بهبود ظاهر نواحی مختلف بدن مانند صورت، دست‌ها، سینه‌ها و باسن استفاده می‌شود."] },
+      { heading: "1. میکروفت (Microfat)", paragraphs: [] },
+      { heading: "تعریف میکروفت", paragraphs: ["میکروفت یک تکنیک تزریق چربی است که در آن چربی به ذرات کوچک‌تر تقسیم شده و سپس به ناحیه مورد نظر تزریق می‌شود. این روش بیشتر برای حجم‌دهی و فرم‌دهی به نواحی بزرگ‌تر و بافت‌های عمیق‌تر بدن استفاده می‌شود."] },
+      { heading: "مزایای میکروفت", paragraphs: ["حجم‌دهی موثر: میکروفت برای حجم‌دهی به نواحی بزرگ‌تر مانند سینه‌ها و باسن بسیار مناسب است.", "نتایج طبیعی: به دلیل استفاده از چربی طبیعی بدن، نتایج بسیار طبیعی و هماهنگ با بقیه بدن هستند.", "ماندگاری بالا: چربی تزریق شده معمولاً به خوبی توسط بدن جذب و ماندگار می‌شود."] },
+      { heading: "معایب میکروفت", paragraphs: ["زمان بازیابی: مانند سایر روش‌های تزریق چربی، میکروفت نیز نیاز به زمان بازیابی دارد.", "احتمال جذب چربی: ممکن است بخشی از چربی تزریق شده توسط بدن جذب شود که نیاز به جلسات ترمیمی دارد."] },
+      { heading: "2. نانوفت (Nanofat)", paragraphs: [] },
+      { heading: "تعریف نانوفت", paragraphs: ["نانوفت یک تکنیک پیشرفته‌تر از تزریق چربی است که در آن چربی به ذرات بسیار ریز و نانوذرات تبدیل می‌شود. این روش برای جوانسازی و بهبود کیفیت پوست و درمان نواحی بافتی سطحی استفاده می‌شود."] },
+      { heading: "مزایای نانوفت", paragraphs: ["جوانسازی پوست: نانوفت به بهبود کیفیت پوست، کاهش چین و چروک و بازسازی بافت‌های آسیب‌دیده کمک می‌کند.", "نتایج دقیق: به دلیل استفاده از نانوذرات چربی، نتایج بسیار دقیق و یکنواخت هستند.", "کمترین خطر عفونت: به دلیل فرآوری دقیق و ریز شدن چربی، خطر عفونت به حداقل می‌رسد."] },
+      { heading: "معایب نانوفت", paragraphs: ["نیاز به جلسات متعدد: ممکن است برای دستیابی به نتایج مطلوب نیاز به چندین جلسه تزریق باشد.", "محدودیت در حجم تزریق: نانوفت بیشتر برای نواحی کوچک‌تر و سطحی استفاده می‌شود و برای حجم‌دهی بزرگ مناسب نیست."] },
+      { heading: "3. ماکروفت (Macrofat)", paragraphs: [] },
+      { heading: "تعریف ماکروفت", paragraphs: ["ماکروفت یک تکنیک تزریق چربی است که در آن چربی به صورت ذرات بزرگ‌تر و کمتر فرآوری شده تزریق می‌شود. این روش برای حجم‌دهی به نواحی بزرگ‌تر و عمیق‌تر مانند باسن و سینه‌ها استفاده می‌شود."] },
+      { heading: "مزایای ماکروفت", paragraphs: ["حجم‌دهی زیاد: ماکروفت برای حجم‌دهی به نواحی بزرگ‌تر و عمیق‌تر بدن بسیار موثر است.", "نتایج سریع: به دلیل حجم زیاد چربی تزریق شده، نتایج به سرعت قابل مشاهده هستند.", "ماندگاری بالا: چربی تزریق شده معمولاً به خوبی توسط بدن جذب و ماندگار می‌شود."] },
+      { heading: "معایب ماکروفت", paragraphs: ["احتمال جذب چربی: مانند سایر روش‌های تزریق چربی، ممکن است بخشی از چربی تزریق شده توسط بدن جذب شود.", "زمان بازیابی: نیاز به زمان بازیابی و مراقبت‌های پس از عمل دارد."] },
+      { heading: "کاربردهای میکروفت", paragraphs: ["حجم‌دهی به سینه‌ها: میکروفت برای افزایش حجم و فرم‌دهی به سینه‌ها استفاده می‌شود.", "فرم‌دهی به باسن: این روش برای فرم‌دهی و حجم‌دهی به باسن نیز بسیار موثر است.", "جوانسازی دست‌ها: میکروفت برای جوانسازی و حجم‌دهی به دست‌ها نیز کاربرد دارد."] },
+      { heading: "کاربردهای نانوفت", paragraphs: ["جوانسازی صورت: نانوفت برای جوانسازی و بهبود کیفیت پوست صورت بسیار مناسب است.", "کاهش چین و چروک: این روش به کاهش چین و چروک‌های ریز و بهبود بافت پوست کمک می‌کند.", "درمان نواحی آسیب‌دیده: نانوفت برای بازسازی بافت‌های آسیب‌دیده و بهبود زخم‌ها نیز کاربرد دارد."] },
+      { heading: "کاربردهای ماکروفت", paragraphs: ["حجم‌دهی به باسن: ماکروفت برای افزایش حجم و فرم‌دهی به باسن بسیار مناسب است.", "افزایش حجم سینه‌ها: این روش برای حجم‌دهی به سینه‌ها نیز کاربرد دارد.", "ترمیم نواحی آسیب‌دیده: ماکروفت برای ترمیم نواحی بافتی آسیب‌دیده و بهبود ظاهر آنها استفاده می‌شود."] },
+      { heading: "نتیجه‌گیری", paragraphs: ["تزریق چربی به عنوان یک روش طبیعی و موثر برای جوانسازی و زیباسازی بدن و صورت شناخته شده است. انواع مختلف تزریق چربی از جمله میکروفت، نانوفت و ماکروفت هر کدام کاربردها و مزایای خاص خود را دارند. انتخاب روش مناسب بستگی به نیازها و شرایط فردی دارد.", "مشاوره با یک پزشک متخصص می‌تواند به شما کمک کند تا بهترین تصمیم را بگیرید و به نتایج مطلوب دست یابید.", "کلمات کلیدی: تزریق چربی، میکروفت، نانوفت، ماکروفت، جوانسازی صورت، حجم‌دهی به بدن، جوانسازی پوست، تکنیک‌های تزریق چربی، مزایا و معایب تزریق چربی، کاربردهای تزریق چربی."] },
+    ],
+    structuredDataType: "MedicalWebPage",
+    // Media audit trail (Track 4, 2026-08-23) — see media-migration/media-review-list.csv.
+    // sourceImageUrl is provenance ONLY, never rendered as a live <img src> —
+    // per Hamid's "do not hotlink old WordPress images permanently" rule,
+    // only heroImage.src (a downloaded local /media/knowledge/... file) is ever used for display.
+    mediaStatus: "missing",
+    needsMediaReview: true,
+    sourceImageUrl: "",
+    localImagePath: "",
   },
   {
     postId: "8558",
@@ -1793,6 +1940,109 @@ export const KNOWLEDGE_ARTICLES: readonly KnowledgeArticle[] = [
     localImagePath: "/media/knowledge/بهترین-متخصص-ایمپلنت-تبریز-و-معرفی-دکت/hero.png",
   },
   {
+    // Batch 2: Condylar Hyperplasia.
+    postId: "13705",
+    slug: "بیماری-کندیلار-هایپرپلاژیا-علل،-تشخی",
+    legacyUrls: ["https://dralirezasadighi.com/بیماری-کندیلار-هایپرپلاژیا-علل،-تشخی/"],
+    title: "بیماری کندیلار هایپرپلاژیا: علل، تشخیص و درمان",
+    seoTitle: "بیماری کندیلار هایپرپلاژیا: علل، تشخیص و درمان",
+    seoDescription: "کندیلار هایپرپلاژیا (Condylar Hyperplasia) یک اختلال نادر اما مهم در ناحیه فک است که باعث رشد غیرطبیعی و بیش از حد کندیل (مفصل فکی) می‌شود. این بیماری می‌تواند باعث ناقرینگی صورت و…",
+    excerpt: "کندیلار هایپرپلاژیا (Condylar Hyperplasia) یک اختلال نادر اما مهم در ناحیه فک است که باعث رشد غیرطبیعی و بیش از حد کندیل (مفصل فکی) می‌شود. این بیماری می‌تواند باعث ناقرینگی صورت و…",
+    topicCluster: "orthognathic-surgery",
+    serviceRelation: "orthognathic-surgery",
+    medicalReview: {
+      reviewerName: "دکتر علیرضا صدیقی",
+      reviewerCredentialsRef: "about",
+      // Inherited from the original WordPress post_modified date — this is
+      // NOT a fresh post-migration clinical re-review. Flagged in
+      // manual-decisions-needed.md-adjacent follow-up: a real medical QA
+      // pass should update this once Dr. Sadighi has re-read the migrated
+      // copy, per CLAUDE.md's "real content, not placeholder" standard.
+      reviewedAt: "2024-10-02",
+    },
+    // Content status workflow (Track 3, 2026-08-23) — every migrated article
+    // defaults to needs-doctor-review; see doctor-review-list.csv. This is
+    // internal editorial metadata, never emitted in public JSON-LD.
+    reviewStatus: "needs-doctor-review",
+    // Persian is always the source (never a translation) — see translations below.
+    translationStatus: "source",
+    publishedAt: "2024-09-14",
+    updatedAt: "2024-10-02",
+    readingTime: "3 دقیقه مطالعه",
+    contentSections: [
+      { heading: "بیماری کندیلار هایپرپلاژیا: علل، تشخیص و درمان", paragraphs: ["کندیلار هایپرپلاژیا (Condylar Hyperplasia) یک اختلال نادر اما مهم در ناحیه فک است که باعث رشد غیرطبیعی و بیش از حد کندیل (مفصل فکی) می‌شود. این بیماری می‌تواند باعث ناقرینگی صورت و مشکلات عملکردی در ناحیه فک شود. در این بخش از مقاله، به بررسی دقیق‌تر این بیماری، نحوه تشخیص و روش‌های درمان آن پرداخته می‌شود."] },
+      { heading: "کندیلار هایپرپلاژیا چیست؟", paragraphs: ["کندیلار هایپرپلاژیا به رشد غیرطبیعی و بیش از حد یکی از کندیل‌های فک اشاره دارد. این وضعیت معمولاً به دلیل اختلال در رشد استخوان‌ها رخ می‌دهد و می‌تواند منجر به ناقرینگی صورت، اختلال در جویدن و مشکلات عملکردی فک شود. این بیماری اغلب در دوران نوجوانی و جوانی بروز می‌کند و می‌تواند به‌طور تدریجی بدتر شود."] },
+      { heading: "علائم کندیلار هایپرپلاژیا", paragraphs: ["ناقرینگی صورت: یکی از شایع‌ترین علائم این بیماری، رشد نامتقارن دو طرف فک است که منجر به ناقرینگی صورت می‌شود.", "اختلالات عملکردی فک: بیماران ممکن است با مشکلاتی مانند سختی در باز و بسته کردن دهان و درد مفصل فکی مواجه شوند.", "مشکلات گاز گرفتن و جویدن: این بیماری می‌تواند باعث تغییر در هم‌راستایی دندان‌ها شده و مشکلاتی در گاز گرفتن و جویدن ایجاد کند.", "صداهای غیرعادی در فک: گاهی اوقات، هنگام حرکت فک، صدای کلیک یا ترکیدن از ناحیه مفصل فکی شنیده می‌شود."] },
+      { heading: "تشخیص کندیلار هایپرپلاژیا", paragraphs: ["تشخیص کندیلار هایپرپلاژیا نیاز به معاینات دقیق بالینی و تصویربرداری‌های تخصصی دارد. مراحل زیر برای تشخیص این بیماری به کار می‌روند:"] },
+      { heading: "1. معاینه بالینی", paragraphs: ["در اولین مرحله، جراح یا متخصص ارتودنسی، وضعیت ناقرینگی صورت و علائم بیمار را ارزیابی می‌کند. هرگونه تغییر در شکل و عملکرد فک ممکن است به تشخیص این بیماری کمک کند."] },
+      { heading: "2. تصویربرداری", paragraphs: ["تصویربرداری سه‌بعدی (CBCT) یا اشعه ایکس برای بررسی دقیق‌تر مفصل فکی و میزان رشد غیرطبیعی کندیل به کار می‌رود. این تکنیک‌ها به متخصص اجازه می‌دهند تا تغییرات ساختاری فک را با دقت بیشتری مشاهده کند."] },
+      { heading: "3. اسکن هسته‌ای (SPECT)", paragraphs: ["برای بررسی فعالیت متابولیکی کندیل، از اسکن هسته‌ای (SPECT) استفاده می‌شود. این اسکن نشان می‌دهد که آیا کندیل به رشد خود ادامه می‌دهد یا خیر، و می‌تواند به تصمیم‌گیری در مورد زمان مناسب برای جراحی کمک کند."] },
+      { heading: "روش‌های درمان کندیلار هایپرپلاژیا", paragraphs: ["درمان کندیلار هایپرپلاژیا به نوع و شدت بیماری بستگی دارد. در ادامه به روش‌های مختلف درمانی اشاره شده است:"] },
+      { heading: "1. جراحی کندیلکتومی", paragraphs: ["کندیلکتومی یکی از روش‌های اصلی درمان این بیماری است. در این جراحی، بخشی از کندیل که دچار رشد غیرطبیعی شده است برداشته می‌شود. این عمل به بهبود تعادل فکی و جلوگیری از پیشرفت بیماری کمک می‌کند."] },
+      { heading: "2. جراحی ارتوگناتیک", paragraphs: ["در مواردی که ناقرینگی صورت به شدت بر ظاهر بیمار تأثیر گذاشته باشد، ممکن است نیاز به جراحی ارتوگناتیک برای اصلاح فک و بازگرداندن تقارن به صورت باشد."] },
+      { heading: "3. درمان‌های ارتودنسی", paragraphs: ["برای بهبود هم‌راستایی دندان‌ها و تنظیم گاز گرفتن، ممکن است نیاز به درمان ارتودنسی باشد. این روش می‌تواند در کنار جراحی یا به‌تنهایی برای اصلاح مشکلات دندانی انجام شود."] },
+      { heading: "4. تزریق بوتاکس", paragraphs: ["در برخی موارد، برای کاهش درد و کنترل فعالیت عضلات فکی، از تزریق بوتاکس استفاده می‌شود. این روش غیرتهاجمی است و می‌تواند به بهبود موقت عملکرد فک کمک کند."] },
+      { heading: "نتیجه‌گیری", paragraphs: ["کندیلار هایپرپلاژیا یکی از علل اصلی ناقرینگی صورت و مشکلات فکی است که با استفاده از روش‌های جراحی و درمان‌های ارتودنسی قابل‌درمان است. تشخیص زودهنگام این بیماری اهمیت زیادی دارد، زیرا در مراحل اولیه، امکان بهبود کامل بیشتر است. انتخاب جراح پلاستیک یا ارتودنتیست متخصص نقش مهمی در موفقیت درمان دارد و می‌تواند به بازگرداندن عملکرد و زیبایی طبیعی فک کمک کند."] },
+    ],
+    structuredDataType: "MedicalWebPage",
+    // Media audit trail (Track 4, 2026-08-23) — see media-migration/media-review-list.csv.
+    // sourceImageUrl is provenance ONLY, never rendered as a live <img src> —
+    // per Hamid's "do not hotlink old WordPress images permanently" rule,
+    // only heroImage.src (a downloaded local /media/knowledge/... file) is ever used for display.
+    mediaStatus: "missing",
+    needsMediaReview: true,
+    sourceImageUrl: "",
+    localImagePath: "",
+  },
+  {
+    // Batch 2: Botox for Bruxism.
+    postId: "8573",
+    slug: "تزریق-بوتاکس-برای-از-بین-بردن-دندان-قرو",
+    legacyUrls: ["https://dralirezasadighi.com/تزریق-بوتاکس-برای-از-بین-بردن-دندان-قرو/"],
+    title: "تزریق بوتاکس برای از بین بردن دندان قروچه راهکاری نوین و مؤثر",
+    seoTitle: "تزریق بوتاکس برای از بین بردن دندان قروچه راهکاری نوین و مؤثر",
+    seoDescription: "دندان قروچه یا بروکسیسم، عارضه‌ای است که بسیاری از افراد به آن مبتلا هستند. این مشکل معمولاً شب‌ها هنگام خواب رخ می‌دهد و می‌تواند باعث مشکلات جدی برای دندان‌ها و فک شود. یکی از رو…",
+    excerpt: "دندان قروچه یا بروکسیسم، عارضه‌ای است که بسیاری از افراد به آن مبتلا هستند. این مشکل معمولاً شب‌ها هنگام خواب رخ می‌دهد و می‌تواند باعث مشکلات جدی برای دندان‌ها و فک شود. یکی از رو…",
+    topicCluster: "facial-cosmetic-surgery",
+    serviceRelation: "facial-cosmetic-surgery",
+    medicalReview: {
+      reviewerName: "دکتر علیرضا صدیقی",
+      reviewerCredentialsRef: "about",
+      // Inherited from the original WordPress post_modified date — this is
+      // NOT a fresh post-migration clinical re-review. Flagged in
+      // manual-decisions-needed.md-adjacent follow-up: a real medical QA
+      // pass should update this once Dr. Sadighi has re-read the migrated
+      // copy, per CLAUDE.md's "real content, not placeholder" standard.
+      reviewedAt: "2024-07-22",
+    },
+    // Content status workflow (Track 3, 2026-08-23) — every migrated article
+    // defaults to needs-doctor-review; see doctor-review-list.csv. This is
+    // internal editorial metadata, never emitted in public JSON-LD.
+    reviewStatus: "needs-doctor-review",
+    // Persian is always the source (never a translation) — see translations below.
+    translationStatus: "source",
+    publishedAt: "2024-07-22",
+    updatedAt: "2024-07-22",
+    readingTime: "2 دقیقه مطالعه",
+    contentSections: [
+      { heading: undefined, paragraphs: ["دندان قروچه یا بروکسیسم، عارضه‌ای است که بسیاری از افراد به آن مبتلا هستند. این مشکل معمولاً شب‌ها هنگام خواب رخ می‌دهد و می‌تواند باعث مشکلات جدی برای دندان‌ها و فک شود. یکی از روش‌های نوین برای درمان این عارضه، تزریق بوتاکس است. در این مقاله، به بررسی این روش درمانی پرداخته و مزایا و معایب آن را بیان خواهیم کرد."] },
+      { heading: "بوتاکس چیست؟", paragraphs: ["بوتاکس یک پروتئین خالص است که از سم بوتولینوم تهیه می‌شود. این ماده با مسدود کردن سیگنال‌های عصبی به عضلات، می‌تواند از انقباضات غیرارادی عضلات جلوگیری کند. این ویژگی باعث شده تا بوتاکس به عنوان یک راهکار مؤثر در درمان بروکسیسم مورد استفاده قرار گیرد."] },
+      { heading: "چگونه بوتاکس به درمان دندان قروچه کمک می‌کند؟", paragraphs: ["در دندان قروچه، عضلات فک به طور غیرارادی و مداوم منقبض می‌شوند که باعث سایش دندان‌ها و درد فک می‌شود. با تزریق بوتاکس به عضلات فک، فعالیت این عضلات کاهش یافته و از انقباضات غیرضروری جلوگیری می‌شود. این کار نه تنها به کاهش دندان قروچه کمک می‌کند، بلکه درد و فشار روی فک را نیز کاهش می‌دهد."] },
+      { heading: "مزایای تزریق بوتاکس برای درمان دندان قروچه", paragraphs: ["کاهش درد و فشار: بوتاکس با کاهش انقباضات عضلات فک، به کاهش درد و فشار روی فک کمک می‌کند.", "کاهش سایش دندان‌ها: با کاهش فعالیت عضلات فک، میزان سایش دندان‌ها نیز کاهش می‌یابد.", "درمان غیرتهاجمی: تزریق بوتاکس یک روش غیرتهاجمی و سریع است که نیاز به جراحی ندارد."] },
+      { heading: "معایب و محدودیت‌های تزریق بوتاکس", paragraphs: ["موقت بودن اثرات: تاثیر بوتاکس معمولاً بین 3 تا 6 ماه است و پس از آن نیاز به تزریق مجدد دارد.", "هزینه: هزینه تزریق بوتاکس می‌تواند بالا باشد و نیاز به تکرار درمان هزینه را افزایش می‌دهد.", "عوارض جانبی: ممکن است در برخی افراد عوارض جانبی مانند ضعف عضلات، تورم و کبودی در محل تزریق مشاهده شود."] },
+      { heading: "نتیجه‌گیری", paragraphs: ["تزریق بوتاکس به عنوان یک راهکار مؤثر و غیرتهاجمی برای درمان دندان قروچه می‌تواند به کاهش درد و سایش دندان‌ها کمک کند. هرچند این روش درمانی دارای معایب و محدودیت‌هایی است، اما به عنوان یک گزینه مؤثر در مدیریت بروکسیسم مورد توجه قرار گرفته است. برای کسب اطلاعات بیشتر و مشاوره، بهتر ا"] },
+    ],
+    structuredDataType: "MedicalWebPage",
+    // Media audit trail (Track 4, 2026-08-23) — see media-migration/media-review-list.csv.
+    // sourceImageUrl is provenance ONLY, never rendered as a live <img src> —
+    // per Hamid's "do not hotlink old WordPress images permanently" rule,
+    // only heroImage.src (a downloaded local /media/knowledge/... file) is ever used for display.
+    mediaStatus: "missing",
+    needsMediaReview: true,
+    sourceImageUrl: "",
+    localImagePath: "",
+  },
+  {
     postId: "14126",
     slug: "تفاوت-کشیدن-دندان-و-جراحی-دندان-عقل",
     legacyUrls: ["https://dralirezasadighi.com/تفاوت-کشیدن-دندان-و-جراحی-دندان-عقل/"],
@@ -2053,6 +2303,63 @@ export const KNOWLEDGE_ARTICLES: readonly KnowledgeArticle[] = [
     localImagePath: "/media/knowledge/جراحی-بینی-به-سبک-اروپایی-زیبایی-و-تقا/hero.jpg",
   },
   {
+    // Batch 2: Protruding Lower Jaw / Prognathism — this post (10,084 chars) is primary; base permalink 13945 consolidates as a redirect-only duplicate.
+    postId: "14707",
+    slug: "جراحی-جلوآمدگی-فک-پایین-2",
+    legacyUrls: ["https://dralirezasadighi.com/جراحی-جلوآمدگی-فک-پایین-2/", "https://dralirezasadighi.com/جراحی-جلوآمدگی-فک-پایین/"],
+    title: "جراحی جلوآمدگی فک پایین | درمان جلو بودن فک پایین و اصلاح ناهنجاری فک + عکس قبل و بعد",
+    seoTitle: "جراحی جلوآمدگی فک پایین | درمان تخصصی و اصلاح ناهنجاری فک با روش ارتوگناتیک",
+    seoDescription: "آیا از جلو بودن فک پایین رنج می‌برید؟ در این مقاله جامع با روش‌های درمان، مراحل جراحی ارتوگناتیک و مراقبت‌های بعد از عمل آشنا شوید. مشاوره تخصصی و تجربه واقعی بیماران در کلینیک دکتر علیرضا صدیقی.",
+    excerpt: "جلوآمدگی فک پایین به حالتی گفته می‌شود که استخوان فک پایین نسبت به فک بالا جلوتر قرار می‌گیرد. این وضعیت می‌تواند باعث تغییر در تناسب چهره، ایجاد مشکلات جویدن، اختلال در تلفظ برخی …",
+    topicCluster: "orthognathic-surgery",
+    serviceRelation: "orthognathic-surgery",
+    medicalReview: {
+      reviewerName: "دکتر علیرضا صدیقی",
+      reviewerCredentialsRef: "about",
+      // Inherited from the original WordPress post_modified date — this is
+      // NOT a fresh post-migration clinical re-review. Flagged in
+      // manual-decisions-needed.md-adjacent follow-up: a real medical QA
+      // pass should update this once Dr. Sadighi has re-read the migrated
+      // copy, per CLAUDE.md's "real content, not placeholder" standard.
+      reviewedAt: "2025-08-09",
+    },
+    // Content status workflow (Track 3, 2026-08-23) — every migrated article
+    // defaults to needs-doctor-review; see doctor-review-list.csv. This is
+    // internal editorial metadata, never emitted in public JSON-LD.
+    reviewStatus: "needs-doctor-review",
+    // Persian is always the source (never a translation) — see translations below.
+    translationStatus: "source",
+    publishedAt: "2025-08-09",
+    updatedAt: "2025-08-09",
+    readingTime: "10 دقیقه مطالعه",
+    contentSections: [
+      { heading: "جلوآمدگی فک پایین چیست؟", paragraphs: ["جلوآمدگی فک پایین به حالتی گفته می‌شود که استخوان فک پایین نسبت به فک بالا جلوتر قرار می‌گیرد. این وضعیت می‌تواند باعث تغییر در تناسب چهره، ایجاد مشکلات جویدن، اختلال در تلفظ برخی حروف و حتی فشار بیش‌ازحد به مفصل گیجگاهی (TMJ) شود.در نمای نیم‌رخ، افرادی که دچار این مشکل هستند، چانه‌ای برجسته دارند و در حالت بستن دهان، دندان‌های پایین جلوتر از دندان‌های بالا قرار می‌گیرد. این ناهنجاری علاوه بر جنبه ظاهری، می‌تواند بر سلامت دهان و روان فرد تأثیر بگذارد و اعتمادبه‌نفس او را کاهش دهد."] },
+      { heading: "علت جلو بودن فک پایین", paragraphs: ["برای درک بهتر جلو بودن فک پایین باید بدانیم که علت آن ممکن است ژنتیکی، محیطی یا ترکیبی باشد. گاهی رشد بیش‌ازحد فک پایین یا رشد ناکافی فک بالا باعث این وضعیت می‌شود. عوامل مؤثر عبارتند از:", "ژنتیک و وراثت: مهم‌ترین علت، انتقال ویژگی‌های اسکلتی از والدین به فرزندان است.", "رشد نامتعادل فک‌ها: فک پایین ممکن است بیش از حد رشد کند یا فک بالا به‌خوبی رشد نکند.", "عادات دوران کودکی: استفاده طولانی از پستانک یا مکیدن انگشت ممکن است بر رشد فک‌ها تأثیر بگذارد.", "آسیب یا ضربه به فک در کودکی: که می‌تواند روند رشد طبیعی استخوان را تغییر دهد.", "مشکلات هورمونی نادر: مثل آکرومگالی که موجب رشد بیش‌ازحد استخوان‌ها می‌شود.", "این دلایل می‌توانند به‌تنهایی یا در ترکیب با یکدیگر، ظاهر و عملکرد فک را تحت تأثیر قرار دهند."] },
+      { heading: "انواع ناهنجاری فک پایین و روش‌های تشخیص هر کدام", paragraphs: ["ناهنجاری‌های فک پایین می‌توانند به دلایل مختلفی مانند مشکلات ژنتیکی، عادات دهانی، یا آسیب‌های دوران رشد ایجاد شوند. این ناهنجاری‌ها نه‌تنها ظاهر صورت را تحت‌تأثیر قرار می‌دهند، بلکه عملکردهایی مانند جویدن، گفتار و حتی تنفس را هم مختل می‌کنند. برای برنامه‌ریزی درمان، لازم است نوع ناهنجاری دقیقاً توسط متخصص مجرب مشخص شود که میتواند اسکلتی، دندانی یا ترکیبی از این دو حالت باشد.", "1. جلو بودن فک پایین (پروگناتیسم مندیبولار)", "در این حالت فک پایین نسبت به فک بالا جلوتر قرار دارد و باعث ایجاد بایت معکوس می‌شود. این مشکل معمولاً به‌صورت مادرزادی وجود دارد اما می‌تواند بر اثر رشد نامتعادل استخوان‌ها نیز ایجاد شود. تشخیص آن معمولاً با معاینه بالینی و عکس‌برداری سفالومتریک انجام می‌شود.", "2. عقب بودن فک پایین (رتروگناتیسم مندیبولار)", "این ناهنجاری زمانی رخ می‌دهد که فک پایین نسبت به فک بالا کوچک‌تر یا عقب‌تر است. این مشکل می‌تواند باعث ظاهر نامتناسب صورت، مشکلات گفتاری و اختلالات تنفسی شود. پزشک متخصص با ارزیابی نسبت فک‌ها و بررسی رادیولوژیک، میزان عقب‌بودگی را تعیین می‌کند.", "3. انحراف فک پایین", "در برخی افراد فک پایین به سمت راست یا چپ منحرف شده که باعث عدم تقارن صورت و اختلال در جویدن می‌شود. تشخیص این مشکل با بررسی دقیق تراز صورت و ثبت تصاویر سه‌بعدی انجام می‌شود.", "4. رشد بیش‌ازحد یا کمتر از حد فک پایین", "گاهی فک پایین به‌طور کلی بیش‌ازحد رشد می‌کند یا رشد آن محدود می‌شود. این حالت می‌تواند ترکیبی از مشکلات عملکردی و زیبایی ایجاد کند و معمولاً نیاز به مداخله جراحی دارد. تشخیص با مقایسه نسبت‌های استاندارد صورت و استفاده از آنالیز رادیوگرافی انجام می‌شود."] },
+      { heading: "روش‌های درمان جلوآمدگی فک پایین", paragraphs: ["جلوآمدگی فک پایین یا پروگناتیسم مندیبولار یکی از ناهنجاری‌های شایع فکی است که می‌تواند هم عملکرد و هم زیبایی صورت را تحت تأثیر قرار دهد. انتخاب روش درمان، به شدت مشکل، سن بیمار، و وضعیت دندان‌ها و فک بالا بستگی دارد. درمان‌ها به دو دسته کلی غیرجراحی و جراحی تقسیم می‌شوند.", "1. درمان‌های غیرجراحی (در سنین رشد)", "اگر بیمار هنوز در سنین رشد باشد، می‌توان از درمان‌های ارتودنسی و ارتوپدی فک برای هدایت رشد استخوان‌ها استفاده کرد. این درمان‌ها شامل:", "ارتودنسی با دستگاه‌های ثابت یا متحرک برای اصلاح موقعیت دندان‌ها", "هدگیر معکوس یا ماسک صورت برای جلو آوردن فک بالا", "پلاک‌های فانکشنال جهت مهار رشد فک پایین", "این روش‌ها در بزرگسالان کارایی ندارند و تنها در کودکان و نوجوانان قابل استفاده‌اند.", "2. جراحی ارتوگناتیک (Orthognathic Surgery)", "در بزرگسالانی که رشد استخوان‌ها کامل شده، تنها راه درمان قطعی جلوآمدگی فک پایین، جراحی ارتوگناتیک است. این جراحی با بیهوشی عمومی انجام شده و شامل:", "برش و جابه‌جایی استخوان فک پایین برای قرارگیری صحیح نسبت به فک بالا", "در صورت نیاز، تنظیم هم‌زمان فک بالا برای بهبود تناسب صورت", "تثبیت موقعیت جدید استخوان با پیچ و پلاک‌های تیتانیومی", "3. ارتودنسی قبل و بعد از جراحی", "در اکثر موارد، جراحی به‌تنهایی کافی نیست و ارتودنسی قبل و بعد از عمل برای هماهنگ کردن موقعیت دندان‌ها ضروری است.", "ارتودنسی قبل از جراحی: مرتب‌کردن دندان‌ها و آماده‌سازی بایت", "ارتودنسی بعد از جراحی: تثبیت موقعیت دندان‌ها و اصلاح جزئیات نهایی", "4. درمان‌های کمکی", "پس از جراحی، برخی بیماران برای بهبود کامل عملکرد جویدن و گفتار نیاز به گفتاردرمانی یا فیزیوتراپی فک دارند."] },
+      { heading: "زمان مناسب برای جراحی جلوآمدگی فک پایین", paragraphs: ["انتخاب زمان مناسب جراحی اهمیت زیادی دارد. معمولاً جراحی پس از پایان رشد فک‌ها انجام می‌شود تا نتیجه پایدار باشد. با این حال، در مواردی که مشکل شدید است، جراحی زودتر نیز ممکن است لازم شود.", "نشانه‌هایی که بیانگر نیاز به جراحی هستند:", "جلو بودن چانه به شکل واضح نسبت به فک بالا", "مشکلات شدید در گاز زدن و جویدن", "درد یا صدای مفصل فک (TMJ)", "تأثیر منفی بر زیبایی صورت و اعتمادبه‌نفس", "عدم پاسخ به درمان ارتودنسی به‌تنهایی"] },
+      { heading: "تجربه واقعی بیمار", paragraphs: ["در کلینیک دکتر علیرضا صدیقی، یک بیمار ۱۹ ساله با مشکل جلو بودن فک پایین مراجعه کرد.", "تصویر قبل از جراحی نشان می‌داد که فک پایین به شکل محسوسی جلوتر از فک بالا قرار دارد، که باعث تغییر در پروفایل صورت و اختلال در گاز زدن شده بود.", "پس از معاینه دقیق و بررسی تصاویر رادیوگرافی، تصمیم به انجام جراحی ارتوگناتیک فک پایین گرفته شد.", "جراحی با هدف بازگرداندن فک پایین به موقعیت ایده‌آل انجام شد. پس از چند هفته، نتایج چشمگیر بودند:چهره بیمار متعادل‌تر شد، عملکرد جویدن و گفتار بهبود یافت، و اعتمادبه‌نفس او به شکل قابل‌توجهی افزایش پیدا کرد."] },
+      { heading: "مراحل جراحی ارتوگناتیک فک پایین", paragraphs: ["جراحی ارتوگناتیک فک پایین یک عمل تخصصی و دقیق است که برای اصلاح جلوآمدگی یا عقب‌ماندگی فک پایین انجام می‌شود. این جراحی به برنامه‌ریزی دقیق، تیم درمانی حرفه‌ای، و مراقبت‌های قبل و بعد از عمل نیاز دارد. به طور کلی مراحل آن شامل موارد زیر است:", "1. مشاوره و ارزیابی اولیه", "در اولین جلسه، متخصص جراحی پلاستیک فک و صورت یا جراح دهان و فک و صورت وضعیت کلی بیمار را بررسی می‌کند. این مرحله شامل:", "گرفتن شرح حال کامل و بررسی سوابق پزشکی", "معاینه دقیق دندان‌ها، فک و صورت", "بررسی مشکلات جویدن، گفتار یا تنفس", "تهیه عکس‌های داخل و خارج دهانی برای مستندسازی", "2. تصویربرداری و مدل‌سازی فک", "برای طراحی دقیق جراحی، پزشک از تصویربرداری CBCT یا رادیوگرافی سفالومتریک استفاده می‌کند. در برخی موارد، از قالب‌گیری دیجیتال یا فیزیکی برای ساخت مدل سه‌بعدی فک استفاده می‌شود تا موقعیت ایده‌آل استخوان‌ها پیش از عمل مشخص شود.", "3. ارتودنسی پیش از جراحی", "اغلب بیماران پیش از عمل نیاز به چند ماه ارتودنسی دارند تا موقعیت دندان‌ها اصلاح و آماده جابه‌جایی فک شود. این مرحله باعث می‌شود دندان‌ها بعد از جراحی به‌درستی روی هم قرار بگیرند.", "4. انجام جراحی تحت بیهوشی عمومی", "در روز عمل:", "بیمار بیهوش می‌شود تا بدون درد جراحی انجام شود.", "برش‌ها معمولاً داخل دهان زده می‌شوند تا جای زخم بیرونی ایجاد نشود.", "استخوان فک پایین با تکنیک‌های مخصوص (مانند BSSO – برش ساژیتال استخوان مندیبول) جدا و به موقعیت جدید منتقل می‌شود.", "استخوان‌ها در محل جدید با پلاک و پیچ‌های تیتانیومی ثابت می‌شوند.", "5. بستن بخیه و پایان عمل", "برش‌ها با بخیه‌های جذبی بسته می‌شوند و در برخی موارد از کش‌های ارتودنسی برای کمک به تثبیت بایت استفاده می‌گردد.", "در اولین جلسه، متخصص جراحی پلاستیک فک و صورت یا جراح دهان و فک و صورت وضعیت کلی بیمار را بررسی می‌کند. این مرحله شامل:", "گرفتن شرح حال کامل و بررسی سوابق پزشکی", "معاینه دقیق دندان‌ها، فک و صورت", "بررسی مشکلات جویدن، گفتار یا تنفس", "تهیه عکس‌های داخل و خارج دهانی برای مستندسازی", "برای طراحی دقیق جراحی، پزشک از تصویربرداری CBCT یا رادیوگرافی سفالومتریک استفاده می‌کند. در برخی موارد، از قالب‌گیری دیجیتال یا فیزیکی برای ساخت مدل سه‌بعدی فک استفاده می‌شود تا موقعیت ایده‌آل استخوان‌ها پیش از عمل مشخص شود.", "اغلب بیماران پیش از عمل نیاز به چند ماه ارتودنسی دارند تا موقعیت دندان‌ها اصلاح و آماده جابه‌جایی فک شود. این مرحله باعث می‌شود دندان‌ها بعد از جراحی به‌درستی روی هم قرار بگیرند.", "در روز عمل:", "بیمار بیهوش می‌شود تا بدون درد جراحی انجام شود.", "برش‌ها معمولاً داخل دهان زده می‌شوند تا جای زخم بیرونی ایجاد نشود.", "استخوان فک پایین با تکنیک‌های مخصوص (مانند BSSO – برش ساژیتال استخوان مندیبول) جدا و به موقعیت جدید منتقل می‌شود.", "استخوان‌ها در محل جدید با پلاک و پیچ‌های تیتانیومی ثابت می‌شوند.", "برش‌ها با بخیه‌های جذبی بسته می‌شوند و در برخی موارد از کش‌های ارتودنسی برای کمک به تثبیت بایت استفاده می‌گردد."] },
+      { heading: "دوران نقاهت و مراقبت‌های بعد از عمل جراحی جلوآمدگی فک پایین", paragraphs: ["دوره نقاهت پس از جراحی جلوآمدگی فک پایین بسیار مهم است و رعایت دقیق توصیه‌های پزشک، کیفیت نتیجه را تضمین می‌کند:", "مصرف داروهای تجویز شده برای کنترل درد و پیشگیری از عفونت", "رعایت رژیم غذایی نرم و مایع در هفته‌های اول", "استفاده از دهان‌شویه ضدعفونی‌کننده برای حفظ بهداشت", "پرهیز از فعالیت‌های سنگین و ورزش‌های تماسی", "پیگیری منظم جلسات معاینه"] },
+      { heading: "سوالات متداول", paragraphs: [] },
+      { heading: "۱. آیا جراحی جلوآمدگی فک پایین دردناک است؟", paragraphs: ["در طول عمل به دلیل بیهوشی عمومی هیچ دردی احساس نمی‌شود. پس از عمل، ممکن است بیمار کمی احساس فشار یا ناراحتی در ناحیه فک داشته باشد که با داروهای مسکن کنترل می‌شود. تورم طبیعی است و طی دو تا سه هفته به‌طور قابل‌توجهی کاهش پیدا می‌کند."] },
+      { heading: "۲. آیا این جراحی جای زخم روی صورت باقی می‌گذارد؟", paragraphs: ["خیر. برش‌ها داخل دهان ایجاد می‌شوند و از بیرون هیچ اثری از جای زخم باقی نمی‌ماند. حتی در صورت نیاز به اصلاحات ظریف، جراح از روش‌هایی استفاده می‌کند که اثر ظاهری به حداقل برسد."] },
+      { heading: "۳. چه مدت طول می‌کشد تا بتوانم فعالیت‌های روزمره را از سر بگیرم؟", paragraphs: ["بیشتر بیماران ظرف ۱۰ تا ۱۴ روز می‌توانند کارهای سبک روزانه را انجام دهند. فعالیت‌های سنگین، ورزش و جویدن غذای سفت معمولاً پس از ۶ هفته توصیه می‌شود. بهبود کامل فرم صورت و عملکرد فک ممکن است چند ماه زمان ببرد."] },
+      { heading: "۴. آیا نتیجه جراحی دائمی است؟", paragraphs: ["بله، در صورتی که رشد فک کامل شده باشد و توصیه‌های پس از عمل به‌طور کامل رعایت شود، نتایج جراحی پایدار خواهد بود. در برخی موارد، ارتودنسی تکمیلی برای تثبیت موقعیت دندان‌ها انجام می‌شود."] },
+      { heading: "۵. آیا این جراحی فقط برای زیبایی است یا مشکلات عملکردی را هم برطرف می‌کند؟", paragraphs: ["این جراحی علاوه بر بهبود تناسب و زیبایی صورت، مشکلات عملکردی مانند سختی در جویدن، اختلال گفتار و فشار بر مفصل فک را نیز برطرف می‌کند. در واقع، این عمل ترکیبی از درمان عملکردی و زیبایی است."] },
+      { heading: "جمع‌بندی", paragraphs: ["جراحی جلوآمدگی فک پایین یک راهکار تخصصی برای درمان جلو بودن فک پایین و بازگرداندن هماهنگی به چهره است. این عمل با تکنیک‌های پیشرفته، نه‌تنها فرم صورت را زیباتر می‌کند بلکه مشکلات عملکردی فک را نیز برطرف می‌سازد. انتخاب یک متخصص جراحی پلاستیک فک و صورت باتجربه و رعایت دقیق مراقبت‌های پس از عمل، کلید موفقیت این درمان است.", "اگر شما یا یکی از عزیزانتان از مشکل جلو بودن فک پایین رنج می‌برید، تأخیر در درمان می‌تواند باعث تشدید مشکلات ظاهری و عملکردی شود.برای دریافت مشاوره تخصصی و بررسی دقیق شرایطتان، همین امروز با کلینیک دکتر علیرضا صدیقی تماس بگیرید و قدم اول را برای داشتن چهره‌ای متناسب و عملکردی سالم بردارید."] },
+    ],
+    structuredDataType: "MedicalWebPage",
+    // Media audit trail (Track 4, 2026-08-23) — see media-migration/media-review-list.csv.
+    // sourceImageUrl is provenance ONLY, never rendered as a live <img src> —
+    // per Hamid's "do not hotlink old WordPress images permanently" rule,
+    // only heroImage.src (a downloaded local /media/knowledge/... file) is ever used for display.
+    mediaStatus: "missing",
+    needsMediaReview: true,
+    sourceImageUrl: "",
+    localImagePath: "",
+  },
+  {
     postId: "14138",
     slug: "جراحی-دندان-عقل-با-بیهوشی-در-تبریز",
     legacyUrls: ["https://dralirezasadighi.com/جراحی-دندان-عقل-با-بیهوشی-در-تبریز/"],
@@ -2154,6 +2461,167 @@ export const KNOWLEDGE_ARTICLES: readonly KnowledgeArticle[] = [
     needsMediaReview: false,
     sourceImageUrl: "https://dralirezasadighi.com/wp-content/uploads/2025/03/جراحی-دندان-عقل-با-بیهوشی-در-تبریز.jpg",
     localImagePath: "/media/knowledge/جراحی-دندان-عقل-با-بیهوشی-در-تبریز/hero.jpg",
+  },
+  {
+    // Batch 2: Orthognathic Jaw Surgery: Stages and Process.
+    postId: "13741",
+    slug: "جراحی-فک-ارتوگناتیک-مراحل-و-روند-درما",
+    legacyUrls: ["https://dralirezasadighi.com/جراحی-فک-ارتوگناتیک-مراحل-و-روند-درما/"],
+    title: "جراحی فک (ارتوگناتیک): مراحل و روند درمان",
+    seoTitle: "جراحی فک (ارتوگناتیک): مراحل و روند درمان",
+    seoDescription: "جراحی فک که به آن جراحی ارتوگناتیک نیز گفته می‌شود، یکی از پیچیده‌ترین روش‌های درمانی برای اصلاح ناهنجاری‌های فکی و بهبود عملکرد دهان و دندان است. بسیاری از افرادی که دچار مشکلات ف…",
+    excerpt: "جراحی فک که به آن جراحی ارتوگناتیک نیز گفته می‌شود، یکی از پیچیده‌ترین روش‌های درمانی برای اصلاح ناهنجاری‌های فکی و بهبود عملکرد دهان و دندان است. بسیاری از افرادی که دچار مشکلات ف…",
+    topicCluster: "orthognathic-surgery",
+    serviceRelation: "orthognathic-surgery",
+    medicalReview: {
+      reviewerName: "دکتر علیرضا صدیقی",
+      reviewerCredentialsRef: "about",
+      // Inherited from the original WordPress post_modified date — this is
+      // NOT a fresh post-migration clinical re-review. Flagged in
+      // manual-decisions-needed.md-adjacent follow-up: a real medical QA
+      // pass should update this once Dr. Sadighi has re-read the migrated
+      // copy, per CLAUDE.md's "real content, not placeholder" standard.
+      reviewedAt: "2024-10-02",
+    },
+    // Content status workflow (Track 3, 2026-08-23) — every migrated article
+    // defaults to needs-doctor-review; see doctor-review-list.csv. This is
+    // internal editorial metadata, never emitted in public JSON-LD.
+    reviewStatus: "needs-doctor-review",
+    // Persian is always the source (never a translation) — see translations below.
+    translationStatus: "source",
+    publishedAt: "2024-09-21",
+    updatedAt: "2024-10-02",
+    readingTime: "5 دقیقه مطالعه",
+    contentSections: [
+      { heading: undefined, paragraphs: ["جراحی فک که به آن جراحی ارتوگناتیک نیز گفته می‌شود، یکی از پیچیده‌ترین روش‌های درمانی برای اصلاح ناهنجاری‌های فکی و بهبود عملکرد دهان و دندان است. بسیاری از افرادی که دچار مشکلات فک، ناهنجاری‌های زیبایی صورت، مشکلات گفتاری یا دردهای مرتبط با مفصل گیجگاهی فکی هستند، به این نوع جراحی نیاز پیدا می‌کنند. در این مقاله، به بررسی مراحل درمان جراحی فک و نکات مهم آن می‌پردازیم."] },
+      { heading: "۱. تشخیص و معاینه اولیه", paragraphs: ["در اولین مرحله، برای ارزیابی دقیق ناهنجاری‌های فکی، بیمار به متخصص ارتودنسی یا جراح فک و صورت مراجعه می‌کند. در این مرحله، با انجام عکس‌برداری‌های دقیق مانند پانورامیک و CBCT و مدل‌سازی دقیق دندان‌ها، میزان و نوع ناهنجاری مشخص می‌شود."] },
+      { heading: "۲. درمان ارتودنسی قبل از جراحی", paragraphs: ["قبل از عمل جراحی فک، دندان‌ها باید با استفاده از ارتودنسی در موقعیت مناسب قرار گیرند. این مرحله که ممکن است ۶ ماه تا ۲ سال طول بکشد، به تنظیم موقعیت دقیق دندان‌ها کمک می‌کند. ارتودنسی قبل از جراحی، باعث هماهنگی بیشتر دندان‌ها با فک پس از جراحی می‌شود."] },
+      { heading: "۳. برنامه‌ریزی جراحی", paragraphs: ["پس از تکمیل درمان ارتودنسی، جراح و ارتودنتیست با استفاده از تکنولوژی‌های سه‌بعدی و نرم‌افزارهای شبیه‌سازی، نقشه دقیق جراحی را طراحی می‌کنند. این برنامه‌ریزی دقیق کمک می‌کند تا تغییرات مورد نیاز در فک با دقت و ظرافت بیشتری انجام شود."] },
+      { heading: "۴. عمل جراحی فک", paragraphs: ["عمل جراحی فک معمولاً تحت بیهوشی عمومی انجام می‌شود. بسته به نوع ناهنجاری، ممکن است جراحی بر روی فک بالا، فک پایین یا هر دو انجام شود. جراحی شامل برش‌های داخل دهانی برای دسترسی به استخوان فک است که پس از جابجایی و اصلاح موقعیت، با استفاده از پیچ و پلیت‌های فلزی تثبیت می‌شود."] },
+      { heading: "انواع جراحی فک:", paragraphs: ["جراحی فک بالا (ماگزیلا): برای اصلاح ناهنجاری‌های فک بالا.", "جراحی فک پایین (مندیبول): برای تنظیم مجدد فک پایین.", "جراحی چانه (ژنئوپلاستی): برای بهبود تقارن صورت."] },
+      { heading: "۵. مراقبت‌ها و دوره بهبودی", paragraphs: ["دوره بهبودی پس از جراحی فک چندین ماه طول می‌کشد. بیمار در این مدت باید به رژیم غذایی نرم و مایعات پایبند باشد. تورم و درد طبیعی است و با داروهای ضد درد کنترل می‌شود. رعایت بهداشت دهان و دندان و اجتناب از فعالیت‌های سنگین در این دوره ضروری است."] },
+      { heading: "۶. پیگیری‌های پس از جراحی", paragraphs: ["پس از جراحی، پیگیری‌های منظم با جراح و ارتودنتیست اهمیت بالایی دارد. ممکن است بیمار نیاز به تنظیمات ارتودنسی بیشتری داشته باشد تا دندان‌ها به موقعیت نهایی خود برسند. این مرحله از درمان ممکن است چند ماه تا یک سال طول بکشد."] },
+      { heading: "۷. نتایج نهایی و مزایای جراحی فک", paragraphs: ["نتایج جراحی فک نه تنها از لحاظ زیبایی بلکه از نظر عملکردی نیز بسیار مثبت هستند. بسیاری از بیماران پس از جراحی، بهبود در عملکرد جویدن، تنفس و گفتار خود را تجربه می‌کنند. همچنین تغییرات زیبایی چهره به افزایش اعتماد به نفس و بهبود کیفیت زندگی منجر می‌شود."] },
+      { heading: "عوارض احتمالی جراحی فک", paragraphs: ["هرچند که جراحی فک عموماً با موفقیت همراه است، اما مانند هر جراحی دیگری، ممکن است عوارضی مانند عفونت، خونریزی، یا کاهش موقتی حس در ناحیه لب‌ها و چانه رخ دهد. با مراقبت‌های مناسب و پیگیری منظم، این عوارض معمولاً قابل مدیریت هستند.", "یکی از نکات مهم در روند درمان ارتودنسی و جراحی فک، جراحی دندان عقل است. در بسیاری از موارد، دندان‌های عقل می‌توانند مشکلاتی مانند تراکم بیش از حد دندان‌ها و یا فشار بر روی دندان‌های مجاور ایجاد کنند. بنابراین، توصیه می‌شود که دندان‌های عقل قبل از شروع ارتودنسی یا حداقل ۶ ماه قبل از جراحی فک کشیده شوند. این موضوع می‌تواند نقش بسیار مهمی در پیشگیری از بروز مشکلات آتی و تسهیل روند درمان داشته باشد."] },
+      { heading: "دلایل جراحی دندان عقل قبل از ارتودنسی", paragraphs: ["دندان‌های عقل به عنوان آخرین دندان‌هایی که در دهان رشد می‌کنند، معمولاً فضای کافی برای رویش ندارند. در نتیجه، این دندان‌ها ممکن است نهفته یا نیمه‌نهفته شوند که مشکلات متعددی به همراه دارد. اگر این دندان‌ها پیش از ارتودنسی کشیده نشوند، ممکن است باعث جابجایی دندان‌های دیگر یا ایجاد فشار بیش از حد در فک شوند. از این رو، متخصصان ارتودنسی مانند دکتر علیرضا صدیقی به بیماران توصیه می‌کنند که قبل از شروع درمان ارتودنسی، دندان‌های عقل خود را خارج کنند."] },
+      { heading: "جراحی دندان عقل قبل از جراحی فک", paragraphs: ["جراحی دندان عقل قبل از جراحی فک نیز از اهمیت بالایی برخوردار است. دندان‌های عقل که ممکن است فک را تحت فشار قرار دهند یا باعث عفونت شوند، می‌توانند باعث مشکلاتی در بهبودی بعد از جراحی فک شوند. به همین دلیل، جراحان فک و صورت توصیه می‌کنند که حداقل ۶ ماه قبل از جراحی فک، دندان‌های عقل خارج شوند. این فاصله زمانی به فک فرصت کافی برای بهبودی می‌دهد و از بروز هرگونه عارضه در روند جراحی فک جلوگیری می‌کند."] },
+      { heading: "اهمیت زمان‌بندی جراحی دندان عقل", paragraphs: ["برای اینکه روند درمان ارتودنسی و جراحی فک بدون مشکل پیش برود، انتخاب زمان مناسب برای جراحی دندان عقل بسیار حیاتی است. به طور معمول، توصیه می‌شود که این جراحی حداقل ۶ ماه قبل از شروع ارتودنسی یا جراحی فک انجام شود تا بهبودی کامل حاصل شود و هیچ‌گونه مشکلی در حرکت دندان‌ها یا جراحی فک ایجاد نشود.", "دکتر علیرضا صدیقی، متخصص جراحی فک و صورت، همواره توصیه می‌کند که بیماران قبل از شروع مراحل درمان ارتودنسی یا جراحی فک، مشاوره کاملی در خصوص وضعیت دندان‌های عقل خود دریافت کنند."] },
+      { heading: "نتیجه گیری:", paragraphs: ["جراحی دندان عقل قبل از ارتودنسی و جراحی فک، یک مرحله حیاتی در روند درمان است که می‌تواند از بروز مشکلات در آینده جلوگیری کند. با مشاوره با متخصصانی مانند دکتر علیرضا صدیقی و انجام این جراحی در زمان مناسب، می‌توان از نتایج بهتری در درمان ارتودنسی و جراحی فک بهره‌مند شد.", "جراحی فک یک روش درمانی کارآمد برای اصلاح ناهنجاری‌های فکی و بهبود عملکرد دهان است. با استفاده از تکنولوژی‌های پیشرفته و برنامه‌ریزی دقیق، این جراحی می‌تواند به نتایج رضایت‌بخشی در زمینه زیبایی و عملکردی منجر شود."] },
+    ],
+    structuredDataType: "MedicalWebPage",
+    // Media audit trail (Track 4, 2026-08-23) — see media-migration/media-review-list.csv.
+    // sourceImageUrl is provenance ONLY, never rendered as a live <img src> —
+    // per Hamid's "do not hotlink old WordPress images permanently" rule,
+    // only heroImage.src (a downloaded local /media/knowledge/... file) is ever used for display.
+    mediaStatus: "missing",
+    needsMediaReview: true,
+    sourceImageUrl: "",
+    localImagePath: "",
+  },
+  {
+    // Batch 2: Is Jaw Surgery Dangerous?
+    postId: "13992",
+    slug: "جراحی-فک-خطرناک",
+    legacyUrls: ["https://dralirezasadighi.com/جراحی-فک-خطرناک/"],
+    title: "آیا جراحی فک خطرناک است؟ بررسی علمی عوارض، مزایا و نکات مهم پیش از عمل",
+    seoTitle: "آیا جراحی فک خطرناک است؟ بررسی علمی مزایا و عوارض جراحی فک",
+    seoDescription: "جراحی فک چه خطراتی دارد؟ در این مقاله جامع به بررسی کامل عوارض، مزایا و نکات مهم قبل و بعد از جراحی فک با منابع معتبر جهانی پرداخته‌ایم.",
+    excerpt: "جراحی فک یا جراحی ارتوگناتیک، یکی از جراحی‌های تخصصی در حوزه دهان و فک و صورت است که با هدف اصلاح ناهنجاری‌های فکی، بهبود عملکرد فک و زیبایی چهره انجام می‌شود. بسیاری از بیماران نگ…",
+    topicCluster: "orthognathic-surgery",
+    serviceRelation: "orthognathic-surgery",
+    medicalReview: {
+      reviewerName: "دکتر علیرضا صدیقی",
+      reviewerCredentialsRef: "about",
+      // Inherited from the original WordPress post_modified date — this is
+      // NOT a fresh post-migration clinical re-review. Flagged in
+      // manual-decisions-needed.md-adjacent follow-up: a real medical QA
+      // pass should update this once Dr. Sadighi has re-read the migrated
+      // copy, per CLAUDE.md's "real content, not placeholder" standard.
+      reviewedAt: "2025-05-06",
+    },
+    // Content status workflow (Track 3, 2026-08-23) — every migrated article
+    // defaults to needs-doctor-review; see doctor-review-list.csv. This is
+    // internal editorial metadata, never emitted in public JSON-LD.
+    reviewStatus: "needs-doctor-review",
+    // Persian is always the source (never a translation) — see translations below.
+    translationStatus: "source",
+    publishedAt: "2024-12-30",
+    updatedAt: "2025-05-06",
+    readingTime: "3 دقیقه مطالعه",
+    contentSections: [
+      { heading: "مقدمه", paragraphs: ["جراحی فک یا جراحی ارتوگناتیک، یکی از جراحی‌های تخصصی در حوزه دهان و فک و صورت است که با هدف اصلاح ناهنجاری‌های فکی، بهبود عملکرد فک و زیبایی چهره انجام می‌شود. بسیاری از بیماران نگران خطرات احتمالی این جراحی هستند؛ اما با آگاهی از فرایند درمان، عوارض احتمالی، و انتخاب جراح مجرب، می‌توان با آرامش خاطر بیشتری تصمیم‌گیری کرد.", "در ادامه، با تکیه بر منابع علمی معتبر مانند Mayo Clinic به بررسی دقیق مزایا، خطرات و مراقبت‌های مرتبط با جراحی فک می‌پردازیم."] },
+      { heading: "جراحی فک چیست و چه کاربردی دارد؟", paragraphs: ["جراحی فک نوعی درمان تخصصی است که به منظور اصلاح موقعیت فک بالا، پایین یا هر دو، انجام می‌شود. این جراحی برای بیماران با مشکلات زیر کاربرد دارد:", "جلو یا عقب بودن غیرطبیعی فک پایین یا بالا", "عدم تقارن چهره ناشی از ناهنجاری‌های استخوانی", "اختلال در جویدن و بلع غذا", "مشکلات تنفسی مانند آپنه خواب", "درد مزمن فک یا مفصل گیجگاهی فکی (TMJ)", "طبق تحقیقات منتشرشده توسط National Institutes of Health (NIH)، جراحی ارتوگناتیک می‌تواند علاوه‌بر بهبود ظاهر صورت، کارایی عملکردی سیستم دهان و فک را نیز ارتقا دهد."] },
+      { heading: "آیا جراحی فک خطرناک است؟", paragraphs: ["هر عمل جراحی ممکن است با ریسک‌هایی همراه باشد، اما در صورت رعایت مراقبت‌های پزشکی، انتخاب جراح متخصص، و پیروی از دستورالعمل‌های قبل و بعد از عمل، احتمال وقوع عوارض به حداقل می‌رسد. عوارض احتمالی شامل:", "عفونت بعد از عمل: که با مصرف آنتی‌بیوتیک کنترل می‌شود.", "بی‌حسی لب یا چانه: که اغلب موقتی است ولی در موارد نادر ممکن است دائمی باشد.", "خونریزی یا تورم شدید: که در چند روز اول طبیعی است.", "بازگشت فک به موقعیت قبلی: در صورت عدم رعایت دقیق مراقبت‌های بعد از عمل.", "بر اساس اطلاعات منتشرشده در مقالات علمی، این عمل جراحی در اکثر موارد ایمن و با نتایج موفقیت‌آمیز همراه است."] },
+      { heading: "مزایای جراحی فک", paragraphs: ["مزایای این عمل تنها محدود به زیبایی نیست. برخی از مزایا عبارتند از:", "اصلاح نحوه جویدن، بلع و صحبت کردن", "کاهش درد ناشی از مشکلات مفصل فک", "بهبود کیفیت خواب در بیماران دچار آپنه خواب", "افزایش اعتماد به نفس با بهبود فرم صورت", "همچنین، نتایج بلندمدت این جراحی معمولاً پایدار هستند، به‌ویژه اگر با درمان ارتودنسی ترکیب شوند."] },
+      { heading: "مراقبت‌های قبل و بعد از جراحی فک", paragraphs: [] },
+      { heading: "مراقبت‌های قبل از جراحی", paragraphs: ["انجام آزمایش‌های تشخیصی مانند عکس‌برداری پانورامیک و سی‌تی‌اسکن", "مشاوره با جراح و ارتودنتیست برای برنامه‌ریزی دقیق درمان", "رعایت رژیم غذایی مناسب و آمادگی برای مصرف غذاهای مایع پس از جراحی"] },
+      { heading: "مراقبت‌های بعد از جراحی", paragraphs: ["استراحت مطلق در چند روز اول پس از عمل", "استفاده از کمپرس سرد برای کاهش تورم", "مصرف دقیق داروهای تجویزی", "رعایت کامل بهداشت دهان با دهان‌شویه مخصوص", "مراجعه منظم برای بررسی روند بهبود"] },
+      { heading: "انتخاب بهترین جراح برای جراحی فک", paragraphs: ["انتخاب جراح متبحر یکی از مهم‌ترین عوامل در کاهش عوارض جراحی است. مواردی که باید در نظر بگیرید:", "تخصص و تجربه جراح در حوزه جراحی فک", "استفاده از تکنولوژی‌های جدید مانند جراحی فک دیجیتال", "بررسی نمونه‌کارها و رضایت بیماران قبلی", "مشاوره صادقانه درباره ریسک‌ها و نتایج احتمالی", "اگر در تبریز یا تهران زندگی می‌کنید، کلینیک دکتر علیرضا صدیقی با بهره‌گیری از تجهیزات دیجیتال و تیم تخصصی، یکی از گزینه‌های قابل اعتماد در زمینه جراحی فک است."] },
+      { heading: "نتیجه‌گیری", paragraphs: ["جراحی فک، اگرچه با خطراتی همراه است، اما برای بسیاری از بیماران فواید بلندمدتی در بهبود عملکرد فک، زیبایی صورت و کیفیت زندگی دارد. با انتخاب جراح مجرب، مشاوره دقیق و رعایت مراقبت‌های لازم، می‌توان این فرآیند را با آرامش و اطمینان طی کرد."] },
+    ],
+    structuredDataType: "MedicalWebPage",
+    // Media audit trail (Track 4, 2026-08-23) — see media-migration/media-review-list.csv.
+    // sourceImageUrl is provenance ONLY, never rendered as a live <img src> —
+    // per Hamid's "do not hotlink old WordPress images permanently" rule,
+    // only heroImage.src (a downloaded local /media/knowledge/... file) is ever used for display.
+    mediaStatus: "missing",
+    needsMediaReview: true,
+    sourceImageUrl: "",
+    localImagePath: "",
+  },
+  {
+    // Batch 2 2026-08-26: Digital Jaw Surgery / CAS Technology — consolidates 4 posts; cas-چیست-و-کاربرد-های-آن folded in as redirect-only (thinner content, not separately extracted).
+    postId: "14003",
+    slug: "جراحی-فک-دیجیتال",
+    legacyUrls: ["https://dralirezasadighi.com/جراحی-فک-دیجیتال/", "https://dralirezasadighi.com/جراحی-دیجیتال-فک/", "https://dralirezasadighi.com/جراحی-فک-به-روش-دیجیتال/", "https://dralirezasadighi.com/cas-چیست-و-کاربرد-های-آن/"],
+    title: "جراحی فک دیجیتال: تحول نوین در دقت و نتایج جراحی‌های فک و صورت",
+    seoTitle: "جراحی فک دیجیتال | تحول نوین در دقت و نتایج جراحی‌های فک و صورت",
+    seoDescription: "جراحی فک دیجیتال با بهره‌گیری از اسکن و چاپ سه‌بعدی، دقت، ایمنی و نتایج درمانی را به‌طور چشمگیری بهبود می‌دهد. اطلاعات کامل و علمی را اینجا بخوانید.",
+    excerpt: "در سال‌های اخیر، جراحی فک و صورت با ورود فناوری‌های دیجیتال به مرحله‌ای کاملاً متفاوت از گذشته رسیده است. جراحی فک دیجیتال با استفاده از ابزارهایی مانند اسکن CBCT، چاپ سه‌بعدی، و ش…",
+    topicCluster: "orthognathic-surgery",
+    serviceRelation: "orthognathic-surgery",
+    medicalReview: {
+      reviewerName: "دکتر علیرضا صدیقی",
+      reviewerCredentialsRef: "about",
+      // Inherited from the original WordPress post_modified date — this is
+      // NOT a fresh post-migration clinical re-review. Flagged in
+      // manual-decisions-needed.md-adjacent follow-up: a real medical QA
+      // pass should update this once Dr. Sadighi has re-read the migrated
+      // copy, per CLAUDE.md's "real content, not placeholder" standard.
+      reviewedAt: "2025-05-04",
+    },
+    // Content status workflow (Track 3, 2026-08-23) — every migrated article
+    // defaults to needs-doctor-review; see doctor-review-list.csv. This is
+    // internal editorial metadata, never emitted in public JSON-LD.
+    reviewStatus: "needs-doctor-review",
+    // Persian is always the source (never a translation) — see translations below.
+    translationStatus: "source",
+    publishedAt: "2025-01-03",
+    updatedAt: "2025-05-04",
+    readingTime: "2 دقیقه مطالعه",
+    contentSections: [
+      { heading: "مقدمه: ورود فناوری به اتاق عمل", paragraphs: ["در سال‌های اخیر، جراحی فک و صورت با ورود فناوری‌های دیجیتال به مرحله‌ای کاملاً متفاوت از گذشته رسیده است. جراحی فک دیجیتال با استفاده از ابزارهایی مانند اسکن CBCT، چاپ سه‌بعدی، و شبیه‌سازی رایانه‌ای، امکان برنامه‌ریزی دقیق‌تر، کاهش عوارض و افزایش رضایت بیمار را فراهم کرده است.", "براساس مقاله‌ای در PubMed، فناوری دیجیتال باعث کاهش خطای جراحی و بهبود نتایج بالینی در بیماران شده است."] },
+      { heading: "جراحی فک دیجیتال چگونه انجام می‌شود؟", paragraphs: ["جراحی فک دیجیتال شامل سه مرحله کلیدی است که هر کدام با دقت بالا توسط تجهیزات پیشرفته انجام می‌شوند:"] },
+      { heading: "1. اسکن سه‌بعدی با CBCT", paragraphs: ["در این مرحله، از استخوان‌های فک، دندان‌ها و بافت‌های اطراف تصویر‌برداری سه‌بعدی انجام می‌شود. این تصاویر دقیق، پایه‌ طراحی و برنامه‌ریزی درمان هستند."] },
+      { heading: "2. شبیه‌سازی رایانه‌ای جراحی", paragraphs: ["با نرم‌افزارهای تخصصی، جراح می‌تواند محل برش‌ها، میزان جابه‌جایی استخوان و سایر جزئیات را پیش از شروع عمل برنامه‌ریزی کند.", "همان‌طور که در مقاله جراحی فک پایین عقب رفته اشاره شده، شبیه‌سازی دیجیتال نقش مهمی در کاهش ریسک و افزایش موفقیت جراحی دارد."] },
+      { heading: "3. استفاده از چاپگرهای سه‌بعدی", paragraphs: ["ابزارهای کمکی مانند گاید جراحی یا صفحات تثبیت‌کننده، به‌صورت اختصاصی برای هر بیمار پرینت می‌شوند. این ابزارها به اجرای دقیق جراحی در اتاق عمل کمک می‌کنند."] },
+      { heading: "مزایای جراحی فک دیجیتال نسبت به روش‌های سنتی", paragraphs: ["مزایا\nتوضیحات\n\n\n\n\nدقت میلی‌متری\nافزایش دقت در برش و جابجایی استخوان\n\n\nپیش‌بینی نتایج\nنمایش تصویر نهایی چهره قبل از جراحی\n\n\nکاهش عوارض\nحذف خطاهای انسانی و کاهش خطرات احتمالی\n\n\nزمان جراحی کمتر\nبهینه‌سازی مراحل پیش از عمل\n\n\nتجربه بهتر بیمار\nکاهش تورم، درد و زمان نقاهت"] },
+      { heading: "چرا جراحی فک دیجیتال با دکتر علیرضا صدیقی؟", paragraphs: ["دکتر علیرضا صدیقی یکی از متخصصان شناخته‌شده در حوزه جراحی فک و صورت در ایران است که با بهره‌گیری از تکنولوژی دیجیتال، درمان‌هایی دقیق، ایمن و موفق را ارائه می‌دهد.", "با تجربه‌ی بالای دکتر صدیقی در کلینیک تخصصی ایشان در تبریز و تهران، بیماران می‌توانند با اطمینان خاطر مراحل درمانی خود را طی کنند و به نتایجی طبیعی و ماندگار دست یابند."] },
+      { heading: "جراحی فک دیجیتال در تمام مراحل درمان", paragraphs: ["در جراحی فک دیجیتال، تکنولوژی در تمام مراحل دخیل است:"] },
+      { heading: "✔ مشاوره و بررسی اولیه", paragraphs: ["تصاویر اسکن CBCT وضعیت دقیق استخوان و دندان را مشخص می‌کنند."] },
+      { heading: "✔ طراحی و برنامه‌ریزی پیشرفته", paragraphs: ["با استفاده از نرم‌افزارهای قدرتمند، مدل سه‌بعدی فک ساخته می‌شود و بر اساس آن، طرح نهایی جراحی طراحی می‌شود."] },
+      { heading: "✔ اجرای دقیق و کنترل‌شده جراحی", paragraphs: ["ابزارهای طراحی‌شده به کمک چاپ سه‌بعدی، تضمین‌کننده‌ی دقت در جراحی هستند."] },
+      { heading: "جمع‌بندی: آینده جراحی فک در دستان فناوری", paragraphs: ["جراحی فک دیجیتال نه‌تنها روند درمان را سریع‌تر و امن‌تر می‌کند، بلکه تجربه‌ای بی‌نظیر برای بیمار به‌همراه دارد. اگر به دنبال روشی مدرن، دقیق و قابل پیش‌بینی برای اصلاح فک هستید، جراحی فک دیجیتال با دکتر علیرضا صدیقی انتخابی هوشمندانه خواهد بود.", "📞 برای رزرو نوبت مشاوره کلیک کنید", "https://dralirezasadighi.com/wp-content/uploads/2025/01/1-1-1.m4v"] },
+    ],
+    structuredDataType: "MedicalWebPage",
+    // Media audit trail (Track 4, 2026-08-23) — see media-migration/media-review-list.csv.
+    // sourceImageUrl is provenance ONLY, never rendered as a live <img src> —
+    // per Hamid's "do not hotlink old WordPress images permanently" rule,
+    // only heroImage.src (a downloaded local /media/knowledge/... file) is ever used for display.
+    mediaStatus: "missing",
+    needsMediaReview: true,
+    sourceImageUrl: "",
+    localImagePath: "",
   },
   {
     postId: "14141",
@@ -2501,6 +2969,200 @@ export const KNOWLEDGE_ARTICLES: readonly KnowledgeArticle[] = [
     localImagePath: "/media/knowledge/جراحی-فک-پایین-عقب-رفته/hero.jpg",
   },
   {
+    // Batch 2: Minimally Invasive Jaw Surgery.
+    postId: "14043",
+    slug: "جراحی-فک-کم-تهاجمی",
+    legacyUrls: ["https://dralirezasadighi.com/جراحی-فک-کم-تهاجمی/"],
+    title: "جراحی فک کم تهاجمی: درمانی نوین با حداقل درد و دوران نقاهت کوتاه",
+    seoTitle: "جراحی فک کم تهاجمی: درمانی نوین با حداقل درد و دوران نقاهت کوتاه",
+    seoDescription: "جراحی فک کم تهاجمی با کاهش درد، کوتاه کردن دوران نقاهت و استفاده از فناوری‌های نوین، روشی ایده‌آل برای درمان ناهنجاری‌های فک است. با ما همراه باشید.",
+    excerpt: "ترس از درد، نقاهت طولانی و عوارض احتمالی باعث می‌شود بسیاری از بیماران از جراحی فک صرف‌نظر کنند. خوشبختانه، پیشرفت‌های چشمگیر در زمینه جراحی فک کم تهاجمی، این نگرانی‌ها را تا حد زی…",
+    topicCluster: "orthognathic-surgery",
+    serviceRelation: "orthognathic-surgery",
+    medicalReview: {
+      reviewerName: "دکتر علیرضا صدیقی",
+      reviewerCredentialsRef: "about",
+      // Inherited from the original WordPress post_modified date — this is
+      // NOT a fresh post-migration clinical re-review. Flagged in
+      // manual-decisions-needed.md-adjacent follow-up: a real medical QA
+      // pass should update this once Dr. Sadighi has re-read the migrated
+      // copy, per CLAUDE.md's "real content, not placeholder" standard.
+      reviewedAt: "2025-04-27",
+    },
+    // Content status workflow (Track 3, 2026-08-23) — every migrated article
+    // defaults to needs-doctor-review; see doctor-review-list.csv. This is
+    // internal editorial metadata, never emitted in public JSON-LD.
+    reviewStatus: "needs-doctor-review",
+    // Persian is always the source (never a translation) — see translations below.
+    translationStatus: "source",
+    publishedAt: "2025-01-04",
+    updatedAt: "2025-04-27",
+    readingTime: "2 دقیقه مطالعه",
+    contentSections: [
+      { heading: "مقدمه", paragraphs: ["ترس از درد، نقاهت طولانی و عوارض احتمالی باعث می‌شود بسیاری از بیماران از جراحی فک صرف‌نظر کنند. خوشبختانه، پیشرفت‌های چشمگیر در زمینه جراحی فک کم تهاجمی، این نگرانی‌ها را تا حد زیادی کاهش داده‌اند. در این مقاله، روش‌های مدرن و مزایای جراحی کم تهاجمی فک را بررسی می‌کنیم."] },
+      { heading: "ناهنجاری‌های فک و اهمیت درمان", paragraphs: ["ناهنجاری‌های فک مانند ناهماهنگی فک‌ها، مشکلات جویدن، درد مزمن و اختلالات تنفسی می‌توانند کیفیت زندگی فرد را به شدت تحت تأثیر قرار دهند. درمان به موقع این مشکلات از بروز آسیب‌های جدی‌تر جلوگیری می‌کند. مشاوره با دکتر علیرضا صدیقی به شما کمک می‌کند تا بهترین روش درمانی را انتخاب کنید."] },
+      { heading: "جراحی فک کم تهاجمی چیست؟", paragraphs: ["جراحی فک کم تهاجمی، روشی پیشرفته است که با استفاده از ابزارهای دقیق، برش‌های کوچک یا حتی بدون برش قابل مشاهده انجام می‌شود. این تکنیک مدرن باعث کاهش درد، کوتاه شدن دوران نقاهت و بهبود نتایج ظاهری می‌شود."] },
+      { heading: "تکنیک‌های پیشرفته در جراحی فک کم تهاجمی", paragraphs: [] },
+      { heading: "1. استفاده از میکروسرجری و ابزارهای دقیق", paragraphs: ["ابزارهای پیشرفته به جراحان اجازه می‌دهد با کمترین آسیب به بافت‌های اطراف عمل کنند."] },
+      { heading: "2. جراحی فک با لیزر", paragraphs: ["استفاده از لیزر باعث کاهش خونریزی، التهاب و ریسک عفونت می‌شود و سرعت بهبود را افزایش می‌دهد."] },
+      { heading: "3. هدایت کامپیوتری و مدل‌سازی سه‌بعدی", paragraphs: ["مدل‌های سه‌بعدی دقیق، امکان برنامه‌ریزی بهتر جراحی را فراهم می‌کنند و نتایج نهایی را بهبود می‌بخشند."] },
+      { heading: "نقش تکنولوژی دیجیتال در جراحی فک", paragraphs: ["فناوری‌های دیجیتال نظیر تصویربرداری سه‌بعدی (3D Imaging) و هدایت ابزارهای جراحی با سیستم‌های کامپیوتری، دقت عمل را به طور چشمگیری افزایش داده‌اند. همچنین چاپ سه‌بعدی مدل‌های فک، امکان برنامه‌ریزی کاملاً شخصی‌سازی شده برای هر بیمار را فراهم می‌آورد.", "لینک مفید:", "اطلاعات بیشتر درباره تکنولوژی دیجیتال در دندانپزشکی"] },
+      { heading: "مزایای جراحی فک کم تهاجمی", paragraphs: [] },
+      { heading: "کاهش درد و التهاب", paragraphs: ["به دلیل استفاده از برش‌های کوچک و لیزر، میزان درد و تورم پس از جراحی به حداقل می‌رسد."] },
+      { heading: "دوران نقاهت کوتاه‌تر", paragraphs: ["بیماران معمولاً ظرف چند هفته به زندگی روزمره خود بازمی‌گردند."] },
+      { heading: "کاهش خطرات و عوارض", paragraphs: ["با دقت بالای جراحی کم تهاجمی، احتمال بروز عفونت و خونریزی شدید کاهش می‌یابد."] },
+      { heading: "نتایج ظاهری بهتر", paragraphs: ["برش‌های کوچک یا نامرئی، ظاهر طبیعی‌تری را پس از جراحی حفظ می‌کنند."] },
+      { heading: "چگونه بر ترس از جراحی فک غلبه کنیم؟", paragraphs: ["مشاوره با جراح متخصص", "مشاهده تجربیات بیماران قبلی", "کسب آگاهی از مراحل جراحی و اقدامات پس از عمل", "مشاهده نمونه جراحی‌های موفق دکتر علیرضا صدیقی"] },
+      { heading: "آیا جراحی فک کم تهاجمی برای همه مناسب است؟", paragraphs: ["انتخاب این روش به شدت ناهنجاری، شرایط فیزیکی و نظر جراح بستگی دارد. جلسه مشاوره اولیه می‌تواند تعیین کند که این روش مناسب شما هست یا خیر."] },
+      { heading: "هزینه جراحی فک کم تهاجمی", paragraphs: ["هزینه این نوع جراحی بسته به میزان پیچیدگی عمل، استفاده از تکنولوژی‌های پیشرفته و تجربه جراح متفاوت است. با وجود هزینه بالاتر نسبت به روش‌های سنتی، مزایایی همچون دوران نقاهت کوتاه‌تر و نتایج بهتر، این سرمایه‌گذاری را توجیه می‌کند."] },
+      { heading: "نتیجه‌گیری", paragraphs: ["جراحی فک کم تهاجمی روشی نوین و موثر برای درمان ناهنجاری‌های فک است. با بهره‌گیری از تکنولوژی‌های مدرن، دوران بهبود کوتاه‌تر، درد کمتر و نتایج ظاهری بهتر حاصل می‌شود. اگر به دنبال راهکاری ایمن و پیشرفته برای درمان ناهنجاری‌های فک خود هستید، با یک جراح متخصص در این زمینه مشورت کنید و گامی مطمئن به سوی زیبایی و سلامت بردارید.", "https://dralirezasadighi.com/wp-content/uploads/2025/01/10-2-1.m4v"] },
+    ],
+    structuredDataType: "MedicalWebPage",
+    // Media audit trail (Track 4, 2026-08-23) — see media-migration/media-review-list.csv.
+    // sourceImageUrl is provenance ONLY, never rendered as a live <img src> —
+    // per Hamid's "do not hotlink old WordPress images permanently" rule,
+    // only heroImage.src (a downloaded local /media/knowledge/... file) is ever used for display.
+    mediaStatus: "missing",
+    needsMediaReview: true,
+    sourceImageUrl: "",
+    localImagePath: "",
+  },
+  {
+    // Batch 2: Chin Surgery / Chin Implant Options.
+    postId: "13926",
+    slug: "جراحی-چانه-پروتز-فیلر-جینیوپلاستی",
+    legacyUrls: ["https://dralirezasadighi.com/جراحی-چانه-پروتز-فیلر-جینیوپلاستی/"],
+    title: "جراحی چانه: بررسی علمی روش‌های اصلاح فرم چانه با پروتز، جینیوپلاستی و فیلر + مزایا، معایب و هزینه‌ها",
+    seoTitle: "جراحی چانه: بررسی روش‌های اصلاح فرم با پروتز، جینیوپلاستی و فیلر",
+    seoDescription: "در این مقاله، به بررسی تخصصی انواع روش‌های اصلاح فرم چانه شامل جراحی چانه، جینیوپلاستی و تزریق فیلر می‌پردازیم. نکات مهم انتخاب بهترین روش، مزایا، معایب و هزینه‌های هر تکنیک نیز آورده شده است.",
+    excerpt: "چانه یکی از عناصر کلیدی در تعیین تناسب و زیبایی چهره است. ناهماهنگی در فرم چانه می‌تواند تأثیر قابل‌توجهی بر ظاهر کلی صورت داشته باشد. روش‌های متعددی برای اصلاح فرم چانه وجود دارد …",
+    topicCluster: "facial-cosmetic-surgery",
+    serviceRelation: "facial-cosmetic-surgery",
+    medicalReview: {
+      reviewerName: "دکتر علیرضا صدیقی",
+      reviewerCredentialsRef: "about",
+      // Inherited from the original WordPress post_modified date — this is
+      // NOT a fresh post-migration clinical re-review. Flagged in
+      // manual-decisions-needed.md-adjacent follow-up: a real medical QA
+      // pass should update this once Dr. Sadighi has re-read the migrated
+      // copy, per CLAUDE.md's "real content, not placeholder" standard.
+      reviewedAt: "2025-05-17",
+    },
+    // Content status workflow (Track 3, 2026-08-23) — every migrated article
+    // defaults to needs-doctor-review; see doctor-review-list.csv. This is
+    // internal editorial metadata, never emitted in public JSON-LD.
+    reviewStatus: "needs-doctor-review",
+    // Persian is always the source (never a translation) — see translations below.
+    translationStatus: "source",
+    publishedAt: "2024-12-15",
+    updatedAt: "2025-05-17",
+    readingTime: "4 دقیقه مطالعه",
+    contentSections: [
+      { heading: "مقدمه", paragraphs: ["چانه یکی از عناصر کلیدی در تعیین تناسب و زیبایی چهره است. ناهماهنگی در فرم چانه می‌تواند تأثیر قابل‌توجهی بر ظاهر کلی صورت داشته باشد. روش‌های متعددی برای اصلاح فرم چانه وجود دارد که شامل جراحی‌های پروتز چانه، جینیوپلاستی و روش‌های غیرجراحی مانند تزریق فیلر می‌شود. در این مقاله، به بررسی کامل این روش‌ها، مزایا، معایب و هزینه‌های مرتبط با هر یک می‌پردازیم."] },
+      { heading: "اهمیت فرم چانه در زیبایی صورت", paragraphs: ["چانه نقش مهمی در تعادل و هارمونی چهره ایفا می‌کند. چانه‌های کوچک، بزرگ، جلو آمده یا عقب رفته می‌توانند تناسب صورت را برهم زنند. اصلاح فرم چانه می‌تواند به بهبود نمای پروفایل و افزایش اعتماد به نفس فرد منجر شود."] },
+      { heading: "روش‌های اصلاح فرم چانه", paragraphs: ["اصلاح فرم چانه به دو دسته کلی تقسیم می‌شود:", "روش‌های جراحی: شامل پروتز چانه و جینیوپلاستی", "روش‌های غیرجراحی: شامل تزریق فیلر"] },
+      { heading: "۱. جراحی چانه", paragraphs: ["الف) پروتز چانه", "پروتز چانه یک روش جراحی برای افزایش حجم یا تغییر فرم چانه است. در این روش، پروتزهایی از جنس سیلیکون یا مواد مشابه در زیر بافت چانه قرار می‌گیرند.", "مزایا:", "ایجاد فرم دائمی و پایدار", "بهبود تناسب صورت و نمای پروفایل", "مناسب برای چانه‌های کوچک و عقب رفته", "معایب:", "نیاز به بی‌هوشی و دوران نقاهت", "احتمال عفونت یا جابه‌جایی پروتز", "هزینه نسبتاً بالا", "ب) جینیوپلاستی", "جینیوپلاستی روشی برای تغییر موقعیت استخوان چانه است. این روش می‌تواند برای کوچک کردن، بزرگ کردن یا تغییر شکل چانه استفاده شود.", "مزایا:", "اصلاح چانه‌های بزرگ و جلو آمده", "بهبود تناسب چهره", "نتایج ماندگار", "معایب:", "دوران نقاهت طولانی‌تر نسبت به پروتز", "نیاز به بی‌هوشی", "احتمال تورم و درد در دوران بهبودی"] },
+      { heading: "۲. فیلر چانه (روش غیرجراحی)", paragraphs: ["تزریق فیلر چانه یکی از روش‌های غیرتهاجمی برای فرم‌دهی چانه است. در این روش، فیلرهای پوستی مانند اسید هیالورونیک به ناحیه چانه تزریق می‌شوند.", "مزایا:", "بدون نیاز به جراحی و بی‌هوشی", "دوره نقاهت کوتاه", "امکان مشاهده فوری نتایج", "معایب:", "ماندگاری موقت (۶ تا ۱۸ ماه)", "نیاز به تمدید تزریق", "احتمال کبودی یا تورم موقت"] },
+      { heading: "مقایسه روش‌های جراحی و غیرجراحی چانه", paragraphs: ["ویژگی\nپروتز چانه\nجینیوپلاستی\nفیلر چانه\n\n\n\n\nنوع روش\nجراحی\nجراحی\nغیرجراحی\n\n\nمدت ماندگاری\nدائمی\nدائمی\nموقت (۶ تا ۱۸ ماه)\n\n\nدوران نقاهت\nمتوسط\nطولانی‌تر\nبسیار کوتاه\n\n\nمناسب برای\nچانه‌های کوچک و عقب رفته\nچانه‌های بزرگ و جلو آمده\nبهبود موقت فرم چانه\n\n\nهزینه\nبالا\nبالا\nمتوسط"] },
+      { heading: "انتخاب بهترین روش برای اصلاح فرم چانه", paragraphs: ["انتخاب روش مناسب برای اصلاح چانه بستگی به عوامل زیر دارد:", "نوع مشکل چانه:", "برای چانه‌های کوچک یا عقب رفته: پروتز چانه یا فیلر چانه مناسب است.", "برای چانه‌های بزرگ و جلو آمده: جراحی جینیوپلاستی بهترین انتخاب است.", "میزان تغییرات مورد نیاز:", "برای تغییرات جزئی و موقت: فیلر چانه کافی است.", "برای تغییرات اساسی و دائمی: پروتز چانه یا جینیوپلاستی پیشنهاد می‌شود.", "بودجه و زمان فرد:", "روش‌های غیرجراحی مانند فیلر چانه، هزینه کمتر و دوران نقاهت کوتاه‌تری دارند.", "روش‌های جراحی هزینه بالاتر ولی نتایج ماندگارتری دارند."] },
+      { heading: "مراقبت‌های بعد از جراحی و تزریق فیلر چانه", paragraphs: ["مراقبت‌های بعد از جراحی چانه:", "مصرف داروهای تجویز شده توسط پزشک", "پرهیز از فعالیت‌های سنگین تا چند هفته", "رعایت بهداشت دهان و دندان", "استفاده از کمپرس سرد برای کاهش تورم", "مراقبت‌های بعد از تزریق فیلر چانه:", "پرهیز از لمس و فشار بر ناحیه چانه تا چند روز", "خودداری از ورزش‌های سنگین", "اجتناب از قرار گرفتن در معرض حرارت بالا مانند سون"] },
+      { heading: "هزینه جراحی چانه و تزریق فیلر", paragraphs: ["هزینه این روش‌ها بسته به عوامل زیر متغیر است:", "نوع روش درمان (پروتز، جینیوپلاستی یا فیلر)", "تجربه و تخصص جراح یا پزشک", "کلینیک یا مرکز درمانی", "مواد استفاده شده (پروتز یا نوع فیلر)", "به‌طور تقریبی:", "هزینه پروتز چانه و جینیوپلاستی بالاتر است و معمولاً شامل هزینه‌های جراحی و بی‌هوشی می‌شود.", "هزینه تزریق فیلر چانه پایین‌تر بوده و به نوع فیلر و حجم تزریق بستگی دارد."] },
+      { heading: "پرسش‌های متداول (FAQ)", paragraphs: ["۱. جراحی چانه چقدر طول می‌کشد؟", "مدت زمان جراحی چانه معمولاً بین ۱ تا ۲ ساعت است.", "۲. ماندگاری فیلر چانه چقدر است؟", "فیلرهای چانه معمولاً بین ۶ تا ۱۸ ماه ماندگاری دارند.", "۳. عوارض جراحی چانه چیست؟", "تورم، کبودی، عفونت یا جابه‌جایی پروتز از عوارض احتمالی جراحی چانه است.", "۴. آیا جراحی چانه درد دارد؟", "در حین عمل بی‌هوشی انجام می‌شود و بیمار دردی احساس نمی‌کند. پس از جراحی، درد خفیف با مصرف دارو کنترل می‌شود."] },
+      { heading: "نتیجه‌گیری", paragraphs: ["روش‌های مختلفی برای اصلاح فرم چانه وجود دارد که شامل جراحی پروتز چانه، جینیوپلاستی و تزریق فیلر می‌شود. هر یک از این روش‌ها مزایا و معایب خاص خود را دارند و انتخاب بهترین گزینه نیازمند مشاوره با پزشک متخصص و بررسی شرایط فرد است. اگر به دنبال تغییرات موقت هستید، تزریق فیلر چانه گزینه مناسبی خواهد بود. اما برای تغییرات اساسی و دائمی، جراحی پروتز یا جینیوپلاستی توصیه می‌شود.", "اگر به دنبال راهکاری حرفه‌ای برای اصلاح فرم چانه هستید، حتماً با جراح متخصص زیبایی صورت مشورت کنید.", "در صورت نیاز به مشاوره، می‌توانید از طریق تماس با کلینیک دکتر صدیقی اقدام فرمایید. 📞"] },
+    ],
+    structuredDataType: "MedicalWebPage",
+    // Media audit trail (Track 4, 2026-08-23) — see media-migration/media-review-list.csv.
+    // sourceImageUrl is provenance ONLY, never rendered as a live <img src> —
+    // per Hamid's "do not hotlink old WordPress images permanently" rule,
+    // only heroImage.src (a downloaded local /media/knowledge/... file) is ever used for display.
+    mediaStatus: "missing",
+    needsMediaReview: true,
+    sourceImageUrl: "",
+    localImagePath: "",
+  },
+  {
+    // Batch 2: Comprehensive Dental Implant Guide in Tabriz — this post (11,590 chars) is primary; -2 permalink duplicate (13929) redirect-only.
+    postId: "8441",
+    slug: "راهنمای-جامع-ایمپلنت-دندان-در-تبریز",
+    legacyUrls: ["https://dralirezasadighi.com/راهنمای-جامع-ایمپلنت-دندان-در-تبریز/", "https://dralirezasadighi.com/راهنمای-جامع-ایمپلنت-دندان-در-تبریز-2/"],
+    title: "راهنمای جامع ایمپلنت دندان در تبریز",
+    seoTitle: "راهنمای جامع ایمپلنت دندان در تبریز",
+    seoDescription: "ایمپلنت دندان یکی از بهترین روش‌ها برای جایگزینی دندان‌های از دست رفته است. در این مقاله، به بررسی جامع ایمپلنت دندان در تبریز و تمامی جنبه‌های آن می‌پردازیم. همچنین به شما کمک می‌…",
+    excerpt: "ایمپلنت دندان یکی از بهترین روش‌ها برای جایگزینی دندان‌های از دست رفته است. در این مقاله، به بررسی جامع ایمپلنت دندان در تبریز و تمامی جنبه‌های آن می‌پردازیم. همچنین به شما کمک می‌…",
+    topicCluster: "advanced-dental-implant",
+    serviceRelation: "advanced-dental-implant",
+    medicalReview: {
+      reviewerName: "دکتر علیرضا صدیقی",
+      reviewerCredentialsRef: "about",
+      // Inherited from the original WordPress post_modified date — this is
+      // NOT a fresh post-migration clinical re-review. Flagged in
+      // manual-decisions-needed.md-adjacent follow-up: a real medical QA
+      // pass should update this once Dr. Sadighi has re-read the migrated
+      // copy, per CLAUDE.md's "real content, not placeholder" standard.
+      reviewedAt: "2024-08-01",
+    },
+    // Content status workflow (Track 3, 2026-08-23) — every migrated article
+    // defaults to needs-doctor-review; see doctor-review-list.csv. This is
+    // internal editorial metadata, never emitted in public JSON-LD.
+    reviewStatus: "needs-doctor-review",
+    // Persian is always the source (never a translation) — see translations below.
+    translationStatus: "source",
+    publishedAt: "2024-07-16",
+    updatedAt: "2024-08-01",
+    readingTime: "10 دقیقه مطالعه",
+    contentSections: [
+      { heading: undefined, paragraphs: ["ایمپلنت دندان یکی از بهترین روش‌ها برای جایگزینی دندان‌های از دست رفته است. در این مقاله، به بررسی جامع ایمپلنت دندان در تبریز و تمامی جنبه‌های آن می‌پردازیم. همچنین به شما کمک می‌کنیم تا بهترین متخصص ایمپلنت در تبریز را پیدا کنید و با هزینه‌ها و مراحل آن آشنا شوید.", "[ez-toc]"] },
+      { heading: "چرا ایمپلنت دندان؟", paragraphs: ["ایمپلنت دندان یکی از پیشرفته‌ترین و مؤثرترین روش‌ها برای جایگزینی دندان‌های از دست رفته است. این روش نه تنها به بازگرداندن لبخند زیبا و طبیعی کمک می‌کند، بلکه عملکرد دهان و دندان را نیز بهبود می‌بخشد. ایمپلنت دندان در تبریز به دلیل استفاده از تکنولوژی‌های پیشرفته و متخصصان با تجربه، از کیفیت بالایی برخوردار است."] },
+      { heading: "بهترین متخصص ایمپلنت در تبریز", paragraphs: ["پیدا کردن بهترین متخصص ایمپلنت در تبریز اولین گام برای داشتن یک تجربه موفق از کاشت ایمپلنت است. یک متخصص خوب باید دارای تجربه کافی، دانش به‌روز و تجهیزات مدرن باشد. بررسی نظرات بیماران قبلی و مشاهده نمونه کارهای پزشک می‌تواند به شما در انتخاب بهتر کمک کند."] },
+      { heading: "کلینیک ایمپلنت در تبریز", paragraphs: ["یکی از مهم‌ترین عوامل در موفقیت ایمپلنت، انتخاب کلینیک ایمپلنت در تبریز است. یک کلینیک معتبر باید دارای تجهیزات پیشرفته، محیطی بهداشتی و کارکنانی مجرب باشد. قبل از انتخاب کلینیک، حتماً از امکانات و خدمات آن بازدید کنید و با پزشکان و پرسنل آن مشورت کنید."] },
+      { heading: "هزینه ایمپلنت دندان در تبریز", paragraphs: ["هزینه ایمپلنت دندان بسته به نوع و تعداد ایمپلنت‌ها، تجربه پزشک و موقعیت جغرافیایی متفاوت است. در تبریز، هزینه‌ها ممکن است کمی کمتر از شهرهای بزرگتر باشد، اما همچنان به کیفیت بالایی دست خواهید یافت. برای اطلاع دقیق از هزینه‌ها، مشاوره حضوری با پزشک مورد نظر خود داشته باشید."] },
+      { heading: "قیمت ایمپلنت دندان در تبریز", paragraphs: ["قیمت ایمپلنت دندان در تبریز می‌تواند تحت تأثیر عوامل مختلفی قرار گیرد. از جمله این عوامل می‌توان به نوع ایمپلنت، برند مورد استفاده، تعداد دندان‌های جایگزین شده و نیاز به اقدامات جانبی مثل پیوند استخوان اشاره کرد. مقایسه قیمت‌ها و خدمات مختلف می‌تواند به شما در تصمیم‌گیری کمک کند."] },
+      { heading: "ایمپلنت فوری در تبریز", paragraphs: ["ایمپلنت فوری در تبریز یکی از روش‌های جدید و پرطرفدار در دندانپزشکی است که به بیماران امکان می‌دهد در کوتاه‌ترین زمان ممکن، دندان‌های از دست رفته خود را جایگزین کنند. این روش برای افرادی مناسب است که نیاز به بازگرداندن سریع لبخند و عملکرد دهان خود دارند."] },
+      { heading: "ایمپلنت دیجیتال در تبریز", paragraphs: ["استفاده از تکنولوژی‌های دیجیتال در ایمپلنت دندان به بهبود دقت و کارایی این فرآیند کمک می‌کند. ایمپلنت دیجیتال در تبریز با استفاده از اسکن‌های سه‌بعدی و ابزارهای پیشرفته، تجربه‌ای دقیق‌تر و سریع‌تر را برای بیماران فراهم می‌کند."] },
+      { heading: "متخصص کاشت ایمپلنت در تبریز", paragraphs: ["یکی از عوامل کلیدی در موفقیت ایمپلنت دندان، انتخاب متخصص کاشت ایمپلنت در تبریز است. تجربه و تخصص پزشک در انجام این عمل می‌تواند به طور مستقیم بر نتایج نهایی تأثیر بگذارد. برای انتخاب بهترین متخصص، تحقیق و مشاوره با چندین پزشک می‌تواند مفید باشد."] },
+      { heading: "ایمپلنت بدون درد در تبریز", paragraphs: ["یکی از نگرانی‌های اصلی بیماران، درد و ناراحتی پس از کاشت ایمپلنت است. خوشبختانه با استفاده از تکنیک‌ها و داروهای مدرن، ایمپلنت بدون درد در تبریز به واقعیت تبدیل شده است. استفاده از بی‌حسی موضعی و تکنیک‌های آرام‌بخشی می‌تواند تجربه‌ای راحت و بدون درد را برای بیماران فراهم کند."] },
+      { heading: "کلینیک دندانپزشکی در تبریز", paragraphs: ["انتخاب یک کلینیک دندانپزشکی در تبریز با تیمی مجرب و تجهیزات پیشرفته می‌تواند به بهبود تجربه شما از کاشت ایمپلنت کمک کند. برخی کلینیک‌ها خدمات جامع‌تری ارائه می‌دهند که شامل مشاوره، برنامه‌ریزی درمان و مراقبت‌های پس از عمل می‌شود."] },
+      { heading: "مراقبت‌های پس از ایمپلنت در تبریز", paragraphs: ["مراقبت‌های پس از ایمپلنت برای اطمینان از موفقیت و دوام طولانی‌مدت آن بسیار مهم است. در تبریز، کلینیک‌های معتبر برنامه‌های مراقبتی جامعی ارائه می‌دهند که شامل تمیز کردن منظم، چکاپ‌های دوره‌ای و مشاوره‌های تخصصی است."] },
+      { heading: "انواع ایمپلنت در تبریز", paragraphs: ["انواع مختلفی از ایمپلنت‌ها وجود دارد که هر کدام برای شرایط خاصی مناسب هستند. از جمله انواع ایمپلنت در تبریز می‌توان به ایمپلنت‌های تک‌دندانی، ایمپلنت‌های پل و ایمپلنت‌های کامل دهانی اشاره کرد. انتخاب نوع مناسب به نیازها و شرایط دهانی شما بستگی دارد.", "مراحل ایمپلنت دندان در تبریز شامل چندین مرحله است که هر کدام از آن‌ها باید با دقت و تخصص انجام شود. در تبریز، این مراحل به طور کلی شامل موارد زیر است:"] },
+      { heading: "1. مشاوره اولیه:", paragraphs: ["در این مرحله، پزشک وضعیت دهان و دندان شما را بررسی کرده و یک برنامه درمانی مناسب برای شما تدوین می‌کند. کلینیک ایمپلنت در تبریز با استفاده از تجهیزات پیشرفته و بررسی دقیق، نیازهای شما را تشخیص می‌دهد."] },
+      { heading: "2. برنامه‌ریزی درمان:", paragraphs: ["با استفاده از اسکن‌های سه‌بعدی و فناوری‌های دیجیتال، پزشک محل دقیق ایمپلنت دندان در تبریز را مشخص می‌کند. این مرحله به دقت بالایی نیاز دارد تا از موفقیت نهایی اطمینان حاصل شود."] },
+      { heading: "3. جراحی کاشت پایه ایمپلنت:", paragraphs: ["در این مرحله، پایه ایمپلنت که از جنس تیتانیوم است، در استخوان فک قرار داده می‌شود. متخصص کاشت ایمپلنت در تبریز با استفاده از تکنیک‌های مدرن و تجربه کافی، این کار را به بهترین نحو انجام می‌دهد."] },
+      { heading: "4. بهبودی و اتصال ایمپلنت به استخوان:", paragraphs: ["پس از جراحی، یک دوره بهبودی نیاز است که در آن ایمپلنت با استخوان فک ترکیب شود. این فرآیند که معمولاً چند ماه طول می‌کشد، به موفقیت بلندمدت ایمپلنت دندان در تبریز کمک می‌کند."] },
+      { heading: "5. قرار دادن دندان موقت:", paragraphs: ["در برخی موارد، برای حفظ ظاهر و عملکرد دهان، یک دندان موقت بر روی ایمپلنت قرار داده می‌شود. کلینیک ایمپلنت در تبریز این امکان را فراهم می‌کند تا در طول دوره بهبودی، شما بدون دندان نباشید."] },
+      { heading: "6. قرار دادن دندان دائمی:", paragraphs: ["پس از اطمینان از ترکیب کامل ایمپلنت با استخوان بهترین قالبگیری ایمپلنت در تبریز انجام می شود و روکش نهایی و بهترین نتیجه ایمپلنت تحویل شما می گردد.", "انتخاب کلینیک و متخصص مناسب برای کاشت ایمپلنت می‌تواند تأثیر زیادی بر موفقیت نهایی داشته باشد. در اینجا به برخی از نکات مهم که باید در نظر بگیرید، اشاره می‌کنیم:"] },
+      { heading: "1 - تجهیزات و فناوری‌های به‌روز", paragraphs: ["یک کلینیک خوب باید دارای تجهیزات مدرن و فناوری‌های پیشرفته باشد. کلینیک ایمپلنت در تبریز که از دستگاه‌های اسکن سه‌بعدی، سیستم‌های دیجیتال و مواد با کیفیت استفاده می‌کند، می‌تواند نتیجه‌ای بهتر و دقیق‌تر برای بیماران فراهم کند."] },
+      { heading: "2 - تجربه و تخصص پزشکان", paragraphs: ["تجربه و تخصص پزشکان نیز از عوامل کلیدی در موفقیت ایمپلنت است. متخصص کاشت ایمپلنت در تبریز با داشتن تجربه کافی و آشنایی با جدیدترین تکنیک‌ها می‌تواند به شما کمک کند تا از نتیجه‌ای موفقیت‌آمیز برخوردار شوید. بهتر است قبل از انتخاب پزشک، نمونه کارهای قبلی و نظرات بیماران را بررسی کنید."] },
+      { heading: "3 - محیط و خدمات کلینیک", paragraphs: ["محیط کلینیک نیز بسیار مهم است. یک کلینیک دندانپزشکی در تبریز با محیطی دوستانه و کارکنانی حرفه‌ای می‌تواند تجربه‌ای راحت‌تر و بدون استرس برای بیماران فراهم کند. همچنین، خدمات پس از عمل و پشتیبانی کلینیک نیز باید مورد توجه قرار گیرد."] },
+      { heading: "4 - آمادگی برای کاشت ایمپلنت دندان", paragraphs: ["قبل از شروع فرآیند کاشت ایمپلنت، برخی آمادگی‌ها و ملاحظات وجود دارد که باید به آن‌ها توجه کنید:"] },
+      { heading: "5 - مشاوره اولیه", paragraphs: ["در مشاوره اولیه، پزشک وضعیت دهان و دندان شما را بررسی کرده و برنامه درمانی مناسبی را پیشنهاد می‌کند. این مرحله شامل معاینه بالینی، تصویربرداری و بررسی تاریخچه پزشکی شما می‌شود."] },
+      { heading: "6- برنامه‌ریزی درمان", paragraphs: ["برنامه‌ریزی دقیق درمان با استفاده از فناوری‌های پیشرفته مانند اسکن سه‌بعدی و نرم‌افزارهای برنامه‌ریزی دیجیتال انجام می‌شود. این مرحله به پزشک کمک می‌کند تا محل دقیق کاشت ایمپلنت را تعیین کرده و از نتیجه‌ای دقیق و موفقیت‌آمیز اطمینان حاصل کند.", "7 - مراقبت‌های پس از کاشت ایمپلنت", "پس از کاشت ایمپلنت، مراقبت‌های ویژه‌ای لازم است تا از بهبود سریع و موفقیت نهایی اطمینان حاصل شود:"] },
+      { heading: "8 - رعایت بهداشت دهان و دندان", paragraphs: ["مراقبت‌های روزانه از دندان‌ها و ایمپلنت شامل مسواک زدن، استفاده از نخ دندان و شستشوی دهان با محلول‌های ضدعفونی کننده می‌شود. رعایت بهداشت مناسب به جلوگیری از عفونت و مشکلات احتمالی کمک می‌کند."] },
+      { heading: "9 - مراجعه به پزشک برای چکاپ‌های دوره‌ای", paragraphs: ["مراجعه منظم به متخصص کاشت ایمپلنت در تبریز برای چکاپ‌های دوره‌ای و بررسی وضعیت ایمپلنت بسیار مهم است. این چکاپ‌ها به پزشک کمک می‌کند تا مشکلات احتمالی را به موقع شناسایی و برطرف کند."] },
+      { heading: "10 - مشکلات و عوارض احتمالی ایمپلنت دندان", paragraphs: ["هرچند که ایمپلنت دندان یکی از روش‌های مطمئن و مؤثر برای جایگزینی دندان‌های از دست رفته است، اما ممکن است مشکلات و عوارضی نیز به همراه داشته باشد. برخی از این مشکلات شامل:"] },
+      { heading: "11 - عفونت", paragraphs: ["عفونت یکی از مشکلات شایع پس از کاشت ایمپلنت است که معمولاً به دلیل عدم رعایت بهداشت دهان و دندان رخ می‌دهد. مراجعه به پزشک و استفاده از داروهای آنتی‌بیوتیک می‌تواند به درمان عفونت کمک کند."] },
+      { heading: "12 - شکست ایمپلنت", paragraphs: ["شکست ایمپلنت ممکن است به دلیل کیفیت پایین مواد استفاده شده، خطای جراحی یا عدم پذیرش بدن رخ دهد. در چنین مواردی، مراجعه به پزشک برای بررسی و جایگزینی ایمپلنت ضروری است."] },
+      { heading: "13 - درد و ناراحتی", paragraphs: ["درد و ناراحتی معمولاً پس از کاشت ایمپلنت طبیعی است و با استفاده از داروهای مسکن و رعایت توصیه‌های پزشک قابل کنترل است. در صورت استمرار درد، باید به پزشک مراجعه کنید."] },
+      { heading: "14 - آینده ایمپلنت دندان", paragraphs: ["با پیشرفت‌های روزافزون در فناوری و تکنیک‌های دندانپزشکی، آینده ایمپلنت دندان بسیار روشن و امیدوارکننده است. ایمپلنت دیجیتال در تبریز و استفاده از فناوری‌های نوین مانند چاپ سه‌بعدی و نانو مواد، به بهبود دقت، سرعت و کیفیت این روش کمک می‌کند."] },
+      { heading: "15 - نتیجه‌گیری", paragraphs: ["ایمپلنت دندان در تبریز یکی از بهترین روش‌ها برای بازگرداندن لبخند و عملکرد طبیعی دهان است. با انتخاب یک متخصص کاشت ایمپلنت در تبریز با تجربه و مراجعه به یک کلینیک ایمپلنت در تبریز با تجهیزات مدرن، می‌توانید از نتایج مطلوب و رضایت‌بخش برخوردار شوید. همچنین، رعایت مراقبت‌های پس از عمل و مراجعه منظم به پزشک می‌تواند به حفظ و دوام طولانی‌مدت ایمپلنت کمک کند.", "با توجه به نکات مطرح شده در این مقاله، امیدواریم که شما بتوانید تصمیمات بهتری در زمینه انتخاب کلینیک و متخصص مناسب بگیرید و تجربه‌ای موفق از کاشت ایمپلنت دندان در تبریز داشته باشید.", "یکی از ویژگی‌های مهم و جذاب برای بیماران، ارائه گارانتی مادام العمر برای ایمپلنت دندان در تبریز است. این گارانتی نشان دهنده اعتماد کلینیک و متخصص به کیفیت خدمات و مواد مورد استفاده است. در ادامه به شرایط و ضوابط این گارانتی پرداخته می‌شود:"] },
+      { heading: "1- انتخاب کلینیک معتبر", paragraphs: ["ابتدا باید یک کلینیک ایمپلنت در تبریز معتبر و با سابقه انتخاب کنید. کلینیک‌های معتبر معمولاً خدمات با کیفیت بالا و گارانتی‌های مطمئن‌تری ارائه می‌دهند. بررسی نظرات بیماران قبلی و تحقیق در مورد شهرت کلینیک می‌تواند به انتخاب بهتر کمک کند."] },
+      { heading: "2 - استفاده از مواد با کیفیت بالا", paragraphs: ["یکی از شرایط اصلی گارانتی مادام العمر، استفاده از ایمپلنت‌های دندان با کیفیت بالا است. این ایمپلنت‌ها معمولاً از تیتانیوم خالص یا آلیاژهای تیتانیوم با کیفیت ساخته می‌شوند که دوام و مقاومت بالایی دارند. متخصص کاشت ایمپلنت در تبریز باید از برندهای معتبر و مورد تایید استفاده کند."] },
+      { heading: "3 - رعایت توصیه‌های پزشک", paragraphs: ["بیمار باید توصیه‌های پزشک را به دقت رعایت کند. این شامل رعایت بهداشت دهان و دندان، مراجعه منظم برای چکاپ‌های دوره‌ای و پرهیز از عادات نامناسب مانند جویدن مواد سخت و استفاده از دندان به عنوان ابزار است. عدم رعایت این موارد می‌تواند منجر به لغو گارانتی شود."] },
+      { heading: "4 - مراجعه منظم برای چکاپ‌های دوره‌ای", paragraphs: ["یکی از شرایط مهم گارانتی، مراجعه منظم به کلینیک دندانپزشکی در تبریز برای چکاپ‌های دوره‌ای است. این چکاپ‌ها معمولاً هر 6 ماه یک‌بار انجام می‌شوند و به پزشک امکان می‌دهند تا وضعیت ایمپلنت را بررسی کرده و مشکلات احتمالی را به موقع شناسایی و برطرف کند."] },
+      { heading: "5 - گزارش مشکلات به موقع", paragraphs: ["بیمار باید هر گونه مشکل یا عارضه را به محض مشاهده به متخصص کاشت ایمپلنت در تبریز گزارش دهد. این شامل درد، التهاب، عفونت یا هر گونه ناراحتی غیرطبیعی است. مراجعه فوری و دریافت درمان مناسب می‌تواند از بروز مشکلات جدی‌تر جلوگیری کند و گارانتی را حفظ کند."] },
+      { heading: "6 - تعهد کلینیک به تعویض یا تعمیر ایمپلنت", paragraphs: ["کلینیک ایمپلنت در تبریز که گارانتی مادام العمر ارائه می‌دهد، باید متعهد باشد که در صورت بروز مشکلات، ایمپلنت را تعمیر یا در صورت لزوم تعویض کند. این خدمات معمولاً شامل تعویض ایمپلنت معیوب و ارائه مشاوره‌های لازم برای پیشگیری از مشکلات آینده است."] },
+      { heading: "7 - نتیجه‌گیری", paragraphs: ["ارائه گارانتی مادام العمر برای ایمپلنت دندان در تبریز نشان دهنده تعهد و اعتماد کلینیک و متخصص به کیفیت خدمات و مواد مورد استفاده است. با انتخاب یک کلینیک دندانپزشکی در تبریز معتبر و رعایت توصیه‌های پزشک، می‌توانید از این گارانتی بهره‌مند شوید و اطمینان داشته باشید که ایمپلنت‌های شما در بهترین شرایط ممکن قرار دارند.", "با توجه به شرایط و نکات مطرح شده، امیدواریم که شما بتوانید تصمیمات بهتری در زمینه انتخاب کلینیک و متخصص مناسب بگیرید و از گارانتی مادام العمر ایمپلنت دندان در تبریز بهره‌مند شوید. این گارانتی نه تنها آرامش خاطر بیشتری برای شما فراهم می‌کند، بلکه به شما اطمینان می‌دهد که لبخند زیبا و عملکرد طبیعی دهان خود را برای مدت طولانی حفظ خواهید کرد."] },
+    ],
+    structuredDataType: "MedicalWebPage",
+    // Media audit trail (Track 4, 2026-08-23) — see media-migration/media-review-list.csv.
+    // sourceImageUrl is provenance ONLY, never rendered as a live <img src> —
+    // per Hamid's "do not hotlink old WordPress images permanently" rule,
+    // only heroImage.src (a downloaded local /media/knowledge/... file) is ever used for display.
+    mediaStatus: "missing",
+    needsMediaReview: true,
+    sourceImageUrl: "",
+    localImagePath: "",
+  },
+  {
     postId: "13739",
     slug: "ریلپس-یا-بازگشت-پس-از-عمل-جراحی-فک-با-تا",
     legacyUrls: ["https://dralirezasadighi.com/ریلپس-یا-بازگشت-پس-از-عمل-جراحی-فک-با-تا/"],
@@ -2574,6 +3236,136 @@ export const KNOWLEDGE_ARTICLES: readonly KnowledgeArticle[] = [
       { heading: "خطة العلاج والوقاية من النكس", paragraphs: ["1. التحليل والتخطيط الدقيق قبل الجراحة: يساعد استخدام التصوير ثلاثي الأبعاد والنمذجة الرقمية الجرّاح على تقييم قوى العضلات ووضعية قطع الفك بدقة، ووضع أفضل خطة علاج.", "2. استخدام وسائل تثبيت مناسبة: بعد الجراحة، يُعد استخدام الألواح والبراغي المناسبة لتثبيت القطع العظمية أمرًا ضروريًا. تساعد هذه الوسائل على منع الحركة غير المرغوبة للقطع والوقاية من النكس.", "3. استخدام أدوات تقويم الأسنان بعد الجراحة: تلعب أدوات تقويم الأسنان دورًا حيويًا في الحفاظ على وضعية الفك الجديدة ويمكن أن تساعد في الوقاية من النكس."] },
       { heading: "دور الدكتور علیرضا صدیقی في جراحة الفك والوقاية من النكس", paragraphs: ["الدكتور علیرضا صدیقی، بصفته من الأخصائيين البارزين في مجال جراحة الفم والفك والوجه، تمكّن بفضل خبرته ومعرفته المتخصصة من تحسين نتائج جراحات الفك وتقليل خطر النكس لدى مرضاه. يساهم أسلوبه في الوضع الدقيق للقطعة القريبة والتحرير المناسب لعضلات الفك، إلى جانب استخدام تقنيات حديثة مثل التصوير ثلاثي الأبعاد، في زيادة نجاح العلاج وتقليل احتمال حدوث النكس."] },
       { heading: "الخلاصة", paragraphs: ["تُعد الوضعية الصحيحة للقطعة القريبة من الفك السفلي والتحرير المناسب لعضلات الفك من العوامل الأساسية في تقليل خطر النكس بعد جراحة الفك. وقد نجح الدكتور علیرضا صدیقی، بالاعتماد على تقنيات جراحية حديثة وتحليلات متقدمة، في المساهمة في تحسين نتائج علاج مرضاه. ويلعب التخطيط الدقيق قبل الجراحة واستخدام وسائل التثبيت المناسبة دورًا حيويًا في منع النكس وضمان نتائج مستقرة."] },
+    ],
+      translationStatus: "translated-needs-review",
+    },
+    },
+    // Media audit trail (Track 4, 2026-08-23) — see media-migration/media-review-list.csv.
+    // sourceImageUrl is provenance ONLY, never rendered as a live <img src> —
+    // per Hamid's "do not hotlink old WordPress images permanently" rule,
+    // only heroImage.src (a downloaded local /media/knowledge/... file) is ever used for display.
+    mediaStatus: "missing",
+    needsMediaReview: true,
+    sourceImageUrl: "",
+    localImagePath: "",
+  },
+  {
+    // Batch 2: Sinus Lift and Dental Implant.
+    postId: "13922",
+    slug: "سینوس-لیفت-و-ایمپلنت-دندان",
+    legacyUrls: ["https://dralirezasadighi.com/سینوس-لیفت-و-ایمپلنت-دندان/"],
+    title: "سینوس لیفت تخصصی و کاشت ایمپلنت دندان با بهترین تکنیک‌های روز دنیا در کلینیک دکتر صدیقی – تهران و تبریز",
+    seoTitle: "سینوس لیفت و ایمپلنت دندان | تخصصی‌ترین جراحی در کلینیک دکتر صدیقی تهران و تبریز",
+    seoDescription: "جراحی سینوس لیفت و ایمپلنت دندان با جدیدترین تکنیک‌ها و تجهیزات روز دنیا در کلینیک دکتر صدیقی در تهران و تبریز. مشاوره تخصصی رایگان + تجربه بالای جراح.",
+    excerpt: "کاشت ایمپلنت دندان امروزه یکی از پیشرفته‌ترین و مؤثرترین روش‌ها برای جایگزینی دندان‌های از دست رفته محسوب می‌شود. اما موفقیت این روش، به میزان و کیفیت استخوان فک بستگی دارد. در بسی…",
+    topicCluster: "advanced-dental-implant",
+    serviceRelation: "advanced-dental-implant",
+    medicalReview: {
+      reviewerName: "دکتر علیرضا صدیقی",
+      reviewerCredentialsRef: "about",
+      // Inherited from the original WordPress post_modified date — this is
+      // NOT a fresh post-migration clinical re-review. Flagged in
+      // manual-decisions-needed.md-adjacent follow-up: a real medical QA
+      // pass should update this once Dr. Sadighi has re-read the migrated
+      // copy, per CLAUDE.md's "real content, not placeholder" standard.
+      reviewedAt: "2025-05-19",
+    },
+    // Content status workflow (Track 3, 2026-08-23) — every migrated article
+    // defaults to needs-doctor-review; see doctor-review-list.csv. This is
+    // internal editorial metadata, never emitted in public JSON-LD.
+    reviewStatus: "needs-doctor-review",
+    // Persian is always the source (never a translation) — see translations below.
+    translationStatus: "source",
+    publishedAt: "2024-12-12",
+    updatedAt: "2025-05-19",
+    readingTime: "4 دقیقه مطالعه",
+    contentSections: [
+      { heading: "مقدمه", paragraphs: ["کاشت ایمپلنت دندان امروزه یکی از پیشرفته‌ترین و مؤثرترین روش‌ها برای جایگزینی دندان‌های از دست رفته محسوب می‌شود. اما موفقیت این روش، به میزان و کیفیت استخوان فک بستگی دارد. در بسیاری از بیماران، به‌ویژه در ناحیه فک بالا، به دلیل تحلیل استخوان یا بزرگ بودن سینوس‌های طبیعی، امکان کاشت مستقیم ایمپلنت وجود ندارد. در این شرایط، جراحی سینوس لیفت (Sinus Lift) به عنوان یک راهکار تخصصی و ایمن برای افزایش حجم استخوان به کار می‌رود.", "در کلینیک تخصصی دکتر علیرضا صدیقی، بهترین جراح فک و صورت در تهران و تبریز، خدمات سینوس لیفت و کاشت ایمپلنت با جدیدترین تجهیزات دیجیتال و تکنولوژی‌های روز دنیا انجام می‌شود. در این مقاله، به بررسی تخصصی فرآیند سینوس لیفت، مزایا، عوارض احتمالی، هزینه‌ها و ارتباط آن با کاشت ایمپلنت می‌پردازیم."] },
+      { heading: "سینوس لیفت چیست و چرا انجام می‌شود؟", paragraphs: ["سینوس لیفت یک نوع جراحی بازسازی استخوان فک بالاست که با هدف ایجاد ارتفاع کافی استخوان در ناحیه پشتی فک بالا (پری‌مولارها و مولارها) انجام می‌شود. در این روش، با بالا بردن غشای کف سینوس و قرار دادن مواد پیوند استخوان، زمینه برای قرارگیری موفق ایمپلنت فراهم می‌شود."] },
+      { heading: "چه عواملی باعث نیاز به سینوس لیفت می‌شوند؟", paragraphs: ["تحلیل استخوان پس از کشیدن دندان‌ها", "ابتلا به بیماری‌های پریودنتال مزمن", "افزایش سن و پوکی استخوان", "بزرگی طبیعی سینوس ماگزیلاری", "ضربه یا آسیب به ناحیه فک", "برای اطلاعات بیشتر درباره دلایل تحلیل استخوان فک، مقاله تخصصی جراحی فک پایین عقب رفته را بخوانید."] },
+      { heading: "انواع جراحی سینوس لیفت", paragraphs: ["سینوس لیفت به دو روش اصلی انجام می‌شود:", "1. سینوس لیفت باز (Traditional/Open Sinus Lift)", "مناسب برای بیمارانی با تحلیل استخوان شدید. در این روش، از طریق برش در دیواره کناری سینوس، غشای سینوس بالا برده شده و مواد پیوند استخوان تزریق می‌شود.", "2. سینوس لیفت بسته (Crestal Sinus Lift)", "در مواردی با تحلیل استخوان خفیف، بدون دسترسی به دیواره کناری سینوس، از طریق محل کاشت ایمپلنت، ارتفاع استخوان افزایش می‌یابد."] },
+      { heading: "مراحل انجام جراحی سینوس لیفت در کلینیک دکتر صدیقی", paragraphs: ["ارزیابی سه‌بعدی استخوان با CBCTابتدا با تصویربرداری پیشرفته CBCT وضعیت سینوس و استخوان بیمار به دقت بررسی می‌شود.", "بی‌حسی موضعی و آماده‌سازی محل جراحیبا استفاده از تکنیک‌های بی‌حسی مدرن، بیمار هیچگونه دردی را حس نمی‌کند.", "بالا بردن غشای سینوس و پیوند استخوانغشای سینوس به‌طور کاملاً کنترل‌شده بالا برده شده و مواد پیوندی (Synthetic، Xenograft یا Autograft) به محل تزریق می‌شود.", "بخیه و شروع دوره بهبودیناحیه جراحی به دقت بخیه شده و بیمار وارد فاز ترمیم می‌شود."] },
+      { heading: "ارتباط سینوس لیفت و کاشت ایمپلنت دندان", paragraphs: ["در مواردی، پس از سینوس لیفت، لازم است چند ماه برای شکل‌گیری استخوان جدید منتظر ماند (۴ تا ۹ ماه). سپس کاشت ایمپلنت با بالاترین میزان موفقیت انجام می‌گیرد.", "اما در شرایط خاص، امکان انجام ایمپلنت فوری پس از سینوس لیفت نیز وجود دارد. برای مطالعه درباره این روش نوین، مقاله ایمپلنت فوری در تبریز را بخوانید."] },
+      { heading: "مزایای ایمپلنت دندان پس از سینوس لیفت", paragraphs: ["بازگرداندن زیبایی لبخند و اعتماد به نفس", "بهبود عملکرد جویدن و گفتار", "جلوگیری از تحلیل بیشتر استخوان", "ماندگاری بالا و مشابه دندان طبیعی", "عدم نیاز به پروتز متحرک"] },
+      { heading: "چرا کلینیک دکتر صدیقی انتخابی مطمئن است؟", paragraphs: ["تخصص و مهارت جراح:دکتر علیرضا صدیقی با بیش از ۱۵ سال تجربه تخصصی در جراحی‌های فک و صورت، نتایج درخشانی در زمینه سینوس لیفت و کاشت ایمپلنت به ثبت رسانده‌اند.", "تکنولوژی دیجیتال:استفاده از سیستم‌های تصویربرداری دیجیتال، راه‌اندازی فایل طراحی سه‌بعدی جراحی، و ایمپلنت‌های اروپایی استاندارد.", "دسترسی دوگانه در تهران و تبریز:امکان رزرو نوبت در دو شعبه فعال تهران (سعادت‌آباد) و تبریز (ولیعصر).", "رضایت بالای بیماران:میانگین رضایت بیماران در نظرسنجی‌های پس از درمان، بیش از ۹۵٪ گزارش شده است."] },
+      { heading: "هزینه سینوس لیفت و کاشت ایمپلنت چقدر است؟", paragraphs: ["هزینه نهایی بسته به موارد زیر تعیین می‌شود:", "میزان تحلیل استخوان فک", "تعداد ایمپلنت‌های مورد نیاز", "نوع مواد پیوندی و برند ایمپلنت", "تکنیک مورد استفاده (باز یا بسته)", "در کلینیک دکتر صدیقی، مشاوره تخصصی اولیه برای تعیین وضعیت و نیاز درمانی به صورت رایگان انجام می‌شود. برای جزئیات هزینه‌ها، مقاله ایمپلنت دندان اقساطی را مطالعه کنید."] },
+      { heading: "پرسش‌های متداول", paragraphs: ["آیا سینوس لیفت درد دارد؟", "خیر. این جراحی تحت بی‌حسی موضعی و با مراقبت کامل انجام می‌شود. پس از آن نیز با داروهای ضد التهاب، درد کنترل می‌شود.", "چه مدت بعد از سینوس لیفت می‌توان ایمپلنت گذاشت؟", "در روش سنتی، معمولاً ۴ تا ۹ ماه بعد. اما در موارد خاص، امکان کاشت همزمان وجود دارد.", "آیا همه بیماران نیاز به سینوس لیفت دارند؟", "خیر. تنها در صورتی که حجم استخوان فک بالا کافی نباشد، این روش پیشنهاد می‌شود."] },
+      { heading: "جمع‌بندی و تماس با ما", paragraphs: ["اگر دچار تحلیل استخوان فک بالا هستید یا به دنبال ایمپلنت مطمئن و بدون جراحی پرخطر هستید، جراحی سینوس لیفت به همراه ایمپلنت در کلینیک تخصصی دکتر صدیقی می‌تواند بهترین انتخاب برای شما باشد. زیبایی لبخند شما در دستان ماست.", "برای تماس با کلینیک دکتر علیرضا صدیقی و مشاوره رایگان، صفحه تماس با ما را کلیک کنید."] },
+    ],
+    structuredDataType: "MedicalWebPage",
+    // Media audit trail (Track 4, 2026-08-23) — see media-migration/media-review-list.csv.
+    // sourceImageUrl is provenance ONLY, never rendered as a live <img src> —
+    // per Hamid's "do not hotlink old WordPress images permanently" rule,
+    // only heroImage.src (a downloaded local /media/knowledge/... file) is ever used for display.
+    mediaStatus: "missing",
+    needsMediaReview: true,
+    sourceImageUrl: "",
+    localImagePath: "",
+  },
+  {
+    // Batch 2: Recessed Lower Jaw / Retrognathia — EN counterpart post_id 13961 (translations.en); EN duplicates 13972/13953 redirect to the EN translation route, not separately extracted.
+    postId: "13957",
+    slug: "فک-پایین-عقبرفته",
+    legacyUrls: ["https://dralirezasadighi.com/فک-پایین-عقبرفته/"],
+    title: "فک پایین عقب‌رفته چیست؟ دلایل، علائم و اهمیت درمان آن",
+    seoTitle: "فک پایین عقب‌رفته چیست؟ دلایل، علائم و روش‌های درمان | دکتر علیرضا صدیقی",
+    seoDescription: "فک پایین عقب‌رفته یا رتروگناتیا باعث مشکلاتی در جویدن، گفتار و تنفس می‌شود. با علائم، دلایل و درمان این ناهنجاری فکی آشنا شوید.",
+    excerpt: "آیا تا به حال با افرادی مواجه شده‌اید که چانه‌ای عقب‌تر از حالت طبیعی دارند؟ شاید در نگاه اول این موضوع صرفاً یک ویژگی ظاهری به نظر برسد، اما در واقع فک پایین عقب‌رفته یا رتروگناتی…",
+    topicCluster: "orthognathic-surgery",
+    serviceRelation: "orthognathic-surgery",
+    medicalReview: {
+      reviewerName: "دکتر علیرضا صدیقی",
+      reviewerCredentialsRef: "about",
+      // Inherited from the original WordPress post_modified date — this is
+      // NOT a fresh post-migration clinical re-review. Flagged in
+      // manual-decisions-needed.md-adjacent follow-up: a real medical QA
+      // pass should update this once Dr. Sadighi has re-read the migrated
+      // copy, per CLAUDE.md's "real content, not placeholder" standard.
+      reviewedAt: "2025-05-07",
+    },
+    // Content status workflow (Track 3, 2026-08-23) — every migrated article
+    // defaults to needs-doctor-review; see doctor-review-list.csv. This is
+    // internal editorial metadata, never emitted in public JSON-LD.
+    reviewStatus: "needs-doctor-review",
+    // Persian is always the source (never a translation) — see translations below.
+    translationStatus: "source",
+    publishedAt: "2024-12-29",
+    updatedAt: "2025-05-07",
+    readingTime: "4 دقیقه مطالعه",
+    contentSections: [
+      { heading: "مقدمه", paragraphs: ["آیا تا به حال با افرادی مواجه شده‌اید که چانه‌ای عقب‌تر از حالت طبیعی دارند؟ شاید در نگاه اول این موضوع صرفاً یک ویژگی ظاهری به نظر برسد، اما در واقع فک پایین عقب‌رفته یا رتروگناتیا (Retrognathia) می‌تواند نشانه‌ای از یک ناهنجاری فکی باشد که عملکردهای حیاتی مانند جویدن، صحبت کردن و حتی نفس کشیدن را تحت تأثیر قرار می‌دهد. در این مقاله به صورت علمی و جامع به بررسی این عارضه، علائم، دلایل و اهمیت درمان آن خواهیم پرداخت."] },
+      { heading: "فک پایین عقب‌رفته چیست؟", paragraphs: ["فک پایین عقب‌رفته، حالتی است که در آن فک پایینی نسبت به فک بالا و سایر اجزای صورت در موقعیت عقب‌تری قرار دارد. این وضعیت ممکن است باعث عدم تناسب صورت و مشکلات عملکردی متعددی مانند اختلال در گاز گرفتن، دشواری در تلفظ برخی کلمات و حتی بروز مشکلات تنفسی در خواب شود.", "رتروگناتیا می‌تواند خفیف، متوسط یا شدید باشد. در موارد شدیدتر، فرد نه‌تنها از نظر جسمی بلکه از نظر روحی و روانی نیز تحت تأثیر قرار می‌گیرد و ممکن است دچار کاهش اعتمادبه‌نفس یا مشکلات اجتماعی شود."] },
+      { heading: "مهم‌ترین علائم فک پایین عقب‌رفته", paragraphs: ["تشخیص زودهنگام این ناهنجاری می‌تواند در پیشگیری از عوارض بلندمدت نقش مؤثری داشته باشد. در ادامه، به رایج‌ترین علائم این عارضه می‌پردازیم:", "چانه عقب‌رفته: ظاهری کوچک و عقب‌تر از معمول که تناسب چهره را بر هم می‌زند.", "اختلال در جویدن غذا: به دلیل عدم هم‌ترازی مناسب فک‌ها، جویدن به‌سختی انجام می‌شود.", "مشکلات گفتاری: برخی اصوات ممکن است به درستی تلفظ نشوند.", "اختلال در خواب: خر و پف شبانه و آپنه خواب در برخی بیماران دیده می‌شود.", "دردهای مفصل فک: فشار نامتناسب روی مفاصل ممکن است منجر به درد مزمن یا ناهنجاری مفصل فک شود.", "نارضایتی از ظاهر: یکی از عوارض روانی مهم، کاهش اعتمادبه‌نفس است."] },
+      { heading: "دلایل فک پایین عقب‌رفته", paragraphs: [] },
+      { heading: "1. ژنتیک و وراثت", paragraphs: ["اصلی‌ترین عامل در بروز رتروگناتیا، ژنتیک است. اگر یکی از والدین یا اعضای نزدیک خانواده به این عارضه مبتلا باشند، احتمال بروز آن در فرزندان افزایش می‌یابد."] },
+      { heading: "2. نقص در رشد فک", paragraphs: ["در برخی موارد، رشد فک پایین در دوران کودکی به‌درستی انجام نمی‌شود. این اتفاق می‌تواند به دلیل مشکلات هورمونی، سوءتغذیه یا اختلالات رشدی رخ دهد."] },
+      { heading: "3. عادات نادرست دوران کودکی", paragraphs: ["رفتارهایی مانند مکیدن انگشت شست، استفاده طولانی‌مدت از پستانک یا تنفس دهانی می‌توانند در شکل‌گیری ناهنجاری فک نقش داشته باشند."] },
+      { heading: "4. اختلالات مادرزادی", paragraphs: ["سندرم‌هایی مانند Pierre Robin Sequence و Treacher Collins Syndrome با ناهنجاری‌های فکی همراه هستند که ممکن است منجر به عقب‌ماندگی فک پایین شود."] },
+      { heading: "5. آسیب یا تروما به فک", paragraphs: ["تصادف یا آسیب در دوران کودکی به ناحیه فک، خصوصاً در دوره‌های حیاتی رشد، می‌تواند روند طبیعی شکل‌گیری استخوان فک را مختل کند."] },
+      { heading: "عوارض درمان‌نشده فک پایین عقب‌رفته", paragraphs: ["عدم درمان این عارضه ممکن است پیامدهای جدی و بلندمدتی داشته باشد، از جمله:", "مشکلات جویدن و هضم: جویدن ناکافی غذا، باعث فشار بر معده و مشکلات گوارشی می‌شود.", "ناراحتی‌های روحی و روانی: ظاهر نامتناسب صورت می‌تواند منجر به اضطراب اجتماعی و افسردگی شود.", "مشکلات دندانی: هم‌ترازی نامناسب ممکن است به پوسیدگی زودهنگام دندان‌ها یا فرسایش مینای دندان منجر شود.", "اختلالات خواب: انسداد راه تنفسی ممکن است آپنه خواب ایجاد کند که با خطرات جدی برای سلامت قلبی همراه است.", "سردرد و درد فک: فشار دائمی روی مفاصل فک ممکن است منجر به دردهای مزمن شود."] },
+      { heading: "روش‌های درمان فک پایین عقب‌رفته", paragraphs: ["درمان این عارضه بسته به شدت آن و سن بیمار، متغیر است. به‌طور کلی، دو روش اصلی وجود دارد:"] },
+      { heading: "1. درمان‌های ارتودنسی", paragraphs: ["در موارد خفیف تا متوسط، خصوصاً در کودکان و نوجوانان، استفاده از ارتودنسی و دستگاه‌های هدایت رشد فک می‌تواند مؤثر باشد."] },
+      { heading: "2. جراحی فک (ارتوگناتیک)", paragraphs: ["در موارد شدیدتر یا در بزرگسالانی که رشد فک کامل شده، جراحی فک پایین یا جراحی ارتوگناتیک بهترین گزینه است. این جراحی با بی‌حسی عمومی انجام شده و فک در موقعیت مناسب قرار داده می‌شود."] },
+      { heading: "اهمیت مشاوره تخصصی قبل از درمان", paragraphs: ["مشاوره با یک متخصص جراحی فک و صورت یا ارتودنتیست می‌تواند شما را در انتخاب مناسب‌ترین روش درمانی راهنمایی کند. همچنین، با بررسی دقیق تصویرهای رادیولوژی و آزمایش‌های لازم، تصمیم‌گیری دقیق‌تری صورت خواهد گرفت.", "برای مطالعه منابع علمی بیشتر درباره رتروگناتیا، می‌توانید به مقاله‌ای در PubMed درباره درمان رتروگناتیا مراجعه کنید."] },
+      { heading: "جمع‌بندی", paragraphs: ["فک پایین عقب‌رفته، عارضه‌ای جدی‌تر از آن چیزی است که به نظر می‌رسد. این مشکل می‌تواند نه تنها زیبایی چهره بلکه کیفیت زندگی، اعتمادبه‌نفس، سلامت فیزیکی و روانی فرد را تحت تأثیر قرار دهد. آگاهی از علائم، دلایل و روش‌های درمانی آن گام اول در مسیر سلامتی است.", "اگر شما یا یکی از عزیزانتان دچار این مشکل هستید، برای ارزیابی دقیق و برنامه‌ریزی درمانی، با کلینیک تخصصی دکتر علیرضا صدیقی تماس بگیرید."] },
+    ],
+    structuredDataType: "MedicalWebPage",
+    translations: {
+      en: {
+      slug: "recessed-lower-jaw-causes-symptoms-and-treatment",
+      title: "Recessed Lower Jaw: Causes, Symptoms, and Treatment",
+      seoTitle: "Recessed Lower Jaw: Causes, Symptoms, and Treatment",
+      seoDescription: "Have you ever noticed someone whose chin appears further back than usual? This condition, known as a recessed lower jaw or retrognathia, is more than just a cosmetic concern. It ca…",
+      excerpt: "Have you ever noticed someone whose chin appears further back than usual? This condition, known as a recessed lower jaw or retrognathia, is more than just a cosmetic concern. It ca…",
+      contentSections: [
+      { heading: "Recessed Lower Jaw: Causes, Symptoms, and Treatment", paragraphs: [] },
+      { heading: "Introduction", paragraphs: ["Have you ever noticed someone whose chin appears further back than usual? This condition, known as a recessed lower jaw or retrognathia, is more than just a cosmetic concern. It can affect essential functions such as chewing, speaking, and even breathing. In this article, we provide a comprehensive, scientific overview of this issue, covering its causes, symptoms, and the importance of treatment."] },
+      { heading: "What Is a Recessed Lower Jaw?", paragraphs: ["A recessed lower jaw, medically termed retrognathia, refers to a condition where the lower jaw is positioned further back compared to the upper jaw or other facial structures. This misalignment can create facial disharmony and may lead to functional issues such as difficulty chewing or speaking.", "This condition can range from mild to severe, with its impact on an individual’s life depending on the degree of misalignment. Additionally, some individuals may experience reduced self-confidence due to this condition."] },
+      { heading: "Symptoms of a Recessed Lower Jaw", paragraphs: ["Identifying the symptoms of a recessed lower jaw can aid in early diagnosis. Key symptoms include:", "Facial Appearance Changes: A smaller, receded chin that appears out of alignment with other facial features.", "Chewing Difficulties: Challenges in chewing due to misaligned teeth.", "Speech Impairments: Some individuals may struggle with clear pronunciation due to jaw positioning.", "Breathing Issues: In severe cases, this condition can obstruct airways, leading to snoring or sleep apnea.", "Jaw Pain or Discomfort: Abnormal pressure on jaw joints may cause pain or discomfort.", "Reduced Self-Confidence: Dissatisfaction with facial aesthetics may affect self-esteem."] },
+      { heading: "Causes of a Recessed Lower Jaw", paragraphs: ["A recessed lower jaw can result from various factors, including:", "Genetic Factors\nGenetics play a significant role in jaw size and shape. A family history of retrognathia increases the likelihood of its occurrence.", "Jaw Development Issues\nIn some cases, the lower jaw does not fully develop, which may result from genetic factors, childhood injuries, or medical conditions.", "Childhood Habits\nProlonged habits such as thumb-sucking, extended pacifier use, or mouth breathing can interfere with natural jaw development.", "Congenital Disorders\nCongenital conditions such as Pierre Robin syndrome can lead to a recessed lower jaw.", "Jaw Trauma or Injuries\nInjuries sustained during the developmental stages of the jaw may alter its natural alignment."] },
+      { heading: "Complications of an Untreated Recessed Lower Jaw", paragraphs: ["Failing to treat a recessed lower jaw can lead to several complications, including:", "Functional Problems: Difficulty chewing and speaking effectively.", "Psychological Impact: Lower self-esteem due to dissatisfaction with appearance.", "Dental Issues: Increased risk of tooth decay or abnormal wear.", "Sleep Disorders: Snoring or sleep apnea due to airway obstruction.", "Chronic Jaw Pain: Persistent discomfort caused by joint stress."] },
+      { heading: "The Importance of Treating a Recessed Lower Jaw", paragraphs: ["Treating a recessed lower jaw can improve both appearance and overall quality of life. Benefits include:", "Enhanced Oral Function: Improved ability to chew and speak clearly.", "Boosted Self-Confidence: A more proportionate appearance can significantly enhance self-esteem.", "Prevention of Future Issues: Treatment can prevent dental and joint problems from developing.", "Improved Breathing: Resolving airway obstructions can reduce or eliminate snoring and sleep apnea."] },
+      { heading: "Conclusion", paragraphs: ["A recessed lower jaw is a serious condition that can impact various aspects of life. Being aware of its symptoms, understanding the causes, and seeking timely treatment can help enhance quality of life and prevent long-term complications. If you or someone you know is affected by this issue, consulting an orthodontist or maxillofacial surgeon should be a priority."] },
     ],
       translationStatus: "translated-needs-review",
     },
@@ -3128,6 +3920,142 @@ export const KNOWLEDGE_ARTICLES: readonly KnowledgeArticle[] = [
     needsMediaReview: false,
     sourceImageUrl: "https://dralirezasadighi.com/wp-content/uploads/2024/12/لیفت-شقیقه-گلایدینگ.jpg",
     localImagePath: "/media/knowledge/لیفت-شقیقه-گلایدینگ/hero.jpg",
+  },
+  {
+    // Batch 2: Implant vs Natural Tooth.
+    postId: "13745",
+    slug: "مقایسه-ایمپلنت-و-دندان-طبیعی-بررسی-تفا",
+    legacyUrls: ["https://dralirezasadighi.com/مقایسه-ایمپلنت-و-دندان-طبیعی-بررسی-تفا/"],
+    title: "مقایسه ایمپلنت و دندان طبیعی: بررسی تفاوت‌ها در ساختار، عملکرد و طول عمر",
+    seoTitle: "مقایسه ایمپلنت و دندان طبیعی: بررسی تفاوت‌ها در ساختار، عملکرد و طول عمر",
+    seoDescription: "در دندان‌پزشکی مدرن، یکی از پرطرفدارترین روش‌ها برای جایگزینی دندان‌های از دست رفته، استفاده از ایمپلنت دندان است. اما سوالی که بسیاری از بیماران مطرح می‌کنند این است که ایمپلنت چه…",
+    excerpt: "در دندان‌پزشکی مدرن، یکی از پرطرفدارترین روش‌ها برای جایگزینی دندان‌های از دست رفته، استفاده از ایمپلنت دندان است. اما سوالی که بسیاری از بیماران مطرح می‌کنند این است که ایمپلنت چه…",
+    topicCluster: "advanced-dental-implant",
+    serviceRelation: "advanced-dental-implant",
+    medicalReview: {
+      reviewerName: "دکتر علیرضا صدیقی",
+      reviewerCredentialsRef: "about",
+      // Inherited from the original WordPress post_modified date — this is
+      // NOT a fresh post-migration clinical re-review. Flagged in
+      // manual-decisions-needed.md-adjacent follow-up: a real medical QA
+      // pass should update this once Dr. Sadighi has re-read the migrated
+      // copy, per CLAUDE.md's "real content, not placeholder" standard.
+      reviewedAt: "2024-10-17",
+    },
+    // Content status workflow (Track 3, 2026-08-23) — every migrated article
+    // defaults to needs-doctor-review; see doctor-review-list.csv. This is
+    // internal editorial metadata, never emitted in public JSON-LD.
+    reviewStatus: "needs-doctor-review",
+    // Persian is always the source (never a translation) — see translations below.
+    translationStatus: "source",
+    publishedAt: "2024-10-17",
+    updatedAt: "2024-10-17",
+    readingTime: "9 دقیقه مطالعه",
+    contentSections: [
+      { heading: undefined, paragraphs: ["در دندان‌پزشکی مدرن، یکی از پرطرفدارترین روش‌ها برای جایگزینی دندان‌های از دست رفته، استفاده از ایمپلنت دندان است. اما سوالی که بسیاری از بیماران مطرح می‌کنند این است که ایمپلنت چه تفاوت‌هایی با دندان طبیعی دارد؟ در این مقاله، به‌صورت جامع به تفاوت‌ها و شباهت‌های میان ایمپلنت و دندان طبیعی پرداخته، و همچنین روش‌های مراقبت از ایمپلنت و دندان طبیعی را بررسی می‌کنیم تا انتخاب مناسبی بر اساس نیازهای فردی داشته باشید."] },
+      { heading: "1. ساختار ایمپلنت در مقایسه با دندان طبیعی", paragraphs: ["دندان طبیعی از چندین لایه تشکیل شده است که شامل مینا، عاج و عصب است. مینا بخش سخت و محافظ خارجی دندان است، در حالی که عاج بخش اصلی ساختار دندان را تشکیل می‌دهد و عصب‌ها و ریشه دندان در لثه قرار دارند. این ساختار باعث می‌شود دندان‌های طبیعی بتوانند فشارهای مختلف مانند جویدن غذاهای سخت را تحمل کنند و حساسیت بیشتری به گرما و سرما داشته باشند.", "از طرف دیگر، ایمپلنت دندان یک سیستم مصنوعی است که شامل یک پایه فلزی (معمولاً از جنس تیتانیوم) و یک تاج مصنوعی می‌باشد. این پایه در استخوان فک قرار می‌گیرد و به عنوان جایگزین ریشه دندان عمل می‌کند. تاج که به پایه متصل می‌شود، شبیه به دندان طبیعی است و از مواد مقاوم مانند سرامیک یا پرسلن ساخته می‌شود."] },
+      { heading: "2. عملکرد ایمپلنت در مقابل دندان طبیعی", paragraphs: ["یکی از سوالات رایج درباره ایمپلنت‌ها این است که آیا عملکرد آن‌ها مشابه دندان‌های طبیعی است یا خیر. پاسخ کوتاه این است که ایمپلنت دندان از نظر عملکرد بسیار نزدیک به دندان‌های طبیعی عمل می‌کند. در حالی که ایمپلنت عصب ندارد و حساسیت به گرما یا فشار را مانند دندان طبیعی احساس نمی‌کند، اما از نظر استحکام و دوام می‌تواند به خوبی نیازهای فرد را برآورده کند.", "دندان‌های طبیعی به دلیل داشتن عصب‌ها، حساسیت به فشار و دما را به خوبی منتقل می‌کنند و این باعث می‌شود که فرد از وضعیت دندان‌ها و خطرات احتمالی مانند ترک خوردن یا شکستن مطلع شود. این مزیت دندان‌های طبیعی است که به کمک این حساسیت می‌توان از آسیب‌های جدی جلوگیری کرد. با این حال، در ایمپلنت‌ها، عدم وجود عصب باعث می‌شود که فرد به هنگام فشار یا ضربه شدید، نتواند به‌موقع واکنش نشان دهد و همین مسئله ممکن است در برخی موارد به آسیب تاج ایمپلنت منجر شود."] },
+      { heading: "3. طول عمر ایمپلنت در مقابل دندان طبیعی", paragraphs: ["طول عمر یکی از مهم‌ترین عوامل در انتخاب بین ایمپلنت و دندان طبیعی است. دندان‌های طبیعی، اگر به درستی مراقبت شوند و بهداشت دهان و دندان رعایت شود، می‌توانند تا پایان عمر بدون مشکل باقی بمانند. با این حال، عواملی مانند پوسیدگی دندان، بیماری‌های لثه و ضربه می‌توانند باعث از دست رفتن دندان‌های طبیعی شوند.", "از سوی دیگر، ایمپلنت‌های دندانی به دلیل استفاده از مواد مقاوم، طول عمر بالایی دارند و در صورت مراقبت صحیح، می‌توانند برای سال‌های طولانی دوام بیاورند. اما باید به این نکته توجه داشت که ایمپلنت‌ها نیز ممکن است نیاز به تعویض تاج یا حتی ترمیم پایه فلزی داشته باشند، به‌ویژه اگر به درستی از آن‌ها مراقبت نشود یا فرد به بیماری‌های دهانی مبتلا شود."] },
+      { heading: "4. مراقبت از ایمپلنت در مقابل دندان طبیعی", paragraphs: ["مراقبت از ایمپلنت دندان و دندان‌های طبیعی هر دو اهمیت بسیاری دارند. بی‌توجهی به بهداشت دهان و دندان می‌تواند منجر به مشکلاتی مانند عفونت، پوسیدگی و حتی از دست دادن دندان یا ایمپلنت شود."] },
+      { heading: "روش‌های بهداشت و نگهداری از ایمپلنت:", paragraphs: ["ایمپلنت‌های دندانی نیاز به مراقبت‌های ویژه‌ای دارند تا به مدت طولانی کارآمد و سالم باقی بمانند. در این بخش، به مهم‌ترین روش‌های نگهداری و مراقبت از ایمپلنت می‌پردازیم.", "مسواک زدن روزانه: برای نگهداری ایمپلنت، باید روزانه حداقل دو بار از یک مسواک نرم و خمیردندان مناسب استفاده کنید. مسواک زدن ایمپلنت باید به‌طور دقیق و ملایم انجام شود تا تاج و لثه‌های اطراف آن تمیز و عاری از پلاک باقی بمانند.", "استفاده از نخ دندان مخصوص: استفاده از نخ دندان معمولی برای تمیز کردن نواحی اطراف ایمپلنت کافی نیست. بهتر است از نخ دندان مخصوص ایمپلنت که ضخیم‌تر و قوی‌تر است، استفاده کنید تا تمام مواد غذایی و پلاک‌هایی که در بین دندان‌ها و اطراف ایمپلنت گیر کرده‌اند، به‌خوبی برداشته شوند.", "استفاده از دهانشویه: دهانشویه‌های ضد باکتری برای جلوگیری از تجمع باکتری‌ها و عفونت در اطراف ایمپلنت مفید هستند. استفاده از دهانشویه به‌ویژه در ساعات شب و بعد از وعده‌های غذایی توصیه می‌شود.", "مراجعه منظم به دندان‌پزشک: حتی اگر مشکلی احساس نمی‌کنید، بهتر است هر 6 ماه یک بار برای بررسی ایمپلنت و تمیزکاری حرفه‌ای به دندان‌پزشک مراجعه کنید. دندان‌پزشک می‌تواند نشانه‌های اولیه عفونت یا پری ایمپلنتیت (التهاب اطراف ایمپلنت) را شناسایی و پیش از گسترش آن، درمان کند.", "پرهیز از خوردن غذاهای سفت: اگرچه ایمپلنت‌ها بسیار قوی و مقاوم هستند، اما توصیه می‌شود که از جویدن غذاهای سفت مانند یخ یا آجیل‌های سفت خودداری کنید. این کار باعث می‌شود که تاج ایمپلنت دچار ترک یا شکستگی نشود."] },
+      { heading: "مراقبت از دندان‌های طبیعی:", paragraphs: ["دندان‌های طبیعی نیز به مراقبت‌های منظم نیاز دارند تا از پوسیدگی و بیماری‌های لثه در امان بمانند.", "مسواک زدن با خمیردندان حاوی فلوراید: فلوراید ماده‌ای است که به تقویت مینای دندان کمک می‌کند و از پوسیدگی جلوگیری می‌کند. مسواک زدن دندان‌های طبیعی با خمیردندان حاوی فلوراید حداقل دو بار در روز ضروری است.", "استفاده از نخ دندان: استفاده منظم از نخ دندان می‌تواند به حذف پلاک و بقایای غذایی از میان دندان‌ها کمک کند، که یکی از عوامل اصلی در جلوگیری از پوسیدگی دندان‌ها و بیماری‌های لثه است.", "دهانشویه: استفاده از دهانشویه‌های ضد باکتری به کاهش تجمع باکتری‌ها و بوی بد دهان کمک می‌کند. به‌ویژه دهانشویه‌های حاوی کلرهگزیدین برای افرادی که به بیماری‌های لثه مبتلا هستند مفید است.", "مراجعه منظم به دندان‌پزشک: توصیه می‌شود که هر 6 ماه یک‌بار برای معاینه دندان‌ها و تمیز کردن حرفه‌ای به دندان‌پزشک مراجعه کنید. این جلسات می‌توانند از مشکلات بالقوه مانند پوسیدگی و پریودنتیت جلوگیری کنند.", "تغذیه مناسب: مصرف مواد غذایی حاوی کلسیم و ویتامین D برای تقویت دندان‌ها ضروری است. همچنین، پرهیز از مصرف بیش از حد قند و شیرینی‌جات می‌تواند به جلوگیری از پوسیدگی دندان کمک کند."] },
+      { heading: "5. هزینه‌ها و تاثیر آن‌ها بر انتخاب ایمپلنت یا دندان طبیعی", paragraphs: ["یکی دیگر از جنبه‌های مهم در انتخاب بین ایمپلنت و دندان طبیعی، هزینه‌ها است. هزینه ایمپلنت دندان ممکن است بالا باشد و بسته به نوع مواد مورد استفاده، تخصص دندان‌پزشک و محل جغرافیایی متفاوت باشد. در مقابل، حفظ دندان طبیعی ممکن است از نظر اقتصادی مقرون‌به‌صرفه‌تر باشد، اما در صورت بروز مشکلاتی مانند پوسیدگی یا شکستگی، هزینه‌های درمانی ممکن است افزایش یابد."] },
+      { heading: "6. مزایا و معایب ایمپلنت دندان در مقایسه با دندان طبیعی", paragraphs: ["مزایای ایمپلنت دندان:", "دوام و ماندگاری طولانی: یکی از بزرگ‌ترین مزایای ایمپلنت‌های دندانی این است که در صورت مراقبت مناسب، می‌توانند برای مدت بسیار طولانی، حتی برای تمام عمر، بدون نیاز به تعویض باقی بمانند.", "ظاهر طبیعی: ایمپلنت‌ها از نظر ظاهری بسیار شبیه به دندان‌های طبیعی هستند و تفاوت آن‌ها با دندان‌های اصلی فرد به سختی قابل تشخیص است.", "ثبات و استحکام: ایمپلنت‌ها به استخوان فک متصل می‌شوند، بنابراین استحکام و ثبات بیشتری نسبت به پروتزهای دندانی یا دندان‌های مصنوعی معمول دارند. این ویژگی باعث می‌شود که فرد بتواند به راحتی غذاهای مختلف را بجود.", "پیشگیری از تحلیل استخوان: زمانی که یک دندان طبیعی از دست می‌رود، استخوان فک به مرور زمان شروع به تحلیل می‌کند. ایمپلنت‌ها با جایگزینی ریشه دندان، از تحلیل رفتن استخوان فک جلوگیری می‌کنند."] },
+      { heading: "معایب ایمپلنت دندان:", paragraphs: ["هزینه بالا: ایمپلنت‌های دندانی، به‌خصوص اگر چندین دندان نیاز به جایگزینی داشته باشند، می‌توانند هزینه‌بر باشند. هزینه بالای این روش ممکن است برای برخی از بیماران مانعی جدی باشد.", "فرآیند جراحی: نصب ایمپلنت نیاز به یک عمل جراحی دارد که شامل قرار دادن پایه فلزی در استخوان فک است. این جراحی ممکن است برای برخی افراد خطرناک یا نامطلوب باشد.", "زمان طولانی درمان: فرآیند بهبودی پس از قرار دادن ایمپلنت ممکن است چندین ماه طول بکشد تا پایه به‌طور کامل با استخوان فک جوش بخورد.", "خطر عفونت: مانند هر عمل جراحی دیگری، خطر عفونت در اطراف ایمپلنت وجود دارد که اگر به‌درستی مدیریت نشود، ممکن است به مشکلات جدی‌تری منجر شود."] },
+      { heading: "مزایای دندان‌های طبیعی:", paragraphs: ["حس و کارکرد طبیعی: دندان‌های طبیعی به دلیل داشتن اعصاب، بهترین حس و عملکرد را ارائه می‌دهند. فرد می‌تواند تغییرات در دما، فشار و حتی درد را با دندان‌های طبیعی احساس کند.", "هزینه کمتر: اگر دندان‌های طبیعی به درستی مراقبت شوند، هزینه نگهداری آن‌ها بسیار کمتر از روش‌های جایگزین مانند ایمپلنت است.", "بدون نیاز به جراحی: دندان‌های طبیعی نیازی به جراحی یا روش‌های تهاجمی برای حفظ و نگهداری ندارند، مگر در شرایط خاصی مانند عصب‌کشی یا جراحی لثه."] },
+      { heading: "معایب دندان‌های طبیعی:", paragraphs: ["پوسیدگی: یکی از بزرگ‌ترین معایب دندان‌های طبیعی، احتمال پوسیدگی و آسیب‌های دیگر مانند شکستگی یا ترک است.", "حساسیت: دندان‌های طبیعی به دلیل داشتن عصب‌ها ممکن است به گرما و سرما حساسیت نشان دهند، که می‌تواند در برخی موارد دردناک باشد.", "بیماری‌های لثه: بیماری‌های لثه و مشکلات مرتبط با دهان و دندان می‌توانند به از دست دادن دندان‌های طبیعی منجر شوند."] },
+      { heading: "7. آینده ایمپلنت‌های دندانی", paragraphs: ["ایمپلنت‌های دندانی طی دهه‌های گذشته بهبودهای بسیاری پیدا کرده‌اند و پیشرفت‌های فناورانه مانند استفاده از مواد زیستی پیشرفته و روش‌های جراحی کم‌تهاجمی، این روش را به یکی از بهترین و محبوب‌ترین راه‌های جایگزینی دندان تبدیل کرده است. در آینده، ممکن است تکنولوژی‌های جدیدی مانند ایمپلنت‌های هوشمند و مواد زیستی پیشرفته‌تر باعث بهبود بیشتر ایمپلنت‌ها شود. این ایمپلنت‌های هوشمند می‌توانند به نظارت بر سلامت دهان و دندان کمک کرده و هشدارهایی درباره مشکلات احتمالی به بیمار و دندان‌پزشک ارائه دهند."] },
+      { heading: "8. انتخاب نهایی: کدام گزینه مناسب‌تر است؟", paragraphs: ["انتخاب بین ایمپلنت دندان و دندان طبیعی به عوامل مختلفی بستگی دارد. اگر دندان طبیعی قابل حفظ و ترمیم باشد، همیشه بهتر است که دندان اصلی خود را حفظ کنید. اما در مواردی که دندان از دست رفته یا غیرقابل ترمیم است، ایمپلنت دندان می‌تواند یک جایگزین عالی باشد که هم از نظر زیبایی و هم از نظر عملکرد با دندان طبیعی برابری می‌کند.", "در نهایت، مشاوره با یک دندان‌پزشک متخصص و بررسی دقیق وضعیت دندان‌ها و لثه‌ها، بهترین راه برای انتخاب مناسب‌ترین گزینه برای شما خواهد بود. ایمپلنت‌ها برای بسیاری از بیماران انتخابی مطمئن و موثر هستند، اما حفظ دندان‌های طبیعی همواره گزینه‌ای ایده‌آل به شمار می‌آید."] },
+      { heading: "نتیجه‌گیری", paragraphs: ["در نهایت، انتخاب بین ایمپلنت دندان و دندان طبیعی بستگی به نیازها و شرایط فردی هر بیمار دارد. اگرچه ایمپلنت‌ها می‌توانند جایگزین مناسبی برای دندان‌های از دست رفته باشند و طول عمر بالایی", "داشته باشند، اما هیچ‌چیز نمی‌تواند جایگزین کاملی برای دندان‌های طبیعی شود. بنابراین، حفظ دندان‌های طبیعی همیشه باید اولویت باشد. اما در شرایطی که دندان طبیعی از دست رفته یا غیرقابل ترمیم است، ایمپلنت دندان به عنوان یک راه‌حل موثر و بلندمدت می‌تواند مورد استفاده قرار گیرد."] },
+    ],
+    structuredDataType: "MedicalWebPage",
+    // Media audit trail (Track 4, 2026-08-23) — see media-migration/media-review-list.csv.
+    // sourceImageUrl is provenance ONLY, never rendered as a live <img src> —
+    // per Hamid's "do not hotlink old WordPress images permanently" rule,
+    // only heroImage.src (a downloaded local /media/knowledge/... file) is ever used for display.
+    mediaStatus: "missing",
+    needsMediaReview: true,
+    sourceImageUrl: "",
+    localImagePath: "",
+  },
+  {
+    // Batch 2: Facial Asymmetry Due to Trauma — consolidates 4 FA posts; EN counterpart post_id 13713 (translations.en).
+    postId: "13707",
+    slug: "ناقرینگیهای-ناشی-از-تروما-به-صورت-عل",
+    legacyUrls: ["https://dralirezasadighi.com/ناقرینگیهای-ناشی-از-تروما-به-صورت-عل/", "https://dralirezasadighi.com/جراحی-ناقرینگیهای-صورت-رویکردها-و-م/", "https://dralirezasadighi.com/درمان-غیر-قرینگی-صورت-راهکارها،-نقش-اس/", "https://dralirezasadighi.com/جراحی-بازسازی-نواقص-صورت-بازگرداندن/"],
+    title: "ناقرینگی‌های ناشی از تروما به صورت: علل، تشخیص و درمان",
+    seoTitle: "ناقرینگی‌های ناشی از تروما به صورت: علل، تشخیص و درمان",
+    seoDescription: "ناقرینگی‌های ناشی از تروما به صورت به وضعیت‌هایی اشاره دارد که در آن، به دلیل آسیب‌های مستقیم به ناحیه صورت، تعادل و تقارن ساختاری چهره فرد به‌هم می‌ریزد. این وضعیت می‌تواند تاثیرا…",
+    excerpt: "ناقرینگی‌های ناشی از تروما به صورت به وضعیت‌هایی اشاره دارد که در آن، به دلیل آسیب‌های مستقیم به ناحیه صورت، تعادل و تقارن ساختاری چهره فرد به‌هم می‌ریزد. این وضعیت می‌تواند تاثیرا…",
+    topicCluster: "facial-trauma-surgery",
+    serviceRelation: "facial-trauma-surgery",
+    medicalReview: {
+      reviewerName: "دکتر علیرضا صدیقی",
+      reviewerCredentialsRef: "about",
+      // Inherited from the original WordPress post_modified date — this is
+      // NOT a fresh post-migration clinical re-review. Flagged in
+      // manual-decisions-needed.md-adjacent follow-up: a real medical QA
+      // pass should update this once Dr. Sadighi has re-read the migrated
+      // copy, per CLAUDE.md's "real content, not placeholder" standard.
+      reviewedAt: "2024-09-12",
+    },
+    // Content status workflow (Track 3, 2026-08-23) — every migrated article
+    // defaults to needs-doctor-review; see doctor-review-list.csv. This is
+    // internal editorial metadata, never emitted in public JSON-LD.
+    reviewStatus: "needs-doctor-review",
+    // Persian is always the source (never a translation) — see translations below.
+    translationStatus: "source",
+    publishedAt: "2024-09-11",
+    updatedAt: "2024-09-12",
+    readingTime: "3 دقیقه مطالعه",
+    contentSections: [
+      { heading: "ناقرینگی‌های ناشی از تروما به صورت: علل، تشخیص و درمان", paragraphs: ["ناقرینگی‌های ناشی از تروما به صورت به وضعیت‌هایی اشاره دارد که در آن، به دلیل آسیب‌های مستقیم به ناحیه صورت، تعادل و تقارن ساختاری چهره فرد به‌هم می‌ریزد. این وضعیت می‌تواند تاثیرات روانی و عملکردی جدی بر زندگی افراد داشته باشد و نیاز به درمان‌های تخصصی و جراحی دارد. در این مقاله، به بررسی علل، نحوه تشخیص و روش‌های درمان ناقرینگی‌های صورت ناشی از تروما پرداخته می‌شود."] },
+      { heading: "علل ناقرینگی‌های ناشی از تروما", paragraphs: ["تروما به ناحیه صورت می‌تواند به چند دلیل زیر منجر به ناقرینگی شود:", "شکستگی‌های استخوانی: ضربات شدید به صورت ممکن است باعث شکستگی فک، گونه‌ها یا بینی شود که در نهایت به ایجاد عدم تقارن منجر می‌گردد.", "آسیب به بافت نرم: پارگی یا ضربه به عضلات و پوست صورت می‌تواند شکل کلی صورت را تغییر دهد.", "آسیب به عصب‌های صورت: در برخی موارد، تروما می‌تواند باعث آسیب به عصب‌های حرکتی صورت شود که منجر به فلج عضلات و ناقرینگی عضلانی می‌گردد.", "جای زخم‌ها و اسکارها: بعد از بهبود زخم‌های بزرگ، جای زخم (اسکار) ممکن است باعث تغییر شکل صورت و بروز ناقرینگی شود."] },
+      { heading: "تشخیص ناقرینگی‌های ناشی از تروما", paragraphs: ["تشخیص ناقرینگی‌های ناشی از تروما نیاز به بررسی‌های بالینی و تصویربرداری‌های دقیق دارد. روش‌های زیر برای تشخیص به کار می‌روند:"] },
+      { heading: "1. معاینه بالینی", paragraphs: ["پزشک یا جراح پلاستیک از طریق بررسی وضعیت ظاهری صورت و ارزیابی تقارن بین دو نیمه آن، وضعیت بیمار را بررسی می‌کند. هرگونه اختلاف در شکل یا حرکت قسمت‌های مختلف صورت مورد ارزیابی قرار می‌گیرد."] },
+      { heading: "2. تصویربرداری", paragraphs: ["برای بررسی دقیق‌تر ساختارهای استخوانی و بافت‌های نرم، از سی‌تی اسکن (CT Scan) یا تصویربرداری سه‌بعدی (CBCT) استفاده می‌شود. این تکنیک‌ها به پزشک کمک می‌کند تا شکستگی‌ها یا ناهنجاری‌های ساختاری را به‌طور دقیق شناسایی کند."] },
+      { heading: "3. ارزیابی عملکردی عصب‌ها", paragraphs: ["اگر تروما به عصب‌های صورت آسیب زده باشد، پزشک از آزمایش‌های نورولوژیکی برای ارزیابی عملکرد عضلات و عصب‌های صورت استفاده می‌کند. این ارزیابی می‌تواند نشان دهد که آیا فلج عضلانی موقتی است یا نیاز به درمان‌های بیشتر دارد."] },
+      { heading: "روش‌های درمان ناقرینگی‌های ناشی از تروما", paragraphs: ["درمان ناقرینگی‌های ناشی از تروما بسته به شدت و نوع آسیب می‌تواند متفاوت باشد. در ادامه، به برخی از روش‌های معمول درمان اشاره شده است:"] },
+      { heading: "1. جراحی ترمیمی شکستگی‌ها", paragraphs: ["اگر ناقرینگی به دلیل شکستگی‌های استخوانی باشد، جراحی ترمیمی به‌منظور بازسازی استخوان‌های شکسته انجام می‌شود. این جراحی ممکن است شامل استفاده از پلیت‌های فلزی یا پیوند استخوان برای بازگرداندن تعادل ساختاری به صورت باشد."] },
+      { heading: "2. تزریق چربی یا فیلر", paragraphs: ["برای اصلاح ناقرینگی‌های ناشی از آسیب به بافت نرم، ممکن است از تزریق چربی یا فیلرهای پوستی استفاده شود. این روش‌ها به بازگرداندن حجم از دست رفته صورت و ایجاد تقارن کمک می‌کنند."] },
+      { heading: "3. جراحی پلاستیک بازسازی اسکار", paragraphs: ["در مواردی که ناقرینگی به دلیل وجود جای زخم‌های برجسته ایجاد شده باشد، جراحی پلاستیک ترمیم اسکار می‌تواند ظاهر پوست را بهبود بخشد و تقارن بهتری به صورت بدهد."] },
+      { heading: "4. فیزیوتراپی و بازتوانی عضلات", paragraphs: ["اگر آسیب به عصب‌های صورت منجر به فلج عضلات شده باشد، فیزیوتراپی و تمرینات بازتوانی عضلات می‌توانند به بازگرداندن حرکت و بهبود تقارن عضلانی کمک کنند. در موارد شدیدتر، ممکن است نیاز به جراحی ترمیم عصب باشد."] },
+      { heading: "5. جراحی ارتوگناتیک", paragraphs: ["در مواردی که تروما باعث اختلالات فکی و تغییر در هم‌راستایی فک‌ها شده باشد، ممکن است جراحی ارتوگناتیک برای اصلاح موقعیت فک و بازگرداندن تقارن به صورت انجام شود."] },
+      { heading: "نتیجه‌گیری", paragraphs: ["ناقرینگی‌های ناشی از تروما به صورت می‌توانند تاثیرات جدی بر ظاهر و عملکرد فک و عضلات صورت داشته باشند. با تشخیص زودهنگام و استفاده از روش‌های جراحی ترمیمی و درمان‌های غیرجراحی، می‌توان به بهبود تقارن صورت و بازگرداندن عملکردهای طبیعی آن کمک کرد. مشاوره با یک جراح پلاستیک متخصص یا متخصص ارتودنسی برای ارزیابی وضعیت بیمار و تعیین بهترین روش درمانی ضروری است."] },
+    ],
+    structuredDataType: "MedicalWebPage",
+    translations: {
+      en: {
+      slug: "facial-asymmetry-due-to-trauma-causes-diagnosis-and-treatment",
+      title: "Facial Asymmetry Due to Trauma: Causes, Diagnosis, and Treatment",
+      seoTitle: "Facial Asymmetry Due to Trauma: Causes, Diagnosis, and Treatment",
+      seoDescription: "Facial asymmetry due to trauma occurs when direct injury to the face disrupts the balance and symmetry of facial structures. This condition can affect both the appearance and funct…",
+      excerpt: "Facial asymmetry due to trauma occurs when direct injury to the face disrupts the balance and symmetry of facial structures. This condition can affect both the appearance and funct…",
+      contentSections: [
+      { heading: "Facial Asymmetry Due to Trauma: Causes, Diagnosis, and Treatment", paragraphs: ["Facial asymmetry due to trauma occurs when direct injury to the face disrupts the balance and symmetry of facial structures. This condition can affect both the appearance and function of the face, and it often requires specialized treatment from expert surgeons such as Dr. Alireza Sedighi. In this article, we will discuss the causes, diagnosis, and treatment options for facial asymmetry resulting from trauma."] },
+      { heading: "Causes of Facial Asymmetry Due to Trauma", paragraphs: ["Several factors can contribute to facial asymmetry after trauma:", "Bone Fractures: Severe impacts to the face may cause jaw fractures, cheekbone fractures, or nasal fractures, leading to visible asymmetry.", "Soft Tissue Damage: Trauma can cause significant damage to facial muscles and skin, resulting in changes to the overall facial structure.", "Nerve Damage: Injury to the facial nerves can lead to muscle paralysis, causing muscular asymmetry.", "Scarring: Large wounds or cuts may leave behind visible scars, altering the natural symmetry of the face."] },
+      { heading: "Diagnosis of Trauma-Related Facial Asymmetry", paragraphs: ["Accurate diagnosis is essential for effective treatment. The following steps are typically involved:"] },
+      { heading: "1. Clinical Examination", paragraphs: ["A thorough examination of facial structures by a plastic or maxillofacial surgeon helps identify the extent of asymmetry and any functional issues."] },
+      { heading: "2. Imaging", paragraphs: ["3D CT scans and digital 3D scans are used to assess bone fractures and soft tissue damage. These images give a clear view of any abnormalities and allow surgeons like Dr. Alireza Sedighi to develop a detailed treatment plan."] },
+      { heading: "3. Nerve Function Evaluation", paragraphs: ["If nerve damage is suspected, neurological tests may be used to evaluate facial muscle function and determine whether the paralysis is temporary or requires further treatment."] },
+      { heading: "Treatment Options for Trauma-Related Facial Asymmetry", paragraphs: ["Several treatment options are available depending on the severity of the asymmetry:"] },
+      { heading: "1. Reconstructive Surgery for Fractures", paragraphs: ["For cases involving bone fractures, reconstructive surgery may be necessary to reset the bones and restore facial symmetry. Procedures may involve the use of metal plates or bone grafts."] },
+      { heading: "2. Soft Tissue Correction", paragraphs: ["For soft tissue damage, treatments such as fat grafting or dermal fillers can be used to restore lost volume and improve symmetry."] },
+      { heading: "3. Scar Revision Surgery", paragraphs: ["If scarring is the primary cause of asymmetry, scar revision surgery can smooth the skin and create a more balanced appearance."] },
+      { heading: "4. Physical Therapy for Nerve Damage", paragraphs: ["If trauma results in nerve damage, physical therapy may help restore facial muscle function. In more severe cases, nerve repair surgery might be required."] },
+      { heading: "Conclusion", paragraphs: ["Facial asymmetry due to trauma can significantly impact a patient’s appearance and function. However, with advanced diagnostic tools and a range of treatment options, expert surgeons like Dr. Alireza Sedighi can help restore symmetry and improve both form and function. Accurate diagnosis and the right combination of treatments, from reconstructive surgery to scar revision, can help patients regain confidence in their appearance."] },
+    ],
+      translationStatus: "translated-needs-review",
+    },
+    },
+    // Media audit trail (Track 4, 2026-08-23) — see media-migration/media-review-list.csv.
+    // sourceImageUrl is provenance ONLY, never rendered as a live <img src> —
+    // per Hamid's "do not hotlink old WordPress images permanently" rule,
+    // only heroImage.src (a downloaded local /media/knowledge/... file) is ever used for display.
+    mediaStatus: "missing",
+    needsMediaReview: true,
+    sourceImageUrl: "",
+    localImagePath: "",
   },
 ];
 

@@ -259,6 +259,34 @@ function main() {
     check(`top-click URL has a redirect: ${path}`, target !== null, true);
   }
 
+  // Batch 2 Knowledge Center migration (2026-08-26) — the 15 approved
+  // final articles, including the consolidation clusters (multiple old WP
+  // permalinks -> one final article) and the two real-English-translation
+  // redirects, which must land on /en/knowledge/..., never the bare
+  // Persian route.
+  check("Batch 2: digital jaw surgery primary", resolveLegacyPath("/جراحی-فک-دیجیتال"), "/knowledge/جراحی-فک-دیجیتال");
+  check("Batch 2: digital jaw surgery duplicate 1", resolveLegacyPath("/جراحی-دیجیتال-فک"), "/knowledge/جراحی-فک-دیجیتال");
+  check("Batch 2: digital jaw surgery duplicate 2", resolveLegacyPath("/جراحی-فک-به-روش-دیجیتال"), "/knowledge/جراحی-فک-دیجیتال");
+  check("Batch 2: CAS duplicate folds into digital jaw surgery", resolveLegacyPath("/cas-چیست-و-کاربرد-های-آن"), "/knowledge/جراحی-فک-دیجیتال");
+  check("Batch 2: facial asymmetry primary", resolveLegacyPath("/ناقرینگیهای-ناشی-از-تروما-به-صورت-عل"), "/knowledge/ناقرینگیهای-ناشی-از-تروما-به-صورت-عل");
+  check("Batch 2: facial asymmetry EN translation redirects to /en/knowledge, not bare", resolveLegacyPath("/facial-asymmetry-due-to-trauma-causes-diagnosis-and-treatment"), "/en/knowledge/facial-asymmetry-due-to-trauma-causes-diagnosis-and-treatment");
+  check("Batch 2: facial asymmetry EN duplicate also -> EN translation route", resolveLegacyPath("/treatment-of-facial-asymmetry-solutions-the-role-of-nuclear-medicine-scans-and-the-appropriate-age-for-jaw-surgery"), "/en/knowledge/facial-asymmetry-due-to-trauma-causes-diagnosis-and-treatment");
+  check("Batch 2: recessed lower jaw primary", resolveLegacyPath("/فک-پایین-عقبرفته"), "/knowledge/فک-پایین-عقبرفته");
+  check("Batch 2: recessed lower jaw EN translation redirects to /en/knowledge, not bare", resolveLegacyPath("/recessed-lower-jaw-causes-symptoms-and-treatment"), "/en/knowledge/recessed-lower-jaw-causes-symptoms-and-treatment");
+  check("Batch 2: protruding lower jaw primary (-2 variant)", resolveLegacyPath("/جراحی-جلوآمدگی-فک-پایین-2"), "/knowledge/جراحی-جلوآمدگی-فک-پایین-2");
+  check("Batch 2: protruding lower jaw base duplicate", resolveLegacyPath("/جراحی-جلوآمدگی-فک-پایین"), "/knowledge/جراحی-جلوآمدگی-فک-پایین-2");
+  check("Batch 2: implant guide primary", resolveLegacyPath("/راهنمای-جامع-ایمپلنت-دندان-در-تبریز"), "/knowledge/راهنمای-جامع-ایمپلنت-دندان-در-تبریز");
+  check("Batch 2: implant guide -2 duplicate", resolveLegacyPath("/راهنمای-جامع-ایمپلنت-دندان-در-تبریز-2"), "/knowledge/راهنمای-جامع-ایمپلنت-دندان-در-تبریز");
+  check("Batch 2: facial lift FAQ (standalone)", resolveLegacyPath("/25-سوال-متداول-در-مورد-جراحی-لیفت-صورت-که"), "/knowledge/25-سوال-متداول-در-مورد-جراحی-لیفت-صورت-که");
+  check("Batch 2: botox for bruxism (standalone)", resolveLegacyPath("/تزریق-بوتاکس-برای-از-بین-بردن-دندان-قرو"), "/knowledge/تزریق-بوتاکس-برای-از-بین-بردن-دندان-قرو");
+  check("Batch 2: is jaw surgery dangerous (standalone)", resolveLegacyPath("/جراحی-فک-خطرناک"), "/knowledge/جراحی-فک-خطرناک");
+  check("Batch 2: condylar hyperplasia (standalone)", resolveLegacyPath("/بیماری-کندیلار-هایپرپلاژیا-علل،-تشخی"), "/knowledge/بیماری-کندیلار-هایپرپلاژیا-علل،-تشخی");
+  check("Batch 2: orthognathic surgery stages (standalone)", resolveLegacyPath("/جراحی-فک-ارتوگناتیک-مراحل-و-روند-درما"), "/knowledge/جراحی-فک-ارتوگناتیک-مراحل-و-روند-درما");
+
+  // Known redirect issue fix (approved, 2026-08-26): must never point at
+  // /about again — the mis-redirect this exact check guards against.
+  check("FIX: wisdom-tooth-timing mis-redirect no longer points at /about", resolveLegacyPath("/همهچیز-درباره-دندان-عقل-زمان-مناسب-ب"), "/knowledge/تفاوت-کشیدن-دندان-و-جراحی-دندان-عقل");
+
   // Rank Math redirect audit merge — see rank-math-redirects-summary.md.
   const rankMathText = readFileSync(RANK_MATH_MERGE_CSV, "utf-8");
   const rankMathRows = parseCsv(rankMathText);

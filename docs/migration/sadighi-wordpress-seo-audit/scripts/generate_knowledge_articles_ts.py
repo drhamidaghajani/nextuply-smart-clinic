@@ -155,16 +155,29 @@ def main():
 import type { Locale } from "@/i18n/locales";
 
 /**
- * SINGLE SOURCE OF TRUTH for Knowledge Center articles — phase-1 migration
- * from the legacy WordPress site (dralirezasadighi.com), per
- * docs/migration/sadighi-wordpress-seo-audit/. 25 articles: the 23 approved
- * `migrate-to-knowledge-center` URLs from phase-1-plan/p0-launch-list.csv,
- * plus 2 URL-collision posts resolved by Hamid's explicit decision
- * (2026-08-23): بلفاروپلاستی canonicalized on post_id 7212 (the newer,
- * richer of two duplicate posts — see collision-review.md), and the fat-
- * injection FAQ collision migrated as its Persian post only (post_id 8597;
- * the English post_id 13413 is deliberately excluded from phase 1 pending a
+ * SINGLE SOURCE OF TRUTH for Knowledge Center articles — migration from the
+ * legacy WordPress site (dralirezasadighi.com), per
+ * docs/migration/sadighi-wordpress-seo-audit/. 40 articles:
+ *
+ * Batch 1 (25 articles, 2026-08-23): the 23 approved `migrate-to-knowledge-
+ * center` URLs from phase-1-plan/p0-launch-list.csv, plus 2 URL-collision
+ * posts resolved by Hamid's explicit decision — بلفاروپلاستی canonicalized
+ * on post_id 7212 (the newer, richer of two duplicate posts — see
+ * collision-review.md), and the fat-injection FAQ collision migrated as its
+ * Persian post only (post_id 8597; English post_id 13413 excluded pending a
  * separate /en slug decision).
+ *
+ * Batch 2 (15 articles, 2026-08-26): the highest-priority remaining
+ * WordPress posts approved for this contract — see
+ * remaining-article-migration-plan.csv, batch-2-import-list.csv, and
+ * merge-recommendations.csv. Several consolidate multiple duplicate/near-
+ * duplicate WP permalinks into ONE final article (extract_articles.py's
+ * `extra_legacy` field) — e.g. 4 posts about digital/CAS jaw surgery
+ * technology collapse into a single جراحی-فک-دیجیتال article. Two of these
+ * (Facial Asymmetry Due to Trauma, Recessed Lower Jaw) have a genuine
+ * English WordPress original as their `translations.en` — extracted
+ * mechanically from that real English post
+ * (extract_batch2_translations.py), never machine-translated from Persian.
  *
  * Content is extracted verbatim from the WordPress `content:encoded` HTML
  * (docs/migration/.../scripts/extract_articles.py) — real clinical content
@@ -183,14 +196,19 @@ import type { Locale } from "@/i18n/locales";
  *
  * `heroImage`/`mediaStatus`/`sourceImageUrl`/`localImagePath` (Track 4,
  * 2026-08-23): real photos were downloaded from dralirezasadighi.com/wp-
- * content/uploads for articles where one could be verified — see
+ * content/uploads for Batch 1 articles where one could be verified — see
  * media-migration/media-review-list.csv and migrate_media.py for the full
- * discovery/selection/rejection trail. `heroImage` is only ever set to a
- * LOCAL downloaded file path; `sourceImageUrl` is provenance metadata only
- * and must never be used as a live image src (no permanent hotlinking to
- * the old WordPress site). Articles with no verified image render the
- * premium no-image editorial hero state instead — see knowledge/[slug]/
- * page.tsx.
+ * discovery/selection/rejection trail. Batch 2 (2026-08-26): the production
+ * domain cutover means dralirezasadighi.com/wp-content/uploads/ no longer
+ * resolves to the old WordPress media library at all (verified directly —
+ * every image URL now 404s/connection-fails through the new Next.js app,
+ * not a rate limit) — every Batch 2 article is `mediaStatus: "missing"` as
+ * a result, not a rejection of the source images' quality. `heroImage` is
+ * only ever set to a LOCAL downloaded file path; `sourceImageUrl` is
+ * provenance metadata only and must never be used as a live image src (no
+ * permanent hotlinking to the old WordPress site). Articles with no
+ * verified image render the premium no-image editorial hero state instead
+ * — see knowledge/[slug]/page.tsx.
  */
 
 export interface KnowledgeArticleFaqItem {

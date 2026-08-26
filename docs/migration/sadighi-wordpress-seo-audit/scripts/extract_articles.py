@@ -1,10 +1,13 @@
 #!/usr/bin/env python3
 """
-Phase-1 implementation: extract + clean real WordPress content for the 25
-approved articles (23 from p0-launch-list.csv + the 2 now-unblocked
-collision posts) into a structured JSON intermediate, which
-generate_knowledge_articles_ts.py then turns into the real
-src/content/knowledge-articles.ts file.
+Phase-1 implementation: extract + clean real WordPress content into a
+structured JSON intermediate, which generate_knowledge_articles_ts.py then
+turns into the real src/content/knowledge-articles.ts file. Batch 1 (25
+articles): 23 from p0-launch-list.csv + 2 now-unblocked collision posts.
+Batch 2 (2026-08-26, 15 more articles): the highest-priority remaining
+WordPress posts, several consolidating duplicate/near-duplicate permalinks
+via `extra_legacy` — see remaining-article-migration-plan.csv and
+merge-recommendations.csv for the full audit trail.
 
 Kept in docs/migration/.../scripts/ (planning-audit territory) — its OUTPUT
 is what gets written into the Next.js app, not this script itself.
@@ -32,6 +35,8 @@ SERVICE_FOR_TOPIC = {
     "rhinoplasty": "rhinoplasty",
     "facial-cosmetic-surgery": "facial-cosmetic-surgery",
     "blepharoplasty": "facial-cosmetic-surgery",
+    # Added for Batch 2 (2026-08-26) — the "Facial Asymmetry Due to Trauma" article.
+    "facial-trauma-surgery": "facial-trauma-surgery",
 }
 
 # post_id -> (approved topic_cluster, proposed slug, extra legacy URLs)
@@ -61,6 +66,26 @@ TARGETS = {
     "8392": {"topic": "rhinoplasty"},
     "7212": {"topic": "blepharoplasty", "canonical_of": "بلفاروپلاستی collision — post_id 7168 retired"},
     "8597": {"topic": "care-instructions", "note": "fat-injection FAQ collision — Persian only, English post_id 13413 excluded from phase 1"},
+    # --- Batch 2 (2026-08-26): 15 approved final articles, consolidating
+    # duplicate/near-duplicate WP permalinks via extra_legacy (same
+    # mechanism as لیفت-شقیقه-گلایدینگ/جراحی-فک-پایین-عقب-رفته above) —
+    # see docs/migration/sadighi-wordpress-seo-audit/merge-recommendations.csv
+    # for the full consolidation trail.
+    "14003": {"topic": "orthognathic-surgery", "extra_legacy": ["https://dralirezasadighi.com/جراحی-دیجیتال-فک/", "https://dralirezasadighi.com/جراحی-فک-به-روش-دیجیتال/", "https://dralirezasadighi.com/cas-چیست-و-کاربرد-های-آن/"], "note": "Batch 2 2026-08-26: Digital Jaw Surgery / CAS Technology — consolidates 4 posts; cas-چیست-و-کاربرد-های-آن folded in as redirect-only (thinner content, not separately extracted)."},
+    "13707": {"topic": "facial-trauma-surgery", "extra_legacy": ["https://dralirezasadighi.com/جراحی-ناقرینگیهای-صورت-رویکردها-و-م/", "https://dralirezasadighi.com/درمان-غیر-قرینگی-صورت-راهکارها،-نقش-اس/", "https://dralirezasadighi.com/جراحی-بازسازی-نواقص-صورت-بازگرداندن/"], "note": "Batch 2: Facial Asymmetry Due to Trauma — consolidates 4 FA posts; EN counterpart post_id 13713 (translations.en)."},
+    "13957": {"topic": "orthognathic-surgery", "note": "Batch 2: Recessed Lower Jaw / Retrognathia — EN counterpart post_id 13961 (translations.en); EN duplicates 13972/13953 redirect to the EN translation route, not separately extracted."},
+    "14707": {"topic": "orthognathic-surgery", "extra_legacy": ["https://dralirezasadighi.com/جراحی-جلوآمدگی-فک-پایین/"], "note": "Batch 2: Protruding Lower Jaw / Prognathism — this post (10,084 chars) is primary; base permalink 13945 consolidates as a redirect-only duplicate."},
+    "8441": {"topic": "advanced-dental-implant", "extra_legacy": ["https://dralirezasadighi.com/راهنمای-جامع-ایمپلنت-دندان-در-تبریز-2/"], "note": "Batch 2: Comprehensive Dental Implant Guide in Tabriz — this post (11,590 chars) is primary; -2 permalink duplicate (13929) redirect-only."},
+    "8381": {"topic": "facial-cosmetic-surgery", "note": "Batch 2: 25 FAQ — Facial Lift."},
+    "8573": {"topic": "facial-cosmetic-surgery", "note": "Batch 2: Botox for Bruxism."},
+    "8566": {"topic": "facial-cosmetic-surgery", "note": "Batch 2: Fat Injection Types."},
+    "13926": {"topic": "facial-cosmetic-surgery", "note": "Batch 2: Chin Surgery / Chin Implant Options."},
+    "13992": {"topic": "orthognathic-surgery", "note": "Batch 2: Is Jaw Surgery Dangerous?"},
+    "13705": {"topic": "orthognathic-surgery", "note": "Batch 2: Condylar Hyperplasia."},
+    "13922": {"topic": "advanced-dental-implant", "note": "Batch 2: Sinus Lift and Dental Implant."},
+    "14043": {"topic": "orthognathic-surgery", "note": "Batch 2: Minimally Invasive Jaw Surgery."},
+    "13745": {"topic": "advanced-dental-implant", "note": "Batch 2: Implant vs Natural Tooth."},
+    "13741": {"topic": "orthognathic-surgery", "note": "Batch 2: Orthognathic Jaw Surgery: Stages and Process."},
 }
 
 TAG_RE = re.compile(r"<[^>]+>")

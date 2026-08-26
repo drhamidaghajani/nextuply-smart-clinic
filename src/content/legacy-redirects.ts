@@ -17,7 +17,7 @@
  * had one; Next's routing does not) — src/middleware.ts normalizes incoming
  * pathnames the same way before looking up this map.
  *
- * 276 entries: 26 from the phase-1
+ * 278 entries: 26 from the phase-1
  * P0-LAUNCH spec (legacy-redirects-spec.csv), 3 resolved by Hamid's
  * explicit decisions (2026-08-23) that were originally P0-blocked (the
  * بلفاروپلاستی collision, the fat-injection FAQ collision's Persian post,
@@ -60,7 +60,7 @@ export const LEGACY_REDIRECTS: Readonly<Record<string, string>> = {
   "/25-سوال-متداول-در-مورد-جراحی-دندان-عقل-نه": "/knowledge/25-سوال-متداول-در-مورد-جراحی-دندان-عقل-نه", // phase-1 spec
   "/25-سوال-متداول-در-مورد-جراحی-زیبایی-بین": "/knowledge/25-سوال-متداول-در-مورد-جراحی-زیبایی-بین", // phase-1 spec
   "/25-سوال-متداول-در-مورد-جراحی-لیفت-ابرو-و-ش": "/knowledge/25-سوال-متداول-در-مورد-جراحی-لیفت-ابرو-و-ش", // phase-1 spec
-  "/25-سوال-متداول-در-مورد-جراحی-لیفت-صورت-که": "/services/facial-cosmetic-surgery", // P0 broad audit 2026-08-26
+  "/25-سوال-متداول-در-مورد-جراحی-لیفت-صورت-که": "/knowledge/25-سوال-متداول-در-مورد-جراحی-لیفت-صورت-که", // Batch 2 Knowledge Center migration 2026-08-26
   "/25-سوال-متداول-در-مورد-جراحی-لیفت-صورت-که/photo_2024-07-15_20-57-10": "/services/facial-cosmetic-surgery", // P0 broad audit 2026-08-26
   "/25-سوال-متداول-در-مورد-جراحی-چانه-و-زاویه": "/knowledge/25-سوال-متداول-در-مورد-جراحی-چانه-و-زاویه", // phase-1 spec
   "/25-سوال-متداول-در-مورد-جراحی-چانه-و-زاویه-2": "/knowledge/25-سوال-متداول-در-مورد-جراحی-چانه-و-زاویه", // P0 broad audit 2026-08-26
@@ -79,11 +79,12 @@ export const LEGACY_REDIRECTS: Readonly<Record<string, string>> = {
   "/blog/جراحی-زیبایی/جراحی-زیبایی-بینی": "/services/rhinoplasty", // P0 broad audit 2026-08-26
   "/blog/جراحی-فک": "/services/orthognathic-surgery", // P0 broad audit 2026-08-26
   "/blog/دسته-بندی-نشده/سینوس-لیفت": "/services/facial-cosmetic-surgery", // P0 broad audit 2026-08-26
-  "/comprehensive-guide-to-lower-jaw-surgery-everything-you-need-to-know": "/services/orthognathic-surgery", // P0 broad audit 2026-08-26
+  "/cas-چیست-و-کاربرد-های-آن": "/knowledge/جراحی-فک-دیجیتال", // Batch 2 Knowledge Center migration 2026-08-26
+  "/comprehensive-guide-to-lower-jaw-surgery-everything-you-need-to-know": "/en/knowledge/recessed-lower-jaw-causes-symptoms-and-treatment", // Batch 2 Knowledge Center migration 2026-08-26
   "/contact/special-equipment-for-a-dentist-dentist-office": "/contact", // P0 broad audit 2026-08-26
   "/dall·e-2024-11-20-01-14-58-a-clean-and-visually-appealing-illustration-about-wisdom-teeth-showing-the-anatomy-of-the-jaw-and-the-position-of-wisdom-teeth-without-any-text-or-lo-2": "/about", // P0 broad audit 2026-08-26
   "/dall·e-2024-11-30-16-33-45-a-realistic-close-up-depiction-of-an-impacted-wisdom-tooth-causing-gum-swelling-and-discomfort-the-focus-is-on-a-detailed-dental-anatomy-with-the-su-2": "/services/impacted-tooth-surgery", // P0 broad audit 2026-08-26
-  "/digital-technology-in-corrective-facial-asymmetry-surgery": "/services/facial-reconstruction-surgery", // P0 broad audit 2026-08-26
+  "/digital-technology-in-corrective-facial-asymmetry-surgery": "/en/knowledge/facial-asymmetry-due-to-trauma-causes-diagnosis-and-treatment", // Batch 2 Knowledge Center migration 2026-08-26
   "/en/25-سوال-متداول-در-مورد-جراحی-تزریق-چربی": "/en/services/facial-cosmetic-surgery", // P0 broad audit 2026-08-26
   "/en/comprehensive-guide-to-lower-jaw-surgery-everything-you-need-to-know": "/en/services/orthognathic-surgery", // P0 broad audit 2026-08-26
   "/en/dall·e-2024-11-20-01-14-58-a-clean-and-visually-appealing-illustration-about-wisdom-teeth-showing-the-anatomy-of-the-jaw-and-the-position-of-wisdom-teeth-without-any-text-or-lo-2": "/en/about", // P0 broad audit 2026-08-26
@@ -108,30 +109,30 @@ export const LEGACY_REDIRECTS: Readonly<Record<string, string>> = {
   "/european-nose-job": "/knowledge/european-nose-job", // phase-1 spec
   "/european-nose-job-what-is-it-and-who-is-it-for": "/services/rhinoplasty", // P0 broad audit 2026-08-26
   "/eyebrow-gliding-lift": "/services/facial-cosmetic-surgery", // P0 broad audit 2026-08-26
-  "/facial-asymmetry-due-to-trauma-causes-diagnosis-and-treatment": "/services/facial-reconstruction-surgery", // P0 broad audit 2026-08-26
+  "/facial-asymmetry-due-to-trauma-causes-diagnosis-and-treatment": "/en/knowledge/facial-asymmetry-due-to-trauma-causes-diagnosis-and-treatment", // Batch 2 Knowledge Center migration 2026-08-26
   "/facial-rejuvenation-with-fillers-a-quick-and-effective-path-to-natural-beauty-in-tehran-and-tabriz": "/services/facial-cosmetic-surgery", // P0 broad audit 2026-08-26
   "/genioplasty-aftercare": "/care-instructions/genioplasty-care", // P0 broad audit 2026-08-26
   "/implant-cost-tabriz": "/services/advanced-dental-implant", // P0 broad audit 2026-08-26
   "/installment-dental-implant": "/services/advanced-dental-implant", // P0 broad audit 2026-08-26
   "/jaw-clicking-and-tmj-disorders-causes-treatments-and-solutions": "/services/orthognathic-surgery", // P0 broad audit 2026-08-26
-  "/lower-jaw-surgery-for-receding-jaw-improving-function-and-aesthetics": "/services/orthognathic-surgery", // P0 broad audit 2026-08-26
+  "/lower-jaw-surgery-for-receding-jaw-improving-function-and-aesthetics": "/en/knowledge/recessed-lower-jaw-causes-symptoms-and-treatment", // Batch 2 Knowledge Center migration 2026-08-26
   "/optimal-timing-for-wisdom-tooth-surgery-jaw-surgery-and-dental-implants-during-orthodontic-treatment": "/services/impacted-tooth-surgery", // P0 broad audit 2026-08-26
   "/post-surgery-jaw-physiotherapy-a-comprehensive-guide-for-faster-recovery-with-effective-exercises": "/care-instructions/jaw-physiotherapy", // P0 broad audit 2026-08-26
   "/receding-jaw-surgery-recovery-and-long-term-results": "/care-instructions/jaw-surgery-care", // P0 broad audit 2026-08-26
-  "/recessed-lower-jaw-causes-symptoms-and-treatment": "/services/orthognathic-surgery", // P0 broad audit 2026-08-26
+  "/recessed-lower-jaw-causes-symptoms-and-treatment": "/en/knowledge/recessed-lower-jaw-causes-symptoms-and-treatment", // Batch 2 Knowledge Center migration 2026-08-26
   "/recovery-period-of-chin-surgery-comparison-with-chin-implants-and-expertise-of-dr-alireza-sedighi": "/care-instructions/genioplasty-care", // P0 broad audit 2026-08-26
   "/sinos-lift-2": "/services/facial-cosmetic-surgery", // P0 broad audit 2026-08-26
   "/sinus-lift-care": "/care-instructions/sinus-lift-care", // P0 broad audit 2026-08-26
   "/sinus-lift-surgery-pre-post-care-guide": "/care-instructions/sinus-lift-care", // P0 broad audit 2026-08-26
   "/tag/جراحی-ایمپلنت-تبریز": "/services/advanced-dental-implant", // phase-1 spec
   "/tag/متخصص-دندان-تبریز": "/about", // decision override 2026-08-23
-  "/treatment-of-facial-asymmetry-solutions-the-role-of-nuclear-medicine-scans-and-the-appropriate-age-for-jaw-surgery": "/services/facial-reconstruction-surgery", // P0 broad audit 2026-08-26
+  "/treatment-of-facial-asymmetry-solutions-the-role-of-nuclear-medicine-scans-and-the-appropriate-age-for-jaw-surgery": "/en/knowledge/facial-asymmetry-due-to-trauma-causes-diagnosis-and-treatment", // Batch 2 Knowledge Center migration 2026-08-26
   "/why-choose-dr-alireza-sedighi-for-jaw-surgery-a-top-choice-for-precision-and-excellence": "/services/orthognathic-surgery", // P0 broad audit 2026-08-26
   "/آشنایی-با-انواع-عمل-جراحی-زیبایی-صورت": "/services/facial-cosmetic-surgery", // P0 broad audit 2026-08-26
   "/آیا-جراحی-فک-خطرناک-است؟": "/services/orthognathic-surgery", // P0 broad audit 2026-08-26
   "/آیا-جراحی-فک-خطرناک-است؟/آیا-جراحی-فک-خطرناک-است؟": "/services/orthognathic-surgery", // P0 broad audit 2026-08-26
   "/اموزش-دوره-ها-تخصصی-ایمپلنت": "/services/advanced-dental-implant", // P0 broad audit 2026-08-26
-  "/انواع-تزریق-چربی-میکروفت،-نانوفت-و-سای": "/services/facial-cosmetic-surgery", // P0 broad audit 2026-08-26
+  "/انواع-تزریق-چربی-میکروفت،-نانوفت-و-سای": "/knowledge/انواع-تزریق-چربی-میکروفت،-نانوفت-و-سای", // Batch 2 Knowledge Center migration 2026-08-26
   "/انواع-تزریق-چربی-میکروفت،-نانوفت-و-سای/charbi": "/services/facial-cosmetic-surgery", // P0 broad audit 2026-08-26
   "/انواع-روش-های-جراحی-چانه": "/services/facial-cosmetic-surgery", // P0 broad audit 2026-08-26
   "/انواع-روش-های-جراحی-چانه/untitled-3": "/services/facial-cosmetic-surgery", // P0 broad audit 2026-08-26
@@ -175,9 +176,9 @@ export const LEGACY_REDIRECTS: Readonly<Record<string, string>> = {
   "/بهترین-متخصص-ایپلنت-تبریز-و-معرفی-دکت": "/about", // P0 broad audit 2026-08-26
   "/بوتاکس": "/services/facial-cosmetic-surgery", // P0 broad audit 2026-08-26
   "/بوتاکس-برای-جوانسازی-پیشانی-و-دور-چشم-ر": "/services/facial-cosmetic-surgery", // P0 broad audit 2026-08-26
-  "/بیماری-کندیلار-هایپرپلاژیا-علل،-تشخی": "/services/orthognathic-surgery", // P0 broad audit 2026-08-26
+  "/بیماری-کندیلار-هایپرپلاژیا-علل،-تشخی": "/knowledge/بیماری-کندیلار-هایپرپلاژیا-علل،-تشخی", // Batch 2 Knowledge Center migration 2026-08-26
   "/تازه-های-فک-و-صورت": "/services/orthognathic-surgery", // P0 broad audit 2026-08-26
-  "/تزریق-بوتاکس-برای-از-بین-بردن-دندان-قرو": "/services/facial-cosmetic-surgery", // P0 broad audit 2026-08-26
+  "/تزریق-بوتاکس-برای-از-بین-بردن-دندان-قرو": "/knowledge/تزریق-بوتاکس-برای-از-بین-بردن-دندان-قرو", // Batch 2 Knowledge Center migration 2026-08-26
   "/تزریق-بوتاکس-برای-از-بین-بردن-دندان-قرو/botox-injection-for": "/services/facial-cosmetic-surgery", // P0 broad audit 2026-08-26
   "/تزریق-فیلر": "/services/facial-cosmetic-surgery", // P0 broad audit 2026-08-26
   "/تفاوت-جراحی-دندان-عقل-با-کشیدن-ساده": "/services/impacted-tooth-surgery", // P0 broad audit 2026-08-26
@@ -187,27 +188,28 @@ export const LEGACY_REDIRECTS: Readonly<Record<string, string>> = {
   "/توضیحاتی-در-مورد-ایمپلنت-دیجیتال": "/services/advanced-dental-implant", // P0 broad audit 2026-08-26
   "/جراحی-ایمپلنت": "/services/advanced-dental-implant", // P0 broad audit 2026-08-26
   "/جراحی-ایمپلنت-2": "/services/advanced-dental-implant", // P0 broad audit 2026-08-26
+  "/جراحی-بازسازی-نواقص-صورت-بازگرداندن": "/knowledge/ناقرینگیهای-ناشی-از-تروما-به-صورت-عل", // Batch 2 Knowledge Center migration 2026-08-26
   "/جراحی-بلفاروپلاستی": "/services/facial-cosmetic-surgery", // P0 broad audit 2026-08-26
   "/جراحی-بینی": "/services/rhinoplasty", // P0 broad audit 2026-08-26
   "/جراحی-بینی-به-سایت-اروپایی-زیبایی-و-تقا": "/services/rhinoplasty", // P0 broad audit 2026-08-26
   "/جراحی-بینی-به-سبک-اروپایی-زیبایی-و-تقا": "/knowledge/جراحی-بینی-به-سبک-اروپایی-زیبایی-و-تقا", // phase-1 spec
   "/جراحی-بینی-به-سبک-اروپایی-زیبایی-و-تقا/photo_2024-07-29_12-16-45": "/services/rhinoplasty", // P0 broad audit 2026-08-26
-  "/جراحی-جلوآمدگی-فک-پایین": "/services/orthognathic-surgery", // P0 broad audit 2026-08-26
-  "/جراحی-جلوآمدگی-فک-پایین-2": "/services/orthognathic-surgery", // P0 broad audit 2026-08-26
+  "/جراحی-جلوآمدگی-فک-پایین": "/knowledge/جراحی-جلوآمدگی-فک-پایین-2", // Batch 2 Knowledge Center migration 2026-08-26
+  "/جراحی-جلوآمدگی-فک-پایین-2": "/knowledge/جراحی-جلوآمدگی-فک-پایین-2", // Batch 2 Knowledge Center migration 2026-08-26
   "/جراحی-دندان-عقل": "/services/impacted-tooth-surgery", // P0 broad audit 2026-08-26
   "/جراحی-دندان-عقل-با-بیهوشی-در-تبریز": "/knowledge/جراحی-دندان-عقل-با-بیهوشی-در-تبریز", // phase-1 spec
   "/جراحی-دندان-عقل-با-بیهوشی-در-تبریز/)": "/services/impacted-tooth-surgery", // P0 broad audit 2026-08-26
   "/جراحی-دندان-عقل-با-بیهوشی-در-تبریز/جراحی-دندان-عقل-با-بیهوشی-در-تبریز": "/services/impacted-tooth-surgery", // P0 broad audit 2026-08-26
   "/جراحی-دندان-عقل-در-تهران-و-تبریز-چرا-ان": "/services/impacted-tooth-surgery", // P0 broad audit 2026-08-26
-  "/جراحی-دیجیتال-فک": "/services/orthognathic-surgery", // P0 broad audit 2026-08-26
+  "/جراحی-دیجیتال-فک": "/knowledge/جراحی-فک-دیجیتال", // Batch 2 Knowledge Center migration 2026-08-26
   "/جراحی-زیبایی-بینی": "/services/rhinoplasty", // P0 production incident fix 2026-08-26
   "/جراحی-زیبایی-بینی-راهنمای-کامل-عمل-بین": "/services/rhinoplasty", // P0 broad audit 2026-08-26
   "/جراحی-سینوس-لیفت-چیست؟": "/services/facial-cosmetic-surgery", // P0 broad audit 2026-08-26
   "/جراحی-فک-2": "/services/orthognathic-surgery", // P0 broad audit 2026-08-26
-  "/جراحی-فک-ارتوگناتیک-مراحل-و-روند-درما": "/services/orthognathic-surgery", // P0 broad audit 2026-08-26
-  "/جراحی-فک-به-روش-دیجیتال": "/services/orthognathic-surgery", // P0 broad audit 2026-08-26
-  "/جراحی-فک-خطرناک": "/services/orthognathic-surgery", // P0 broad audit 2026-08-26
-  "/جراحی-فک-دیجیتال": "/services/orthognathic-surgery", // P0 broad audit 2026-08-26
+  "/جراحی-فک-ارتوگناتیک-مراحل-و-روند-درما": "/knowledge/جراحی-فک-ارتوگناتیک-مراحل-و-روند-درما", // Batch 2 Knowledge Center migration 2026-08-26
+  "/جراحی-فک-به-روش-دیجیتال": "/knowledge/جراحی-فک-دیجیتال", // Batch 2 Knowledge Center migration 2026-08-26
+  "/جراحی-فک-خطرناک": "/knowledge/جراحی-فک-خطرناک", // Batch 2 Knowledge Center migration 2026-08-26
+  "/جراحی-فک-دیجیتال": "/knowledge/جراحی-فک-دیجیتال", // Batch 2 Knowledge Center migration 2026-08-26
   "/جراحی-فک-دیجیتال-انقلابی-در-دقت-و-نتایج": "/services/orthognathic-surgery", // P0 broad audit 2026-08-26
   "/جراحی-فک-نی-نی-سایت": "/knowledge/جراحی-فک-نی-نی-سایت", // phase-1 spec
   "/جراحی-فک-نی-نی-سایت/جراحی-فک-نی-نی-سایت": "/services/orthognathic-surgery", // P0 broad audit 2026-08-26
@@ -221,11 +223,11 @@ export const LEGACY_REDIRECTS: Readonly<Record<string, string>> = {
   "/جراحی-فک-پایین-عقب-رفته-راهی-برای-بهبود": "/knowledge/جراحی-فک-پایین-عقب-رفته", // historical slug variant, stage-2 unmatched-gsc-priority.csv
   "/جراحی-فک-پایین-عقب-رفته-راهی-برای-بهبود/جراحی-فک-پایین-عقب-رفته-راهی-برای-بهبود": "/services/orthognathic-surgery", // P0 broad audit 2026-08-26
   "/جراحی-فک-چیست-و-چرا-انجام-میشود؟": "/services/orthognathic-surgery", // P0 broad audit 2026-08-26
-  "/جراحی-فک-کم-تهاجمی": "/services/orthognathic-surgery", // P0 broad audit 2026-08-26
+  "/جراحی-فک-کم-تهاجمی": "/knowledge/جراحی-فک-کم-تهاجمی", // Batch 2 Knowledge Center migration 2026-08-26
   "/جراحی-فک-کمتهاجمی-روشی-نوین-برای-درم": "/services/orthognathic-surgery", // P0 broad audit 2026-08-26
-  "/جراحی-ناقرینگیهای-صورت-رویکردها-و-م": "/services/facial-reconstruction-surgery", // P0 broad audit 2026-08-26
+  "/جراحی-ناقرینگیهای-صورت-رویکردها-و-م": "/knowledge/ناقرینگیهای-ناشی-از-تروما-به-صورت-عل", // Batch 2 Knowledge Center migration 2026-08-26
   "/جراحی-ناقرینگیهای-صورت-رویکردها-و-م/برای-غیر-قرینگی": "/services/facial-reconstruction-surgery", // P0 broad audit 2026-08-26
-  "/جراحی-چانه-پروتز-فیلر-جینیوپلاستی": "/services/facial-cosmetic-surgery", // P0 broad audit 2026-08-26
+  "/جراحی-چانه-پروتز-فیلر-جینیوپلاستی": "/knowledge/جراحی-چانه-پروتز-فیلر-جینیوپلاستی", // Batch 2 Knowledge Center migration 2026-08-26
   "/جراحی-چانه،-پروتز-چانه،-فیلر-و-جینیوپل": "/services/facial-cosmetic-surgery", // P0 broad audit 2026-08-26
   "/جوانسازی-صورت-با-فیلر-تهران-و-تبریز": "/services/facial-cosmetic-surgery", // P0 broad audit 2026-08-26
   "/جوانسازی-صورت-با-فیلر-راهی-سریع-و-مؤثر": "/services/facial-cosmetic-surgery", // P0 broad audit 2026-08-26
@@ -233,7 +235,7 @@ export const LEGACY_REDIRECTS: Readonly<Record<string, string>> = {
   "/خدمات-زیبایی": "/services", // P0 production incident fix 2026-08-26
   "/خدمات-ما": "/services", // P0 broad audit 2026-08-26
   "/درد-دندان-عقل": "/services/impacted-tooth-surgery", // P0 broad audit 2026-08-26
-  "/درمان-غیر-قرینگی-صورت-راهکارها،-نقش-اس": "/services/facial-reconstruction-surgery", // P0 broad audit 2026-08-26
+  "/درمان-غیر-قرینگی-صورت-راهکارها،-نقش-اس": "/knowledge/ناقرینگیهای-ناشی-از-تروما-به-صورت-عل", // Batch 2 Knowledge Center migration 2026-08-26
   "/دوره-نقاهت-جراحی-چانه،-مقایسه-با-پروتز": "/care-instructions/genioplasty-care", // P0 broad audit 2026-08-26
   "/دکتر-علیرضا-صدیقی-2": "/about", // P0 broad audit 2026-08-26
   "/دکتر-علیرضا-صدیقی/23-2": "/about", // P0 broad audit 2026-08-26
@@ -252,8 +254,8 @@ export const LEGACY_REDIRECTS: Readonly<Record<string, string>> = {
   "/دکتر-علیرضا-صدیقی/rezayat1_64_11zon": "/about", // P0 broad audit 2026-08-26
   "/دکتر-علیرضا-صدیقی/لیفت-ابرو_5": "/about", // P0 broad audit 2026-08-26
   "/دکتر-علیرضا-صدیقی/لیفت-صورت-2": "/about", // P0 broad audit 2026-08-26
-  "/راهنمای-جامع-ایمپلنت-دندان-در-تبریز": "/services/advanced-dental-implant", // P0 broad audit 2026-08-26
-  "/راهنمای-جامع-ایمپلنت-دندان-در-تبریز-2": "/services/advanced-dental-implant", // P0 broad audit 2026-08-26
+  "/راهنمای-جامع-ایمپلنت-دندان-در-تبریز": "/knowledge/راهنمای-جامع-ایمپلنت-دندان-در-تبریز", // Batch 2 Knowledge Center migration 2026-08-26
+  "/راهنمای-جامع-ایمپلنت-دندان-در-تبریز-2": "/knowledge/راهنمای-جامع-ایمپلنت-دندان-در-تبریز", // Batch 2 Knowledge Center migration 2026-08-26
   "/راهنمای-جامع-ایمپلنت-دندان-در-تبریز-مع": "/services/advanced-dental-implant", // P0 broad audit 2026-08-26
   "/راهنمای-جامع-جراحی-فک-پایین-جلو-آمده-هر": "/knowledge/جراحی-فک-پایین-جلو-آمده", // rank-math redirect id 19
   "/راهنمای-جامع-جراحی-فک-پایین-جلو-آمده-هر/راهنمای-جامع-جراحی-فک-پایین-جلو-آمده-هر": "/services/orthognathic-surgery", // P0 broad audit 2026-08-26
@@ -272,7 +274,7 @@ export const LEGACY_REDIRECTS: Readonly<Record<string, string>> = {
   "/سوالات-متداول-ایمپلنت": "/services/advanced-dental-implant", // P0 broad audit 2026-08-26
   "/سوالات-متداول-بلفاروپلاستی": "/services/facial-cosmetic-surgery", // P0 broad audit 2026-08-26
   "/سینوس-لیفت-تخصصی-و-کاشت-ایمپلنت-دندان-ب": "/services/advanced-dental-implant", // P0 broad audit 2026-08-26
-  "/سینوس-لیفت-و-ایمپلنت-دندان": "/services/advanced-dental-implant", // P0 broad audit 2026-08-26
+  "/سینوس-لیفت-و-ایمپلنت-دندان": "/knowledge/سینوس-لیفت-و-ایمپلنت-دندان", // Batch 2 Knowledge Center migration 2026-08-26
   "/سینوس-لیفت-چیست؟": "/services/facial-cosmetic-surgery", // P0 broad audit 2026-08-26
   "/شکاف-لب-و-کام-چیست؟": "/services/facial-reconstruction-surgery", // P0 broad audit 2026-08-26
   "/شکاف-لب-و-کام-چیست؟/d067f6de43bb2ff994f11414142d60ab-cleft-lip-palate": "/services/facial-reconstruction-surgery", // P0 broad audit 2026-08-26
@@ -285,7 +287,7 @@ export const LEGACY_REDIRECTS: Readonly<Record<string, string>> = {
   "/عمل-بینی-اروپایی-چیست-و-برای-چه-چهرهه": "/knowledge/european-nose-job", // rank-math redirect id 35
   "/عوارض-ایمپلنت-دندان": "/services/advanced-dental-implant", // P0 broad audit 2026-08-26
   "/عوارض-ایمپلنت-دندان-واقعیت-یا-نگرانی-ب": "/services/advanced-dental-implant", // P0 broad audit 2026-08-26
-  "/فک-پایین-عقبرفته": "/services/orthognathic-surgery", // P0 broad audit 2026-08-26
+  "/فک-پایین-عقبرفته": "/knowledge/فک-پایین-عقبرفته", // Batch 2 Knowledge Center migration 2026-08-26
   "/فک-پایین-عقبرفته-چیست؟-دلایل،-علائم": "/services/orthognathic-surgery", // P0 broad audit 2026-08-26
   "/فیزیوتراپی-بعد-از-جراحی-فک": "/knowledge/فیزیوتراپی-بعد-از-جراحی-فک", // phase-1 spec
   "/فیزیوتراپی-بعد-از-جراحی-فک-راقنمای-کام": "/care-instructions/jaw-physiotherapy", // P0 broad audit 2026-08-26
@@ -313,9 +315,9 @@ export const LEGACY_REDIRECTS: Readonly<Record<string, string>> = {
   "/مزایای-جراحی-فک-و-معرفی-بهترین-جراح-فک،": "/about", // P0 broad audit 2026-08-26
   "/مقالات": "/knowledge", // P0 broad audit 2026-08-26
   "/مقالات-2": "/knowledge", // P0 broad audit 2026-08-26
-  "/مقایسه-ایمپلنت-و-دندان-طبیعی-بررسی-تفا": "/services/advanced-dental-implant", // P0 broad audit 2026-08-26
+  "/مقایسه-ایمپلنت-و-دندان-طبیعی-بررسی-تفا": "/knowledge/مقایسه-ایمپلنت-و-دندان-طبیعی-بررسی-تفا", // Batch 2 Knowledge Center migration 2026-08-26
   "/موفقیت-۱۳-واحد-ایمپلنت-پساز-دو-سال-بی": "/services/advanced-dental-implant", // P0 broad audit 2026-08-26
-  "/ناقرینگیهای-ناشی-از-تروما-به-صورت-عل": "/services/facial-reconstruction-surgery", // P0 broad audit 2026-08-26
+  "/ناقرینگیهای-ناشی-از-تروما-به-صورت-عل": "/knowledge/ناقرینگیهای-ناشی-از-تروما-به-صورت-عل", // Batch 2 Knowledge Center migration 2026-08-26
   "/نمونه-درمان": "/before-after", // P0 production incident fix 2026-08-26
   "/نمونه-درمان/n13": "/before-after", // P0 broad audit 2026-08-26
   "/نمونه-درمان/n27": "/before-after", // P0 broad audit 2026-08-26
@@ -323,7 +325,7 @@ export const LEGACY_REDIRECTS: Readonly<Record<string, string>> = {
   "/همه-آنچه-باید-در-مورد-ایمپلنت-دندان-بدا": "/services/advanced-dental-implant", // P0 broad audit 2026-08-26
   "/همه-چیز-در-مورد-دندان-عقل": "/services/impacted-tooth-surgery", // P0 broad audit 2026-08-26
   "/همه-چیز-در-مورد-رینوپلاستی": "/services/rhinoplasty", // P0 broad audit 2026-08-26
-  "/همهچیز-درباره-دندان-عقل-زمان-مناسب-ب": "/about", // P0 broad audit 2026-08-26
+  "/همهچیز-درباره-دندان-عقل-زمان-مناسب-ب": "/knowledge/تفاوت-کشیدن-دندان-و-جراحی-دندان-عقل", // P0 broad audit 2026-08-26
   "/همهچیز-درباره-دندان-عقل-زمان-مناسب-ب/dall·e-2024-11-20-01-14-58-a-clean-and-visually-appealing-illustration-about-wisdom-teeth-showing-the-anatomy-of-the-jaw-and-the-position-of-wisdom-teeth-without-any-text-or-lo": "/about", // P0 broad audit 2026-08-26
   "/پروتز-گونه": "/services/facial-cosmetic-surgery", // P0 broad audit 2026-08-26
   "/پیوند-استخوان-برای-ایمپلنتهای-دندان": "/services/advanced-dental-implant", // P0 broad audit 2026-08-26

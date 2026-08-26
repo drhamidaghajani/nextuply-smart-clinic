@@ -331,12 +331,53 @@ P0_BROAD_AUDIT_20260826 = {
     "/همه-آنچه-باید-در-مورد-ایمپلنت-دندان-بدا": "/services/advanced-dental-implant",  # keyword-bucket fallback (matched: ایمپلنت); 0c/2i
     "/همه-چیز-در-مورد-دندان-عقل": "/services/impacted-tooth-surgery",  # keyword-bucket fallback (matched: دندان-عقل); 6c/348i
     "/همه-چیز-در-مورد-رینوپلاستی": "/services/rhinoplasty",  # keyword-bucket fallback (matched: رینوپلاستی); 0c/2i
-    "/همهچیز-درباره-دندان-عقل-زمان-مناسب-ب": "/about",  # keyword-bucket fallback (matched: درباره); 1c/113i
+    "/همهچیز-درباره-دندان-عقل-زمان-مناسب-ب": "/knowledge/تفاوت-کشیدن-دندان-و-جراحی-دندان-عقل",  # FIX 2026-08-26 (Batch 2): was "/about" — a false match on "درباره" in this bucket's own keyword rule. Genuine wisdom-tooth-timing article; closest existing migrated match is Batch 1's تفاوت-کشیدن-دندان-و-جراحی-دندان-عقل. 1c/113i
     "/همهچیز-درباره-دندان-عقل-زمان-مناسب-ب/dall·e-2024-11-20-01-14-58-a-clean-and-visually-appealing-illustration-about-wisdom-teeth-showing-the-anatomy-of-the-jaw-and-the-position-of-wisdom-teeth-without-any-text-or-lo": "/about",  # keyword-bucket fallback (matched: درباره); 0c/1i
     "/پروتز-گونه": "/services/facial-cosmetic-surgery",  # keyword-bucket fallback (matched: گونه); 21c/5521i
     "/پیوند-استخوان-برای-ایمپلنتهای-دندان": "/services/advanced-dental-implant",  # keyword-bucket fallback (matched: ایمپلنت); 0c/12i
     "/چرا-دندان-عقل-درد-میکند؟-دلایل-و-راه": "/services/impacted-tooth-surgery",  # keyword-bucket fallback (matched: دندان-عقل); 0c/39i
     "/چرا-دکتر-علیرضا-صدیقی-را-برای-جراحی-فک-ا": "/about",  # keyword-bucket fallback (matched: چرا-دکتر); 39c/1723i
+}
+
+# Batch 2 Knowledge Center migration (2026-08-26): the 15 approved final
+# articles, several consolidating duplicate/near-duplicate WP permalinks
+# into one final article (see extract_articles.py's TARGETS "extra_legacy"
+# entries and merge-recommendations.csv for the full consolidation trail).
+# English-source duplicate permalinks redirect to the /en/knowledge/...
+# translation route, never to the bare Persian one — a real English
+# translation now exists for those two clusters, so the earlier P0 broad-
+# audit's bare/Persian fallback (P0_BROAD_AUDIT_20260826 above) is
+# superseded here by a more specific, better destination for these paths.
+BATCH_2_KNOWLEDGE_MIGRATION_20260826 = {
+    "/جراحی-فک-دیجیتال": "/knowledge/جراحی-فک-دیجیتال",  # Batch 2 article: Digital Jaw Surgery / CAS Technology (primary source)
+    "/جراحی-دیجیتال-فک": "/knowledge/جراحی-فک-دیجیتال",  # Batch 2: consolidated duplicate
+    "/جراحی-فک-به-روش-دیجیتال": "/knowledge/جراحی-فک-دیجیتال",  # Batch 2: consolidated duplicate
+    "/cas-چیست-و-کاربرد-های-آن": "/knowledge/جراحی-فک-دیجیتال",  # Batch 2: consolidated duplicate (57 clicks, thinner content, folded into the richer article)
+    "/ناقرینگیهای-ناشی-از-تروما-به-صورت-عل": "/knowledge/ناقرینگیهای-ناشی-از-تروما-به-صورت-عل",  # Batch 2 article: Facial Asymmetry Due to Trauma (primary source)
+    "/جراحی-ناقرینگیهای-صورت-رویکردها-و-م": "/knowledge/ناقرینگیهای-ناشی-از-تروما-به-صورت-عل",  # Batch 2: consolidated duplicate
+    "/درمان-غیر-قرینگی-صورت-راهکارها،-نقش-اس": "/knowledge/ناقرینگیهای-ناشی-از-تروما-به-صورت-عل",  # Batch 2: consolidated duplicate
+    "/جراحی-بازسازی-نواقص-صورت-بازگرداندن": "/knowledge/ناقرینگیهای-ناشی-از-تروما-به-صورت-عل",  # Batch 2: consolidated duplicate
+    "/facial-asymmetry-due-to-trauma-causes-diagnosis-and-treatment": "/en/knowledge/facial-asymmetry-due-to-trauma-causes-diagnosis-and-treatment",  # Batch 2: EN translation source (real English WP post, mechanically extracted)
+    "/treatment-of-facial-asymmetry-solutions-the-role-of-nuclear-medicine-scans-and-the-appropriate-age-for-jaw-surgery": "/en/knowledge/facial-asymmetry-due-to-trauma-causes-diagnosis-and-treatment",  # Batch 2: EN duplicate, redirected to the EN translation route
+    "/digital-technology-in-corrective-facial-asymmetry-surgery": "/en/knowledge/facial-asymmetry-due-to-trauma-causes-diagnosis-and-treatment",  # Batch 2: EN duplicate, redirected to the EN translation route
+    "/فک-پایین-عقبرفته": "/knowledge/فک-پایین-عقبرفته",  # Batch 2 article: Recessed Lower Jaw / Retrognathia (primary source)
+    "/recessed-lower-jaw-causes-symptoms-and-treatment": "/en/knowledge/recessed-lower-jaw-causes-symptoms-and-treatment",  # Batch 2: EN translation source (real English WP post, mechanically extracted)
+    "/lower-jaw-surgery-for-receding-jaw-improving-function-and-aesthetics": "/en/knowledge/recessed-lower-jaw-causes-symptoms-and-treatment",  # Batch 2: EN duplicate, redirected to the EN translation route
+    "/comprehensive-guide-to-lower-jaw-surgery-everything-you-need-to-know": "/en/knowledge/recessed-lower-jaw-causes-symptoms-and-treatment",  # Batch 2: EN duplicate, redirected to the EN translation route
+    "/جراحی-جلوآمدگی-فک-پایین-2": "/knowledge/جراحی-جلوآمدگی-فک-پایین-2",  # Batch 2 article: Protruding Lower Jaw / Prognathism (primary source)
+    "/جراحی-جلوآمدگی-فک-پایین": "/knowledge/جراحی-جلوآمدگی-فک-پایین-2",  # Batch 2: consolidated duplicate
+    "/راهنمای-جامع-ایمپلنت-دندان-در-تبریز": "/knowledge/راهنمای-جامع-ایمپلنت-دندان-در-تبریز",  # Batch 2 article: Comprehensive Dental Implant Guide in Tabriz (primary source)
+    "/راهنمای-جامع-ایمپلنت-دندان-در-تبریز-2": "/knowledge/راهنمای-جامع-ایمپلنت-دندان-در-تبریز",  # Batch 2: consolidated duplicate
+    "/25-سوال-متداول-در-مورد-جراحی-لیفت-صورت-که": "/knowledge/25-سوال-متداول-در-مورد-جراحی-لیفت-صورت-که",  # Batch 2 article: 25 FAQ — Facial Lift
+    "/تزریق-بوتاکس-برای-از-بین-بردن-دندان-قرو": "/knowledge/تزریق-بوتاکس-برای-از-بین-بردن-دندان-قرو",  # Batch 2 article: Botox for Bruxism
+    "/انواع-تزریق-چربی-میکروفت،-نانوفت-و-سای": "/knowledge/انواع-تزریق-چربی-میکروفت،-نانوفت-و-سای",  # Batch 2 article: Fat Injection Types
+    "/جراحی-چانه-پروتز-فیلر-جینیوپلاستی": "/knowledge/جراحی-چانه-پروتز-فیلر-جینیوپلاستی",  # Batch 2 article: Chin Surgery / Chin Implant Options
+    "/جراحی-فک-خطرناک": "/knowledge/جراحی-فک-خطرناک",  # Batch 2 article: Is Jaw Surgery Dangerous?
+    "/بیماری-کندیلار-هایپرپلاژیا-علل،-تشخی": "/knowledge/بیماری-کندیلار-هایپرپلاژیا-علل،-تشخی",  # Batch 2 article: Condylar Hyperplasia
+    "/سینوس-لیفت-و-ایمپلنت-دندان": "/knowledge/سینوس-لیفت-و-ایمپلنت-دندان",  # Batch 2 article: Sinus Lift and Dental Implant
+    "/جراحی-فک-کم-تهاجمی": "/knowledge/جراحی-فک-کم-تهاجمی",  # Batch 2 article: Minimally Invasive Jaw Surgery
+    "/مقایسه-ایمپلنت-و-دندان-طبیعی-بررسی-تفا": "/knowledge/مقایسه-ایمپلنت-و-دندان-طبیعی-بررسی-تفا",  # Batch 2 article: Implant vs Natural Tooth
+    "/جراحی-فک-ارتوگناتیک-مراحل-و-روند-درما": "/knowledge/جراحی-فک-ارتوگناتیک-مراحل-و-روند-درما",  # Batch 2 article: Orthognathic Jaw Surgery: Stages and Process
 }
 
 def js_str(s: str) -> str:
@@ -386,6 +427,9 @@ def main():
 
     for old_path, new_path in P0_BROAD_AUDIT_20260826.items():
         entries[old_path] = (new_path, "P0 broad audit 2026-08-26")
+
+    for old_path, new_path in BATCH_2_KNOWLEDGE_MIGRATION_20260826.items():
+        entries[old_path] = (new_path, "Batch 2 Knowledge Center migration 2026-08-26")
 
     rank_math_added = 0
     if RANK_MATH_MERGE_CSV.exists():

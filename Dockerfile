@@ -67,7 +67,21 @@ COPY --from=prod-deps /app/node_modules ./node_modules
 # artifact that was built and type-checked is exactly what runs.
 COPY --from=build /app/node_modules/.prisma ./node_modules/.prisma
 COPY --from=build /app/node_modules/@prisma/client ./node_modules/@prisma/client
-COPY --from=build /app/.next ./.next
+# Round 2026-08-27 (P0 production fix) — root cause of the recurring
+# "EACCES: permission denied, mkdir '/app/.next/cache/images'" error: the
+# `build` stage above runs as root (no `USER` set there), so a plain
+# `COPY --from=build` leaves `.next` root-owned in this stage too. Next.js
+# creates `.next/cache/images` LAZILY, on the first optimized-image
+# request at runtime under `next start` — not during `next build` — so by
+# the time `USER nextjs` below takes over, the `nextjs` user has no write
+# permission on `.next/cache` to create that subdirectory into. `--chown`
+# transfers ownership of the whole copied tree at copy time (no extra
+# layer, no runtime `chown -R` cost); the explicit `mkdir -p .../images`
+# right after guarantees the directory itself exists and is nextjs-owned
+# even if a future Next.js version changes when/whether it's lazily
+# created — the same fix applied manually in production, made permanent.
+COPY --from=build --chown=nextjs:nodejs /app/.next ./.next
+RUN mkdir -p /app/.next/cache/images && chown -R nextjs:nodejs /app/.next/cache
 COPY --from=build /app/public ./public
 COPY --from=build /app/package.json ./package.json
 COPY --from=build /app/prisma ./prisma

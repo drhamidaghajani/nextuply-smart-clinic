@@ -9,7 +9,14 @@
 export const REAL_PHOTOS: Partial<Record<string, string>> = {
   "jaw-surgery": "/media/gallery/jaw-surgery.jpg",
   rhinoplasty: "/media/gallery/rhinoplasty.jpeg",
-  "facial-cosmetic": "/media/gallery/facial-cosmetic.png",
+  // Round 2026-08-27 (P0 production performance fix): was `facial-
+  // cosmetic.png` — a 1.46MB PNG for a photograph at the exact same pixel
+  // dimensions as `facial-rejuvenation.jpeg` (66KB) right above it. PNG's
+  // lossless compression is the wrong format for a photo; re-saved as a
+  // JPEG at the same quality this project already uses elsewhere (~85),
+  // same visual content, 174KB — an 88% reduction. `facial-cosmetic.png`
+  // itself is left in place, unreferenced, rather than deleted.
+  "facial-cosmetic": "/media/gallery/facial-cosmetic.jpg",
   "dental-implant": "/media/gallery/dental-implant.jpeg",
   "impacted-tooth": "/media/gallery/impacted-tooth.jpeg",
   "facial-rejuvenation": "/media/gallery/facial-rejuvenation.jpeg",

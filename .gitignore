@@ -102,6 +102,14 @@ public/media/.DS_Store
 !public/media/gallery/dental-implant.jpeg
 !public/media/gallery/dr-sadighi-logo.png
 !public/media/gallery/facial-cosmetic.png
+# 2026-08-27 (P0 production performance fix) — facial-cosmetic.png (1.46MB
+# PNG) recompressed as a JPEG (174KB) at the same dimensions; see
+# gallery-photos.ts's own comment. The .png negation above is now stale
+# (the file it names is no longer referenced by any page) but left in
+# place rather than removed, since removing it has no effect on an
+# already-tracked file and isn't worth the risk of touching unrelated
+# git-tracking state in a performance-fix pass.
+!public/media/gallery/facial-cosmetic.jpg
 !public/media/gallery/facial-rejuvenation.jpeg
 !public/media/gallery/impacted-tooth.jpeg
 !public/media/gallery/jaw-surgery.jpg

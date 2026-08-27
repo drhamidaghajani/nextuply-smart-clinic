@@ -39,6 +39,26 @@ import { Reveal } from "@/components/motion/reveal";
  * round — per the explicit "no heavy animation" instruction for this
  * section, entrance is a plain `Reveal` fade/rise (this project's
  * standard, already used everywhere else), nothing bespoke.
+ *
+ * Round 2026-08-27 (post-deploy regression fix, per Hamid — "the section
+ * is skipped/passed over while scrolling on desktop"): the rebuild above
+ * dropped this section's `snap-section` class along with the fake content
+ * it used to wrap. That class isn't cosmetic — `html:has(.homepage-scroll-
+ * snap)` in globals.css puts the whole homepage into `scroll-snap-type: y
+ * mandatory` on desktop, and every OTHER homepage section still carries
+ * `snap-section` (a defined stop point); without it here, mandatory snap
+ * has nowhere valid to land inside this section's vertical span and jumps
+ * straight through it to the next stop — the exact same bug class already
+ * fixed once before in `case-gallery-section.tsx` (see that file's own
+ * comment: "without it, scrolling past WhyDrSadighiSection had nowhere
+ * snap-valid to land"). Restored here, WITHOUT `h-dvh` — this section's
+ * content is legitimately shorter now (3 cards, not the old 5-item
+ * mosaic), and `case-gallery-section.tsx`/`patient-journey-section.tsx`/
+ * `site-footer.tsx` already prove `snap-section` at a natural, non-full-
+ * viewport height is a normal, safe combination on this page, not a new
+ * pattern invented here. Mobile is unaffected either way — the same
+ * `@media (max-width: 767px)` rule in globals.css already turns mandatory
+ * snap off below the desktop breakpoint.
  */
 
 const PREVIEW_CATEGORIES: readonly BeforeAfterCategory[] = ["rhinoplasty", "jaw-surgery", "facial-reconstruction"];
@@ -79,7 +99,7 @@ export function PatientStoriesSection({
     <section
       data-header-bg="#0f172a"
       dir={LOCALE_DIRECTION[locale]}
-      className="relative overflow-hidden bg-deep-navy px-4 py-16 sm:px-8 sm:py-24"
+      className="snap-section relative overflow-hidden bg-deep-navy px-4 py-16 sm:px-8 sm:py-24"
     >
       <div
         aria-hidden

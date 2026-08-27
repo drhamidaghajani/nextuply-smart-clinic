@@ -505,6 +505,7 @@ export const assistantFlow = {
     closeButtonLabel: "Close assistant",
     back: "Back",
     backToMenu: "Back to main menu",
+    backToMenuMessage: "You're back at the main menu. How can I help you?",
     chooseServiceCta: "Choose a Service",
     serviceSelectionEyebrow: "Choose a Service",
     serviceSelectionTitle: "Which service are you interested in?",

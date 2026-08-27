@@ -492,6 +492,7 @@ export const assistantFlow = {
     closeButtonLabel: "إغلاق المساعد",
     back: "رجوع",
     backToMenu: "العودة إلى القائمة الرئيسية",
+    backToMenuMessage: "لقد عدت إلى القائمة الرئيسية. كيف يمكنني مساعدتك؟",
     chooseServiceCta: "اختر خدمة",
     serviceSelectionEyebrow: "اختيار الخدمة",
     serviceSelectionTitle: "ما الخدمة التي تهمكم؟",

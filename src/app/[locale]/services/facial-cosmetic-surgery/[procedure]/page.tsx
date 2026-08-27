@@ -136,6 +136,22 @@ export default async function FacialCosmeticProcedurePage({
         subtitle={procedure.summary[locale]}
         iconKey={taxonomyItem?.iconKey ?? SERVICE_SLUG}
         photoSrc={procedure.imagePath}
+        // Round 2026-08-27 (post-deploy regression fix, per Hamid — "the
+        // hero image feels boxed with a thick white frame"): `ServiceHero`
+        // defaults to `photoFit="contain"`, which `ServiceVisualPanel`
+        // renders on a cream/white background with inner padding — built
+        // for diagram-style images that must never be cropped, but it
+        // reads as a heavy light box sitting inside this hero's dark
+        // gradient. All 7 procedure photos (including the one flagged
+        // `imageIsPlaceholder`) are verified to be exactly 1586x992 —
+        // precisely this hero's own 16:10 frame — so `"cover"` fills the
+        // frame edge-to-edge with zero cropping, the same treatment these
+        // exact images already get on the parent page's `ProcedureLinkCard`
+        // grid. Scoped to this ONE call site via the existing `photoFit`
+        // prop — `ServiceHero`/`ServiceVisualPanel` themselves are
+        // untouched, so every other service page's hero (which still wants
+        // "contain" for its own gallery photos) is unaffected.
+        photoFit="cover"
         locale={locale}
         breadcrumb={[
           { label: dict.eyebrow, href: localeHref(locale, "/services") },

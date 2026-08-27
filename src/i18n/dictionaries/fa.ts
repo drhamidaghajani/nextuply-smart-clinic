@@ -1285,6 +1285,7 @@ export const fa = {
       closeButtonLabel: "بستن دستیار",
       back: "بازگشت",
       backToMenu: "بازگشت به منوی اصلی",
+      backToMenuMessage: "به منوی اصلی بازگشتید. چطور می‌توانم کمکتان کنم؟",
       chooseServiceCta: "انتخاب خدمت",
       serviceSelectionEyebrow: "انتخاب خدمت",
       serviceSelectionTitle: "کدام خدمت برایتان مدنظر است؟",

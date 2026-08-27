@@ -238,6 +238,8 @@ export interface AssistantFlowDictionary {
     /** One step back within a guided flow (e.g. triage -> service selection) — distinct from `backToMenu`, which always jumps all the way to the main menu. Round 2026-08-26 (assistant Back/Main-menu UX fix). */
     back: string;
     backToMenu: string;
+    /** Round 2026-08-27 (post-deploy regression fix) — the assistant line shown every time "Main Menu" is used, immediately followed by `mainActions` chips, so returning to the menu is never a dead end. */
+    backToMenuMessage: string;
     chooseServiceCta: string;
     serviceSelectionEyebrow: string;
     serviceSelectionTitle: string;

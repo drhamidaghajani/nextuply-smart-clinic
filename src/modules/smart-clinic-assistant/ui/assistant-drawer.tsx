@@ -1348,10 +1348,25 @@ export function AssistantDrawer() {
     })();
   };
 
+  /**
+   * Round 2026-08-27 (post-deploy regression fix, per Hamid — "clicking
+   * the Home icon takes the user to an empty state / shows nothing"):
+   * this used to only flip `mode`/`step` back to "menu"/"general" without
+   * pushing anything new. `renderLiveArea()` has no case for `mode ===
+   * "menu"` (it falls through to `null` by design — the ONLY place the
+   * main menu's chips ever render is a pushed `entries` item), and the
+   * ONE place that ever pushed one (`seedConversation`, the very first
+   * open) only runs once per session. Once the patient moves past that
+   * first entry, returning to "menu" mode landed on a transcript with
+   * nothing actionable below it — a real, reproducible empty state, not
+   * a cosmetic issue. Now pushes a fresh menu entry every time, so
+   * "Main Menu" always lands on populated options, never a dead end.
+   */
   const handleBackToMenu = () => {
     setMode("menu");
     setStep("general");
     setReturnStep(null);
+    pushEntry({ kind: "assistant", text: dict.ui.backToMenuMessage, chips: mainMenuChips() });
   };
 
   /**
@@ -1573,27 +1588,23 @@ export function AssistantDrawer() {
     return null;
   };
 
-  const showBack = mode !== "menu";
   /**
-   * Round 2026-08-26 (assistant Back/Main-menu UX fix) — a distinct
-   * one-step-back icon only shows up in the header when there's genuinely
-   * an earlier step to return to; otherwise "Back" and "Main menu" would
-   * be the exact same action rendered twice. Mirrors `handleStepBack`'s
-   * own branching so the two can never disagree about what "back" means
-   * right now.
+   * Round 2026-08-26 (assistant Back/Main-menu UX fix), revised
+   * 2026-08-27 (post-deploy regression, per Hamid — "no clear back
+   * button, only a Home icon appears"): Back and Main Menu are now the
+   * SAME visibility rule — both show together whenever the patient is
+   * inside any flow (`mode !== "menu"`), and both hide together only at
+   * the true main menu, exactly per his explicit spec. The previous round
+   * gave Back a NARROWER, step-index-aware visibility (hidden at
+   * `service_selection`, the first booking step) so it would never
+   * duplicate Main Menu's action — but that meant only ONE icon showed up
+   * at the very step patients most often land on right after opening the
+   * assistant, which read as "no back button, only a home icon" even
+   * though the feature existed. `handleStepBack` still decides the right
+   * TARGET internally (one real step back when one exists, otherwise the
+   * same place Main Menu goes) — only the button's visibility changed.
    */
-  const canStepBack =
-    mode === "otp" ||
-    mode === "identify" ||
-    (mode === "booking" &&
-      (() => {
-        const currentIndex = BOOKING_STEPS.indexOf(step);
-        let targetIndex = currentIndex - 1;
-        if (targetIndex >= 0 && BOOKING_STEPS[targetIndex] === "triage" && state.leadInfo.selectedService === "general_consultation") {
-          targetIndex -= 1;
-        }
-        return targetIndex >= 0;
-      })());
+  const showBack = mode !== "menu";
 
   /**
    * Round 2026-07-22 (V2.2 — focused full-screen assistant, item 1/2/4):
@@ -1677,21 +1688,24 @@ export function AssistantDrawer() {
             <div className="flex shrink-0 items-center gap-2 border-b border-warm-white/10 bg-gradient-to-br from-deep-navy to-[#1a2540] px-3 py-4 sm:px-5">
               {/*
                 Round 2026-08-26 (assistant Back/Main-menu UX fix, per
-                Hamid — "no clear back path, user may need to refresh"):
-                these two icon buttons live in the FIXED header, next to
-                the close button, so they stay reachable regardless of
-                how far the transcript has scrolled — the old version's
-                only back affordance was a small text link at the top of
-                the scrollable stage, easy to lose once a few messages/
-                cards had stacked up. `canStepBack`/`showBack` decide
-                whether either renders at all; while `mode === "menu"`
-                there is nowhere to go back FROM, so neither shows.
+                Hamid — "no clear back path, user may need to refresh"),
+                revised 2026-08-27 (post-deploy regression — "no clear
+                back button, only a Home icon appears"): these two icon
+                buttons live in the FIXED header, next to the close
+                button, so they stay reachable regardless of how far the
+                transcript has scrolled. Both now share the SAME
+                visibility rule (`showBack`, i.e. `mode !== "menu"`) —
+                Back and Main Menu always appear together inside any
+                flow, and hide together only at the true main menu, per
+                his explicit spec. `title` mirrors `aria-label` so a
+                desktop hover tooltip names each control, not just its icon.
               */}
-              {canStepBack ? (
+              {showBack ? (
                 <button
                   type="button"
                   onClick={handleStepBack}
                   aria-label={dict.ui.back}
+                  title={dict.ui.back}
                   className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full text-warm-white/70 transition-colors duration-200 hover:bg-warm-white/10 hover:text-warm-white"
                 >
                   <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2} strokeLinecap="round" strokeLinejoin="round" className="h-4 w-4">
@@ -1704,6 +1718,7 @@ export function AssistantDrawer() {
                   type="button"
                   onClick={handleBackToMenu}
                   aria-label={dict.ui.backToMenu}
+                  title={dict.ui.backToMenu}
                   className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full text-warm-white/70 transition-colors duration-200 hover:bg-warm-white/10 hover:text-warm-white"
                 >
                   <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={1.8} strokeLinecap="round" strokeLinejoin="round" className="h-4 w-4">

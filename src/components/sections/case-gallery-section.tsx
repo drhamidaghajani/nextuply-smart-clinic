@@ -60,15 +60,20 @@ import { PHOTO_POSITION, REAL_PHOTOS } from "./gallery-photos";
  * where that mismatch would 404) once Hamid supplies one — `GalleryTile`
  * renders that as a real `next/image` covering the tile instead of the
  * icon placeholder.
- * - `jaw-surgery`: a real, named patient of Dr. Sadighi's, per Hamid's
- *   explicit confirmation — NOT a stock/unrelated photo; an earlier photo
- *   he sent in this same conversation for the same slot was declined for
- *   exactly that reason, before he clarified this one is genuinely her.
- *   Publishing an identifiable patient's photo tied to a specific
- *   procedure still needs her explicit consent for this public use
- *   specifically — flagged to Hamid, not confirmed back yet as of this
- *   write, so treat that as an open pre-launch item rather than assumed
- *   settled.
+ * - `jaw-surgery`: SUPERSEDED 2026-08-28 — this entry originally recorded
+ *   (2026-07-15) that Hamid had explicitly confirmed the photo then in this
+ *   slot as a real, named patient, not stock/unrelated. A later
+ *   investigation (per Hamid, 2026-08-28) re-flagged that same photo as
+ *   showing an unrelated person (a volleyball athlete with a championship
+ *   trophy) with no visible connection to jaw surgery, found the identical
+ *   photo also wired in as this service's own hero image, and — given the
+ *   contradiction and no way to re-verify identity/consent from the image
+ *   itself — treated it as confirmed-wrong per that investigation. See
+ *   `gallery-photos.ts`'s own comment for the resulting fix. Whatever the
+ *   truth of the original confirmation, the same consent question it
+ *   raised (identifiable patient photo tied to a specific procedure needs
+ *   her explicit consent for this public use) is now moot for this slot,
+ *   but may still apply if the original photo is ever reused elsewhere.
  * - `rhinoplasty`: added 2026-07-05, same-day follow-up.
  * - `facial-cosmetic`, `dental-implant`, `impacted-tooth`: added
  *   2026-07-05, later same day — `Implant.jpeg`/`ToothSurgery.jpeg` read

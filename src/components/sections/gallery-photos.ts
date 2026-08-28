@@ -7,7 +7,24 @@
  * inventing placeholder imagery.
  */
 export const REAL_PHOTOS: Partial<Record<string, string>> = {
-  "jaw-surgery": "/media/gallery/jaw-surgery.jpg",
+  // Round 2026-08-28 (wrong-gallery-image investigation, per Hamid): was
+  // `/media/gallery/jaw-surgery.jpg` — a photo of an unrelated person (a
+  // volleyball athlete holding a championship trophy and medal), not any
+  // jaw-surgery/clinical content. An earlier code comment in
+  // `case-gallery-section.tsx` recorded this photo as a confirmed real
+  // patient back on 2026-07-15, but the visual content doesn't support
+  // that, and the identical photo (different crop) had also been wired in
+  // as this service's own hero photo in `services.ts` — treated as
+  // confirmed-wrong per this investigation, flagged to Hamid in the report.
+  // No other jaw-surgery/orthognathic photo exists in the project's media
+  // (checked `public/media/**`), so rather than invent or reuse an
+  // unrelated photo, this now points at the same real, already-approved
+  // doctor/surgery photo (`doctor-surgery.jpg`) already used site-wide
+  // (About page, hero poster, "Why Dr. Sadighi" section) as the general
+  // fallback for "no dedicated photo" cases. Both `jaw-surgery.jpg` and
+  // `orthognathic-surgery.png.jpeg` (the hero copy) are left in place,
+  // unreferenced, per the standing "do not delete" convention.
+  "jaw-surgery": "/media/doctor-surgery.jpg",
   rhinoplasty: "/media/gallery/rhinoplasty.jpeg",
   // Round 2026-08-27 (P0 production performance fix): was `facial-
   // cosmetic.png` — a 1.46MB PNG for a photograph at the exact same pixel
@@ -30,5 +47,8 @@ export const REAL_PHOTOS: Partial<Record<string, string>> = {
 
 /** Per-photo `object-position` override — defaults to "center" if unset. */
 export const PHOTO_POSITION: Partial<Record<string, string>> = {
-  "jaw-surgery": "center 25%",
+  // Matches the crop already used everywhere else `doctor-surgery.jpg`
+  // appears (About page, "Why Dr. Sadighi" section) — the old "center 25%"
+  // was tuned for the removed photo's framing, not this one.
+  "jaw-surgery": "75% 25%",
 };

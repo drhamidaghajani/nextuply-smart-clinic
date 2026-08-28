@@ -60,20 +60,22 @@ import { PHOTO_POSITION, REAL_PHOTOS } from "./gallery-photos";
  * where that mismatch would 404) once Hamid supplies one — `GalleryTile`
  * renders that as a real `next/image` covering the tile instead of the
  * icon placeholder.
- * - `jaw-surgery`: SUPERSEDED 2026-08-28 — this entry originally recorded
- *   (2026-07-15) that Hamid had explicitly confirmed the photo then in this
- *   slot as a real, named patient, not stock/unrelated. A later
- *   investigation (per Hamid, 2026-08-28) re-flagged that same photo as
- *   showing an unrelated person (a volleyball athlete with a championship
- *   trophy) with no visible connection to jaw surgery, found the identical
- *   photo also wired in as this service's own hero image, and — given the
- *   contradiction and no way to re-verify identity/consent from the image
- *   itself — treated it as confirmed-wrong per that investigation. See
- *   `gallery-photos.ts`'s own comment for the resulting fix. Whatever the
- *   truth of the original confirmation, the same consent question it
- *   raised (identifiable patient photo tied to a specific procedure needs
- *   her explicit consent for this public use) is now moot for this slot,
- *   but may still apply if the original photo is ever reused elsewhere.
+ * - `jaw-surgery`: unsettled history, kept as-is per Hamid's 2026-08-28
+ *   rollback — treat identity/consent as an open question, not settled in
+ *   either direction. Originally recorded (2026-07-15) that Hamid had
+ *   explicitly confirmed this photo as a real, named patient, not
+ *   stock/unrelated; publishing an identifiable patient's photo tied to a
+ *   specific procedure still needs her explicit consent for this public
+ *   use specifically, flagged to Hamid at the time and not confirmed back.
+ *   A same-day 2026-08-28 investigation re-flagged the photo as showing an
+ *   unrelated person (a volleyball athlete with a championship trophy),
+ *   swapped it for `doctor-surgery.jpg` (commit 3ff4fb4), and found the
+ *   identical photo also wired in as this service's own hero image. Hamid
+ *   then asked for that swap rolled back the same day as visually wrong
+ *   (a generic operating-room photo repeated across the hero video poster,
+ *   the service hero, and this tile) — restoring the original file here
+ *   and in `services.ts`'s `heroPhotoSrc`, without resolving which of the
+ *   two competing claims about the photo's content is correct.
  * - `rhinoplasty`: added 2026-07-05, same-day follow-up.
  * - `facial-cosmetic`, `dental-implant`, `impacted-tooth`: added
  *   2026-07-05, later same day — `Implant.jpeg`/`ToothSurgery.jpeg` read

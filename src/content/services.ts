@@ -348,18 +348,14 @@ export const SERVICES: readonly ServiceTaxonomyItem[] = [
     },
     footerLabel: { fa: "جراحی فک و چانه", en: "Orthognathic Surgery", ar: "جراحة الفك والذقن" },
     assistantLabel: { fa: "جراحی فک و چانه", en: "Orthognathic Surgery", ar: "جراحة الفك والذقن" },
-    // heroPhotoSrc removed 2026-08-28 (wrong-gallery-image investigation):
-    // `orthognathic-surgery.png.jpeg` is the same unrelated-person photo as
-    // `gallery-photos.ts`'s old `jaw-surgery` entry (a volleyball athlete
-    // holding a championship trophy — same source photo, different crop),
-    // now confirmed live on this page's own hero, not just the homepage
-    // gallery tile. No dedicated jaw-surgery hero photo exists, so this now
-    // falls back to `servicePhoto` (`REAL_PHOTOS.jaw-surgery`, see that
-    // file's own comment) — the same real, already-approved doctor/surgery
-    // photo the site already uses as its general "no dedicated photo"
-    // fallback elsewhere. The stale file and its .gitignore negation are
-    // left in place, unreferenced, same precedent as the 2026-08-27
-    // facial-cosmetic.png cleanup.
+    // heroPhotoSrc restored 2026-08-28 (urgent visual rollback, per Hamid):
+    // briefly removed the same day by a "wrong-gallery-image investigation"
+    // that re-flagged this photo as showing an unrelated person and fell
+    // back to `doctor-surgery.jpg` instead — reverted as visually wrong
+    // (a generic operating-room photo on this hero, repeated from the
+    // homepage's hero-video poster and gallery tile too). Back to exactly
+    // what it was before commit 3ff4fb4.
+    heroPhotoSrc: "/media/services/orthognathic-surgery.png.jpeg",
     // approachPhotoSrc unchanged, per doctor's explicit "عکس دوم تغییر نکند".
     approachPhotoSrc: "/media/services-orthognathic-surgery.jpeg",
     approachPhotoPosition: "center 25%",

@@ -20,11 +20,13 @@ const DEFAULT_PLAYBACK_RATE = 0.6;
  * measured against production: PageSpeed's mobile LCP was 3.2s (field) /
  * this session's local Lighthouse run against production hit 11.3s LCP
  * with the video still only 7MB into its download when the trace ended.
- * `poster` now points at `doctor-surgery.jpg` (119KB, already a real,
- * approved asset used elsewhere — not a new image) so the browser paints
- * a real, relevant frame immediately while the video streams in behind
- * it. This does not fix the video's own size — that still needs a real
- * compression pass — but it removes the "nothing renders at all" gap.
+ * A `poster` pointing at `doctor-surgery.jpg` was added to close that gap,
+ * but reverted the next day (2026-08-28, urgent visual rollback, per
+ * Hamid): it read as the hero showing a still photo first and then
+ * "replacing" it with the video, rather than the video-first feel the
+ * hero is meant to have. The underlying LCP gap this was meant to fix is
+ * still open — see SYSTEM_ARCHITECTURE.md §10; a real compression pass on
+ * the video itself is the actual fix, not another poster.
  */
 export function HeroVideo({
   src,
@@ -65,7 +67,6 @@ export function HeroVideo({
       loop
       playsInline
       preload="auto"
-      poster="/media/doctor-surgery.jpg"
       className="hero-video-zoom absolute inset-0 h-full w-full object-cover"
     >
       <source src={src} type="video/mp4" />

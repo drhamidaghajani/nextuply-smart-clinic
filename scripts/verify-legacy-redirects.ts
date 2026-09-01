@@ -53,6 +53,10 @@ const DECISION_OVERRIDES: Record<string, string> = {
   // blocked" decision for this one URL specifically; see STILL_BLOCKED
   // below and production-redirect-audit.csv for the full incident.
   "/نمونه-درمان": "/before-after",
+  // Unblocked 2026-08-28 (per Hamid, closing out the last 2 remaining
+  // Search Console 404s) — reverses the earlier "keep blocked" decision;
+  // see STILL_BLOCKED below and legacy-redirects.ts's own top comment.
+  "/جراحی-برجستگی-پیشانی": "/services/facial-cosmetic-surgery",
 };
 
 /**
@@ -72,10 +76,12 @@ function stripFaPrefix(path: string): string {
 
 // Hamid's explicit "keep blocked" instruction (2026-08-23) — must have NO
 // map entry. نمونه-درمان REMOVED 2026-08-26 (P0 incident, see
-// DECISION_OVERRIDES above) — a later, more specific instruction on that
-// exact URL reversed the earlier decision; جراحی-برجستگی-پیشانی wasn't
-// mentioned in the newer instruction and stays blocked.
-const STILL_BLOCKED = new Set(["/جراحی-برجستگی-پیشانی"]);
+// DECISION_OVERRIDES above); جراحی-برجستگی-پیشانی REMOVED 2026-08-28 (per
+// Hamid, closing out the last 2 remaining Search Console 404s — see
+// DECISION_OVERRIDES above). Empty for now — kept as a Set (not deleted)
+// since it's the established mechanism for any future "keep blocked"
+// decision.
+const STILL_BLOCKED = new Set<string>([]);
 
 function parseCsv(text: string): Record<string, string>[] {
   const rows: string[][] = [];

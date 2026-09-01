@@ -34,17 +34,20 @@
  * with real GSC/WordPress traffic, not only the 5 originally-reported
  * examples (see production-redirect-audit.csv for the full audit).
  *
- * Deliberately EXCLUDED, per Hamid's explicit "keep blocked" instruction —
- * do not add until its content has been manually reviewed and a
- * destination confirmed (see manual-decisions-needed.md item 4, and
- * rank-math-redirects-summary.md's "Blocked" section for the matching
- * rank-math alias):
- *   - /جراحی-برجستگی-پیشانی/
- * (/نمونه-درمان/ was ALSO blocked here until 2026-08-26, when a P0
- * production incident — this URL 404ing with real search traffic —
- * prompted a newer, more specific instruction that explicitly redirects
- * it to /before-after instead; see P0_INCIDENT_FIXES_20260826 above and
- * production-redirect-audit.csv for the full incident.)
+ * Both URLs once listed here as deliberately blocked pending a manual
+ * content review and destination decision are now resolved:
+ * /نمونه-درمان/ was unblocked 2026-08-26 (P0 production incident — this
+ * URL 404ing with real search traffic — see P0_INCIDENT_FIXES_20260826
+ * above and production-redirect-audit.csv for the full incident), and
+ * /جراحی-برجستگی-پیشانی/ was unblocked 2026-08-28 (per Hamid, closing out
+ * the last 2 remaining Search Console 404s) — see that entry below and
+ * `scripts/verify-legacy-redirects.ts`'s DECISION_OVERRIDES for the
+ * matching test-side change.
+ *
+ * /کامپوزیت-دندان؛-آشنایی-با-انواع،-مزای/ was similarly stuck on
+ * "needs-human-decision" (no matching service, not migrated as a
+ * standalone Knowledge Center article — see redirect-only-list.csv) until
+ * the same 2026-08-28 round resolved it to the general /services page.
  *
  * Also excluded: the bare homepage path ("/") and the www/http host
  * variants — those are handled by separate host-canonicalization logic in
@@ -189,6 +192,7 @@ export const LEGACY_REDIRECTS: Readonly<Record<string, string>> = {
   "/جراحی-ایمپلنت": "/services/advanced-dental-implant", // P0 broad audit 2026-08-26
   "/جراحی-ایمپلنت-2": "/services/advanced-dental-implant", // P0 broad audit 2026-08-26
   "/جراحی-بازسازی-نواقص-صورت-بازگرداندن": "/knowledge/ناقرینگیهای-ناشی-از-تروما-به-صورت-عل", // Batch 2 Knowledge Center migration 2026-08-26
+  "/جراحی-برجستگی-پیشانی": "/services/facial-cosmetic-surgery", // unblocked 2026-08-28 (per Hamid, Search Console 404) — see this file's own top comment
   "/جراحی-بلفاروپلاستی": "/services/facial-cosmetic-surgery", // P0 broad audit 2026-08-26
   "/جراحی-بینی": "/services/rhinoplasty", // P0 broad audit 2026-08-26
   "/جراحی-بینی-به-سایت-اروپایی-زیبایی-و-تقا": "/services/rhinoplasty", // P0 broad audit 2026-08-26
@@ -295,6 +299,7 @@ export const LEGACY_REDIRECTS: Readonly<Record<string, string>> = {
   "/فیزیوتراپی-بعد-از-جراحی-فک-چرا-ضروری-اس": "/knowledge/فیزیوتراپی-بعد-از-جراحی-فک", // rank-math redirect id 21
   "/فیلم-جراحی-فک-در-اتاق-عمل": "/knowledge/فیلم_جراحی_فک_در_اتاق_عمل", // rank-math redirect id 11
   "/فیلم_جراحی_فک_در_اتاق_عمل": "/knowledge/فیلم_جراحی_فک_در_اتاق_عمل", // phase-1 spec
+  "/کامپوزیت-دندان؛-آشنایی-با-انواع،-مزای": "/services", // resolved 2026-08-28 (per Hamid, Search Console 404) — no matching service page, general dentistry with no Knowledge Center article
   "/لیفت-ابرو-و-شقیقه": "/knowledge/لیفت-ابرو-و-شقیقه", // phase-1 spec
   "/لیفت-ابرو-وشقیقه": "/services/facial-cosmetic-surgery", // P0 broad audit 2026-08-26
   "/لیفت-شقیقه-گلایدینگ": "/knowledge/لیفت-شقیقه-گلایدینگ", // phase-1 spec

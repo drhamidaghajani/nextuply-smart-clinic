@@ -142,6 +142,7 @@ export const LEGACY_REDIRECTS: Readonly<Record<string, string>> = {
   "/ایمپلنت-اشترومن-در-تبریز": "/knowledge/ایمپلنت-اشترومن-در-تبریز", // phase-1 spec
   "/ایمپلنت-اشترومن-در-تبریز؛-بهترین-راه": "/services/advanced-dental-implant", // P0 broad audit 2026-08-26
   "/ایمپلنت-اقساطی-در-تبریز-با-دکتر-علیرضا": "/knowledge/ایمپلنت-اقساطی-در-تبریز-با-دکتر-علیرضا", // phase-1 spec
+  "/ایمپلنت-اقساطی-در-تبریز-با-دکتر-علیرضا-صدیقی": "/services/advanced-dental-implant", // Search Console traffic URL, added 2026-09-01 — longer slug variant of the phase-1-spec entry above (same article, "-صدیقی" suffix), destination given directly by Hamid rather than the Knowledge Center article
   "/ایمپلنت-اقساطی-در-تهران": "/services/advanced-dental-implant", // P0 broad audit 2026-08-26
   "/ایمپلنت-اقساطی-در-تهران-برای-همه؛-از-دغ": "/services/advanced-dental-implant", // P0 broad audit 2026-08-26
   "/ایمپلنت-در-تهران": "/services/advanced-dental-implant", // P0 broad audit 2026-08-26

@@ -2,7 +2,6 @@
 
 import { motion, useReducedMotion } from "framer-motion";
 import Image from "next/image";
-import Link from "next/link";
 
 import { getServiceById } from "@/content/services";
 import {
@@ -199,7 +198,8 @@ export function KnowledgeCenterSection({ dict, locale }: { dict: KnowledgeCenter
             articles (left), separated by a thin divider, not cards. */}
         <div className="mt-4 grid gap-5 border-t border-charcoal/10 pt-4 sm:mt-6 sm:gap-8 sm:pt-6 lg:grid-cols-[1.3fr_1fr] lg:gap-14 lg:pt-8">
           <motion.article {...fadeUp(shouldReduceMotion ? 0 : 0.08)} className="group">
-            <Link href={localeHref(locale, `/knowledge/${feature.content.slug}`)} className="block">
+            {/* Round 2026-08-27 (P0 hotfix) — plain `<a>`, not `next/link`; see service-tile.tsx for the full root-cause writeup. */}
+            <a href={localeHref(locale, `/knowledge/${feature.content.slug}`)} className="block">
               <FeatureVisual photoSrc={feature.article.heroImage?.src} alt={feature.article.heroImage?.alt ?? feature.content.title} iconId={featureService?.iconKey} />
               <div className="mt-2.5 flex items-center gap-3 sm:mt-4">
                 <span className="text-[10px] font-semibold uppercase tracking-wide text-gold sm:text-xs">{TOPIC_LABEL[locale][feature.article.topicCluster]}</span>
@@ -221,12 +221,13 @@ export function KnowledgeCenterSection({ dict, locale }: { dict: KnowledgeCenter
                   className={`h-3.5 w-3.5 transition-transform duration-300 ease-out sm:h-4 sm:w-4 ${isRtl ? "group-hover:-translate-x-1" : "group-hover:translate-x-1"}`}
                 />
               </span>
-            </Link>
+            </a>
           </motion.article>
 
           <motion.div {...fadeUp(shouldReduceMotion ? 0 : 0.16)} className="flex flex-col divide-y divide-charcoal/10">
             {side.map((item) => (
-              <Link key={item.content.slug} href={localeHref(locale, `/knowledge/${item.content.slug}`)} className="group py-2.5 first:pt-0 last:pb-0 sm:py-4">
+              // Round 2026-08-27 (P0 hotfix) — plain `<a>`, not `next/link`; see service-tile.tsx for the full root-cause writeup.
+              <a key={item.content.slug} href={localeHref(locale, `/knowledge/${item.content.slug}`)} className="group py-2.5 first:pt-0 last:pb-0 sm:py-4">
                 <div className="flex items-center gap-2">
                   <span className="text-[10px] font-semibold uppercase tracking-wide text-gold sm:text-xs">{TOPIC_LABEL[locale][item.article.topicCluster]}</span>
                   <span aria-hidden className="text-charcoal/20">
@@ -238,7 +239,7 @@ export function KnowledgeCenterSection({ dict, locale }: { dict: KnowledgeCenter
                   {item.content.title}
                 </h4>
                 <p className="mt-1 line-clamp-1 text-xs leading-5 text-charcoal/60 sm:line-clamp-2 sm:leading-6">{item.content.excerpt}</p>
-              </Link>
+              </a>
             ))}
           </motion.div>
         </div>

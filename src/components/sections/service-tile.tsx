@@ -1,5 +1,3 @@
-import Link from "next/link";
-
 import { getServiceHref, type ServiceTaxonomyItem } from "@/content/services";
 import type { Locale } from "@/i18n/locales";
 
@@ -45,7 +43,22 @@ export function ServiceTile({
   const remainingCount = includedItemsLabel ? item.includedItems[locale].length - previewItems.length : 0;
 
   return (
-    <Link
+    // Round 2026-08-27 (P0 hotfix, per Hamid — homepage clicks "doing
+    // nothing"): plain `<a>`, not `next/link`. Root cause traced live on
+    // production: the uncompressed hero video request (~20MB, never
+    // completing on the wire — see hero-video.tsx) saturates the
+    // browser's limited per-origin connection pool, starving other
+    // in-flight requests behind it. `Link`'s client-side navigation
+    // intercepts the click with `preventDefault()` and waits on a fetch
+    // for the destination route that gets queued behind that same
+    // starved pool — so the click visibly does nothing until (if ever)
+    // that fetch resolves. A native `<a href>` has no JS in the click
+    // path: the browser navigates immediately as a real top-level load,
+    // which is not similarly blocked. Confirmed with Playwright directly
+    // against production: a `Link`-based click timed out waiting for the
+    // SPA transition while several unrelated small requests (icons, a JS
+    // chunk) were still pending behind the video at the same moment.
+    <a
       href={getServiceHref(locale, item.slug)}
       className={`group flex h-full flex-col items-center rounded-xl bg-warm-white px-2 py-3 text-center shadow-sm shadow-charcoal/5 ring-1 transition-all duration-[900ms] ease-in-out hover:-translate-y-0.5 hover:bg-deep-navy hover:shadow-xl hover:shadow-charcoal/20 hover:ring-gold/30 sm:rounded-2xl sm:px-5 sm:py-6 ${
         isFeatured ? "ring-gold/25" : "ring-charcoal/5"
@@ -98,6 +111,6 @@ export function ServiceTile({
           ) : null}
         </div>
       ) : null}
-    </Link>
+    </a>
   );
 }

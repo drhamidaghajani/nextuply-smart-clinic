@@ -1,5 +1,4 @@
 import Image from "next/image";
-import Link from "next/link";
 
 import { getBeforeAfterCasesByCategory, type BeforeAfterCategory } from "@/content/before-after-cases";
 import { getBeforeAfterHref } from "@/content/services";
@@ -122,7 +121,8 @@ export function PatientStoriesSection({
             if (!view) return null;
             return (
               <Reveal key={item.id} delay={index * 0.08}>
-                <Link
+                {/* Round 2026-08-27 (P0 hotfix) — plain `<a>`, not `next/link`; see service-tile.tsx for the full root-cause writeup. */}
+                <a
                   href={getBeforeAfterHref(locale, item.category)}
                   className="group block overflow-hidden rounded-2xl border border-warm-white/10 bg-warm-white/[0.04] transition-colors duration-300 ease-out hover:border-gold/40"
                 >
@@ -145,7 +145,7 @@ export function PatientStoriesSection({
                     <p className="mt-1 text-xs text-warm-white/45">{item.privacyLabel[locale]}</p>
                     <span className="mt-3 inline-flex items-center gap-1.5 text-xs font-medium text-gold">{dict.viewCaseCta}</span>
                   </div>
-                </Link>
+                </a>
               </Reveal>
             );
           })}
@@ -153,13 +153,14 @@ export function PatientStoriesSection({
 
         <Reveal delay={0.2}>
           <div className="mt-10 flex flex-wrap items-center justify-center gap-3 sm:mt-12">
-            <Link
+            {/* Round 2026-08-27 (P0 hotfix) — plain `<a>`, not `next/link`; see service-tile.tsx for the full root-cause writeup. */}
+            <a
               href={getBeforeAfterHref(locale, null)}
               className="inline-flex items-center gap-2 rounded-full border border-warm-white/15 bg-warm-white/5 px-5 py-3 text-sm font-medium text-warm-white transition-colors duration-200 hover:border-gold/40 hover:text-gold"
             >
               <IconGallery className="h-4 w-4" />
               {dict.beforeAfterCta}
-            </Link>
+            </a>
             <a
               href={instagramHref}
               target="_blank"

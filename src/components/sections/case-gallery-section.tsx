@@ -2,7 +2,6 @@
 
 import { motion, useReducedMotion } from "framer-motion";
 import Image from "next/image";
-import Link from "next/link";
 import type { MouseEvent as ReactMouseEvent } from "react";
 
 import { getServiceHref, type ServiceTaxonomyItem } from "@/content/services";
@@ -235,7 +234,13 @@ function GalleryTile({ item, locale, shouldReduceMotion }: { item: GalleryItem; 
   };
 
   return (
-    <Link
+    // Round 2026-08-27 (P0 hotfix, per Hamid — homepage clicks "doing
+    // nothing"): plain `<a>`, not `next/link` — see the matching note in
+    // `service-tile.tsx` for the full root-cause writeup. Same fix here:
+    // this tile's client-side navigation could stall behind the
+    // uncompressed hero video request starving the connection pool; a
+    // native anchor navigates immediately regardless.
+    <a
       href={getServiceHref(locale, item.slug)}
       // The transform + shadow live on THIS element — the actual box each
       // tile is (its shape, its edges) — not on a clipped inner layer. Per
@@ -295,7 +300,7 @@ function GalleryTile({ item, locale, shouldReduceMotion }: { item: GalleryItem; 
           <p className="text-[9px] uppercase tracking-wide text-warm-white/60 sm:text-[11px]">{item.englishLabel}</p>
         </div>
       </div>
-    </Link>
+    </a>
   );
 }
 

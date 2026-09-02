@@ -62,6 +62,22 @@ export default function sitemap(): MetadataRoute.Sitemap {
     }))
   );
 
+  // Round 2026-08-27 — the 4 health-tourism pages (overview + visa/hotel/
+  // transfer) exist and render real fa/en/ar content in all 3 locales
+  // (`src/app/[locale]/health-tourism/**`) but were missing from the
+  // sitemap entirely; this was the only gap, not a content or linking
+  // issue — same `localeHref` pattern as every other route group above,
+  // so Persian still emits no `/fa/...` URL. Priority follows this file's
+  // own convention: 0.6 for the section's own landing page (matching
+  // `/knowledge`, `/care-instructions`), 0.5 for its sub-pages (matching
+  // care-topic detail pages).
+  const healthTourismRoutes: MetadataRoute.Sitemap = SUPPORTED_LOCALES.flatMap((locale) => [
+    { url: `${SITE_URL}${localeHref(locale, "/health-tourism")}`, changeFrequency: "monthly" as const, priority: 0.6 },
+    { url: `${SITE_URL}${localeHref(locale, "/health-tourism/visa")}`, changeFrequency: "monthly" as const, priority: 0.5 },
+    { url: `${SITE_URL}${localeHref(locale, "/health-tourism/hotel")}`, changeFrequency: "monthly" as const, priority: 0.5 },
+    { url: `${SITE_URL}${localeHref(locale, "/health-tourism/transfer")}`, changeFrequency: "monthly" as const, priority: 0.5 },
+  ]);
+
   const articleRoutes: MetadataRoute.Sitemap = KNOWLEDGE_ARTICLES.flatMap((article) => {
     const entries: MetadataRoute.Sitemap = [
       {
@@ -90,5 +106,5 @@ export default function sitemap(): MetadataRoute.Sitemap {
     return entries;
   });
 
-  return [...staticRoutes, ...serviceRoutes, ...procedureRoutes, ...careRoutes, ...articleRoutes];
+  return [...staticRoutes, ...serviceRoutes, ...procedureRoutes, ...careRoutes, ...healthTourismRoutes, ...articleRoutes];
 }

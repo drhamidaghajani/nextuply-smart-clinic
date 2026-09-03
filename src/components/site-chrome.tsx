@@ -1,13 +1,39 @@
 "use client";
 
+import dynamic from "next/dynamic";
 import { usePathname } from "next/navigation";
 
 import type { FooterDictionary, HeaderDictionary } from "@/i18n/dictionary-types";
 import type { Locale } from "@/i18n/locales";
-import { AssistantDrawer, FloatingAssistantTrigger } from "@/modules/smart-clinic-assistant";
+import { FloatingAssistantTrigger } from "@/modules/smart-clinic-assistant";
 
 import { SiteFooter } from "./sections/site-footer";
 import { SiteHeader } from "./site-header";
+
+/**
+ * Round 2026-09-03 (P1 mobile TBT audit): `AssistantDrawer` is a 1,823-
+ * line, always-mounted client component (see this file's own 2026-07-24
+ * comment below — it was already known to be "large" and "stateful"),
+ * unconditionally rendered on EVERY non-internal route regardless of
+ * whether the drawer is ever opened. Imported here via `next/dynamic`
+ * from its specific submodule path (`.../ui/assistant-drawer`, not the
+ * `@/modules/smart-clinic-assistant` barrel `FloatingAssistantTrigger`
+ * still uses below) so its code is guaranteed to land in its own chunk —
+ * importing it through the barrel instead risks webpack merging it back
+ * into whatever chunk the barrel's other, eagerly-used exports already
+ * belong to, silently undoing the split.
+ *
+ * `ssr: false`: `AssistantDrawer` is a client-only overlay (no content
+ * that needs to be crawled or present in the initial HTML) and reads all
+ * of its state from `useAssistant()` context, not props — so there is
+ * nothing here for the server to usefully render anyway, and skipping
+ * SSR for it is a strictly safe choice, not a behavior change.
+ *
+ * `FloatingAssistantTrigger` is deliberately left as a normal static
+ * import, unchanged: it must stay immediately visible and clickable from
+ * first paint, not deferred.
+ */
+const AssistantDrawer = dynamic(() => import("@/modules/smart-clinic-assistant/ui/assistant-drawer").then((m) => m.AssistantDrawer), { ssr: false });
 
 /**
  * Round 2026-07-24 (Internal Operations Lite, Part A — production crash

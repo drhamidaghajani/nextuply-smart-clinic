@@ -3,13 +3,8 @@
 import { motion, useReducedMotion } from "framer-motion";
 import Image from "next/image";
 
-import { getServiceById } from "@/content/services";
-import {
-  KNOWLEDGE_ARTICLES,
-  type KnowledgeArticle,
-  type KnowledgeArticleTranslation,
-  type KnowledgeTopicCluster,
-} from "@/content/knowledge-articles";
+import type { ResolvedHomepageArticle } from "@/content/knowledge-center-homepage";
+import type { KnowledgeTopicCluster } from "@/content/knowledge-articles";
 import type { KnowledgeCenterDictionary } from "@/i18n/dictionary-types";
 import { formatDateForLocale } from "@/i18n/format-jalali-date";
 import { localeHref } from "@/i18n/locale-href";
@@ -29,18 +24,28 @@ import { LOCALE_DIRECTION, type Locale } from "@/i18n/locales";
  * demo copy in the dictionary — fake `/blog/...` hrefs that don't exist
  * anywhere in this app, plus a `CoverMotif` icon-on-gradient placeholder
  * standing in for real photography. Now pulls the real, live Knowledge
- * Center content directly from `KNOWLEDGE_ARTICLES`: `FEATURED_SLUGS` is
- * Hamid's own priority-ordered list of high-traffic P0 articles (first =
- * feature, next 3 = side list); en/ar read that SAME article's own
- * translation and are simply skipped — never a Persian fallback — if one
- * doesn't exist yet, matching the "never show Persian body under /en or
- * /ar" rule already enforced on the article pages themselves. The
- * feature slot's image now renders the real migrated hero photo when one
- * exists, falling back to the exact same navy-gradient + masked-icon
- * treatment this section always used — same visual language, just now
- * backed by real content instead of demo text. The side list stays
- * text-only, matching this section's own established "no cards, no
- * clutter" design instead of introducing a new image treatment for it.
+ * Center content: `FEATURED_SLUGS` (moved to `knowledge-center-homepage.ts`,
+ * see below) is Hamid's own priority-ordered list of high-traffic P0
+ * articles (first = feature, next 3 = side list); en/ar read that SAME
+ * article's own translation and are simply skipped — never a Persian
+ * fallback — if one doesn't exist yet, matching the "never show Persian
+ * body under /en or /ar" rule already enforced on the article pages
+ * themselves. The feature slot's image now renders the real migrated
+ * hero photo when one exists, falling back to the exact same
+ * navy-gradient + masked-icon treatment this section always used — same
+ * visual language, just now backed by real content instead of demo text.
+ * The side list stays text-only, matching this section's own established
+ * "no cards, no clutter" design instead of introducing a new image
+ * treatment for it.
+ *
+ * Round 2026-09-03 (P1 mobile TBT audit): this component no longer
+ * imports `KNOWLEDGE_ARTICLES` (961KB of source — full body/translations
+ * for ~90 articles) or `getServiceById` itself. That resolution now
+ * happens server-side in `@/content/knowledge-center-homepage`'s
+ * `resolveFeaturedHomepageArticles`, called from `page.tsx`; this
+ * component just receives the already-resolved `articles` prop — same
+ * rendered output, ~961KB less client JS. See that function's own
+ * comment for the full story.
  */
 
 const TOPIC_LABEL: Record<Locale, Record<KnowledgeTopicCluster, string>> = {
@@ -88,34 +93,6 @@ const TOPIC_LABEL: Record<Locale, Record<KnowledgeTopicCluster, string>> = {
   },
 };
 
-/** Hamid's own priority order (2026-08-25) — first is the feature slot, next 3 are the side list. */
-const FEATURED_SLUGS = [
-  "ایمپلنت-اقساطی-در-تبریز-با-دکتر-علیرضا",
-  "جراحی-فک-نی-نی-سایت",
-  "جراحی-بینی-به-سبک-اروپایی-زیبایی-و-تقا",
-  "جراحی-دندان-عقل-با-بیهوشی-در-تبریز",
-] as const;
-
-interface ResolvedHomepageArticle {
-  article: KnowledgeArticle;
-  content: Pick<KnowledgeArticleTranslation, "slug" | "title" | "excerpt">;
-}
-
-function resolveFeaturedArticles(locale: Locale): ResolvedHomepageArticle[] {
-  const resolved: ResolvedHomepageArticle[] = [];
-  for (const slug of FEATURED_SLUGS) {
-    const article = KNOWLEDGE_ARTICLES.find((a) => a.slug === slug);
-    if (!article) continue;
-    if (locale === "fa") {
-      resolved.push({ article, content: article });
-      continue;
-    }
-    const content = article.translations?.[locale];
-    if (content) resolved.push({ article, content });
-  }
-  return resolved;
-}
-
 function IconArrow({ className, pointLeft }: { className?: string; pointLeft: boolean }) {
   return (
     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2} strokeLinecap="round" strokeLinejoin="round" className={className}>
@@ -158,7 +135,16 @@ function FeatureVisual({ photoSrc, alt, iconId }: { photoSrc?: string; alt: stri
   );
 }
 
-export function KnowledgeCenterSection({ dict, locale }: { dict: KnowledgeCenterDictionary; locale: Locale }) {
+export function KnowledgeCenterSection({
+  dict,
+  locale,
+  articles,
+}: {
+  dict: KnowledgeCenterDictionary;
+  locale: Locale;
+  /** Resolved server-side by `resolveFeaturedHomepageArticles` (see that function's own comment for why) — first is the feature slot, rest are the side list. */
+  articles: readonly ResolvedHomepageArticle[];
+}) {
   const shouldReduceMotion = useReducedMotion();
   const isRtl = LOCALE_DIRECTION[locale] === "rtl";
 
@@ -169,9 +155,8 @@ export function KnowledgeCenterSection({ dict, locale }: { dict: KnowledgeCenter
     transition: { duration: shouldReduceMotion ? 0.01 : 0.6, delay: shouldReduceMotion ? 0 : delay, ease: [0.22, 1, 0.36, 1] as const },
   });
 
-  const [feature, ...side] = resolveFeaturedArticles(locale);
+  const [feature, ...side] = articles;
   if (!feature) return null;
-  const featureService = feature.article.serviceRelation ? getServiceById(feature.article.serviceRelation) : undefined;
 
   return (
     <section
@@ -199,21 +184,21 @@ export function KnowledgeCenterSection({ dict, locale }: { dict: KnowledgeCenter
         <div className="mt-4 grid gap-5 border-t border-charcoal/10 pt-4 sm:mt-6 sm:gap-8 sm:pt-6 lg:grid-cols-[1.3fr_1fr] lg:gap-14 lg:pt-8">
           <motion.article {...fadeUp(shouldReduceMotion ? 0 : 0.08)} className="group">
             {/* Round 2026-08-27 (P0 hotfix) — plain `<a>`, not `next/link`; see service-tile.tsx for the full root-cause writeup. */}
-            <a href={localeHref(locale, `/knowledge/${feature.content.slug}`)} className="block">
-              <FeatureVisual photoSrc={feature.article.heroImage?.src} alt={feature.article.heroImage?.alt ?? feature.content.title} iconId={featureService?.iconKey} />
+            <a href={localeHref(locale, `/knowledge/${feature.slug}`)} className="block">
+              <FeatureVisual photoSrc={feature.heroImage?.src} alt={feature.heroImage?.alt ?? feature.title} iconId={feature.serviceIconKey} />
               <div className="mt-2.5 flex items-center gap-3 sm:mt-4">
-                <span className="text-[10px] font-semibold uppercase tracking-wide text-gold sm:text-xs">{TOPIC_LABEL[locale][feature.article.topicCluster]}</span>
+                <span className="text-[10px] font-semibold uppercase tracking-wide text-gold sm:text-xs">{TOPIC_LABEL[locale][feature.topicCluster]}</span>
                 <span aria-hidden className="text-charcoal/20">
                   ·
                 </span>
-                <span className="text-[10px] text-charcoal/40 sm:text-xs">{formatDateForLocale(feature.article.updatedAt, locale)}</span>
+                <span className="text-[10px] text-charcoal/40 sm:text-xs">{formatDateForLocale(feature.updatedAt, locale)}</span>
               </div>
               <h3 className="mt-1 text-base font-extrabold leading-tight text-charcoal sm:mt-2 sm:text-xl lg:text-2xl">
                 <span className="bg-gradient-to-l from-gold to-gold bg-[length:0%_2px] bg-right-bottom bg-no-repeat pb-1 transition-[background-size] duration-500 ease-out group-hover:bg-[length:100%_2px]">
-                  {feature.content.title}
+                  {feature.title}
                 </span>
               </h3>
-              <p className="mt-1.5 line-clamp-2 max-w-xl text-xs leading-5 text-charcoal/65 sm:mt-3 sm:text-sm sm:leading-7">{feature.content.excerpt}</p>
+              <p className="mt-1.5 line-clamp-2 max-w-xl text-xs leading-5 text-charcoal/65 sm:mt-3 sm:text-sm sm:leading-7">{feature.excerpt}</p>
               <span className="mt-2 inline-flex items-center gap-2 text-xs font-semibold text-charcoal transition-colors duration-300 ease-out group-hover:text-gold sm:mt-4 sm:text-sm">
                 {dict.readMoreCta}
                 <IconArrow
@@ -227,18 +212,18 @@ export function KnowledgeCenterSection({ dict, locale }: { dict: KnowledgeCenter
           <motion.div {...fadeUp(shouldReduceMotion ? 0 : 0.16)} className="flex flex-col divide-y divide-charcoal/10">
             {side.map((item) => (
               // Round 2026-08-27 (P0 hotfix) — plain `<a>`, not `next/link`; see service-tile.tsx for the full root-cause writeup.
-              <a key={item.content.slug} href={localeHref(locale, `/knowledge/${item.content.slug}`)} className="group py-2.5 first:pt-0 last:pb-0 sm:py-4">
+              <a key={item.slug} href={localeHref(locale, `/knowledge/${item.slug}`)} className="group py-2.5 first:pt-0 last:pb-0 sm:py-4">
                 <div className="flex items-center gap-2">
-                  <span className="text-[10px] font-semibold uppercase tracking-wide text-gold sm:text-xs">{TOPIC_LABEL[locale][item.article.topicCluster]}</span>
+                  <span className="text-[10px] font-semibold uppercase tracking-wide text-gold sm:text-xs">{TOPIC_LABEL[locale][item.topicCluster]}</span>
                   <span aria-hidden className="text-charcoal/20">
                     ·
                   </span>
-                  <span className="text-[10px] text-charcoal/40">{formatDateForLocale(item.article.updatedAt, locale)}</span>
+                  <span className="text-[10px] text-charcoal/40">{formatDateForLocale(item.updatedAt, locale)}</span>
                 </div>
                 <h4 className="mt-1 line-clamp-1 text-sm font-bold leading-snug text-charcoal transition-colors duration-300 ease-out group-hover:text-gold sm:text-base">
-                  {item.content.title}
+                  {item.title}
                 </h4>
-                <p className="mt-1 line-clamp-1 text-xs leading-5 text-charcoal/60 sm:line-clamp-2 sm:leading-6">{item.content.excerpt}</p>
+                <p className="mt-1 line-clamp-1 text-xs leading-5 text-charcoal/60 sm:line-clamp-2 sm:leading-6">{item.excerpt}</p>
               </a>
             ))}
           </motion.div>

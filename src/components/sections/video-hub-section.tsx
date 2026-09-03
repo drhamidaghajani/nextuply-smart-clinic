@@ -89,17 +89,23 @@ type Video = VideoHubVideo;
  * box — featured and all 3 carousel slots — plays the real Hero video file
  * so the boxes aren't empty during review. Swap for real per-video
  * footage once it exists; this is not final content.
+ *
+ * Round 2026-09-03 (P1 mobile performance fix, live-production PageSpeed
+ * regression): this section renders up to THREE autoplaying instances of
+ * this same video simultaneously (1 featured + 2 small thumbnails) — was
+ * still pointing at the original, uncompressed `hero-doctor.mp4` (20.5MB)
+ * even after the Hero section itself was optimized, so the homepage was
+ * autoplaying/decoding up to ~61.5MB of duplicate video on load. Switched
+ * to the same optimized WebM/MP4 pair the Hero already uses (proven safe
+ * there — see hero-video.tsx's own comment): ~3.2MB (WebM) or ~5.2MB
+ * (MP4 fallback) per instance instead of 20.5MB, same visual content.
  */
 function VideoPlaceholder() {
   return (
-    <video
-      className="absolute inset-0 h-full w-full object-cover"
-      src="/media/video/hero-doctor.mp4"
-      autoPlay
-      loop
-      muted
-      playsInline
-    />
+    <video className="absolute inset-0 h-full w-full object-cover" autoPlay loop muted playsInline>
+      <source src="/media/video/hero-doctor.optimized.webm" type="video/webm" />
+      <source src="/media/video/hero-doctor.optimized.mp4" type="video/mp4" />
+    </video>
   );
 }
 
@@ -129,14 +135,17 @@ function FeaturedVideo({ playAriaLabel }: { playAriaLabel: string }) {
       <video
         ref={videoRef}
         className="absolute inset-0 h-full w-full object-cover"
-        src="/media/video/hero-doctor.mp4"
         autoPlay
         loop
         muted={!isPlaying}
         controls={isPlaying}
         playsInline
         onClick={!isPlaying ? handlePlay : undefined}
-      />
+      >
+        {/* Optimized WebM/MP4 pair, same as VideoPlaceholder above — see that function's own comment. */}
+        <source src="/media/video/hero-doctor.optimized.webm" type="video/webm" />
+        <source src="/media/video/hero-doctor.optimized.mp4" type="video/mp4" />
+      </video>
       {!isPlaying && (
         <>
           <div aria-hidden className="pointer-events-none absolute inset-0 bg-black/15" />

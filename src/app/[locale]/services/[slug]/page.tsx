@@ -116,7 +116,8 @@ export default async function ServiceDetailPage({ params }: { params: Promise<{ 
         title={dict.overviewHeading}
         body={service.overview}
         tone="cream"
-        visual={<ServiceVisualPanel photoSrc="/media/doctor-headshot.png" alt={service.title} photoPosition="top" />}
+        // .jpg since 2026-09-03 — see about/page.tsx's own comment on this same asset
+        visual={<ServiceVisualPanel photoSrc="/media/doctor-headshot.jpg" alt={service.title} photoPosition="top" />}
       />
 
       {/* Round 2026-07-31 (doctor feedback, per Hamid): the approach photo

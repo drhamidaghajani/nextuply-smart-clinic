@@ -20,7 +20,9 @@ export function generateStaticParams() {
 }
 
 const SERVICE_SLUG = "facial-cosmetic-surgery";
-const HERO_IMAGE = "/media/services/facial-cosmetic-surgery/hero-facial-cosmetic.png";
+// .jpg since 2026-09-03 (image payload optimization) — see
+// facial-cosmetic-procedures.ts's own comment on this same batch of images.
+const HERO_IMAGE = "/media/services/facial-cosmetic-surgery/hero-facial-cosmetic.jpg";
 
 /**
  * Round 2026-08-17 — Facial Cosmetic Surgery, rebuilt as a parent/

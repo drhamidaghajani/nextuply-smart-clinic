@@ -16,7 +16,14 @@ export const REAL_PHOTOS: Partial<Record<string, string>> = {
   // — restored to the original file and crop exactly as it stood before
   // commit 3ff4fb4. See `case-gallery-section.tsx`'s doc-comment for the
   // full history of what this photo is and isn't confirmed to be.
-  "jaw-surgery": "/media/gallery/jaw-surgery.jpg",
+  //
+  // Round 2026-09-03 (image payload optimization): same photo, same crop —
+  // `jaw-surgery.jpg` (1708x1920, 1.22MB) was already a JPEG, so format
+  // conversion wasn't an option; re-saved as `jaw-surgery.optimized.jpg`,
+  // resized to 1423x1600 (same aspect ratio, so `PHOTO_POSITION` below is
+  // still valid unchanged) at quality 82 — 430KB, a 66% reduction, no
+  // visible quality loss. Original `jaw-surgery.jpg` kept, unreferenced.
+  "jaw-surgery": "/media/gallery/jaw-surgery.optimized.jpg",
   rhinoplasty: "/media/gallery/rhinoplasty.jpeg",
   // Round 2026-08-27 (P0 production performance fix): was `facial-
   // cosmetic.png` — a 1.46MB PNG for a photograph at the exact same pixel

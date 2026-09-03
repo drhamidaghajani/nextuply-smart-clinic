@@ -169,8 +169,9 @@ export function WhyDrSadighiSection({ dict, locale }: { dict: DoctorStoryDiction
               transition={{ duration: shouldReduceMotion ? 0.01 : 0.9, ease: [0.22, 1, 0.36, 1] }}
               className="relative aspect-[297/342] flex-[3] overflow-hidden rounded-2xl shadow-[0_30px_80px_rgba(15,23,42,0.18)] sm:rounded-[28px]"
             >
+              {/* .jpg since 2026-09-03 — see about/page.tsx's own comment on this same asset */}
               <Image
-                src="/media/doctor-headshot.png"
+                src="/media/doctor-headshot.jpg"
                 alt={dict.portraitAlt}
                 fill
                 sizes="(min-width: 1024px) 25vw, 50vw"

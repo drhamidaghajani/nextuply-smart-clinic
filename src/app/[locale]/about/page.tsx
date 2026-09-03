@@ -59,7 +59,8 @@ function extractLeadingDigits(value: string): string | null {
  *   touch also depend on) — larger heading, gold primary + outline
  *   secondary, ambient glow.
  *
- * Real imagery: `doctor-headshot.png` (hero) and `doctor-surgery.jpg`
+ * Real imagery: `doctor-headshot.jpg` (hero — `.jpg` since 2026-09-03,
+ * was `.png`, see the `<Image>` below) and `doctor-surgery.jpg`
  * (biography) — the same two real photos used site-wide. No fake
  * portraits. TODO: replace hero photo with a dedicated About-page
  * portrait once one is approved (code-only note, not shown to users).
@@ -176,7 +177,8 @@ export default async function AboutPage({ params }: { params: Promise<{ locale: 
               style={{ background: "radial-gradient(60% 60% at 50% 42%, rgba(201,161,90,0.22) 0%, rgba(15,23,42,0) 70%)" }}
             />
             <div className="relative aspect-[4/5] w-full max-w-[420px] overflow-hidden rounded-[28px] shadow-[0_40px_100px_rgba(0,0,0,0.4)] ring-1 ring-warm-white/10 sm:rounded-[36px]">
-              <Image src="/media/doctor-headshot.png" alt={dict.title} fill sizes="(min-width: 1024px) 40vw, 90vw" className="object-cover object-top" priority />
+              {/* .jpg since 2026-09-03 (image payload optimization) — was doctor-headshot.png (1.84MB); same photo, ~307KB, no visible quality loss. Original .png kept, unreferenced. */}
+              <Image src="/media/doctor-headshot.jpg" alt={dict.title} fill sizes="(min-width: 1024px) 40vw, 90vw" className="object-cover object-top" priority />
               {/* gentle vignette on the outer rim only — center (the face) stays untouched */}
               <div aria-hidden className="pointer-events-none absolute inset-0" style={{ boxShadow: "inset 0 0 70px 24px rgba(15,23,42,0.28)" }} />
               <div aria-hidden className="pointer-events-none absolute inset-0 ring-1 ring-inset ring-gold/20" />

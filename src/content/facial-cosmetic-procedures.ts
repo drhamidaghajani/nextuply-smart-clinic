@@ -25,6 +25,17 @@ import type { Locale } from "@/i18n/locales";
  * locales build and read consistently — the clinic markets in Persian
  * first (see CLAUDE.md), and the translated medical copy has NOT been
  * separately signed off.
+ *
+ * `imagePath`s below (plus `hero-facial-cosmetic.jpg`, the parent page's
+ * own hero — see that page's own comment): re-saved as `.jpg` 2026-09-03
+ * (image payload optimization). All 8 were 1586x992 PNGs (472KB-707KB
+ * each, ~4.1MB combined) — indexed/paletted exports with a fully-opaque
+ * alpha channel (checked directly, pixel-by-pixel: every value is 255)
+ * carried for no visual reason. Re-saved as JPEGs at quality 73-78 (each
+ * image's own detail level dictated where in that range it landed, to
+ * stay under ~300KB while looking right): same photo, same crop, same
+ * dimensions, ~230KB-300KB each, ~48-68% smaller depending on the image.
+ * Originals kept, unreferenced, per the standing "do not delete" rule.
  */
 export const FACIAL_PROCEDURE_IDS = [
   "face-lift",
@@ -153,7 +164,7 @@ export const FACIAL_PROCEDURES: readonly FacialProcedure[] = [
         "الحضور لمتابعة مسار التعافي في المواعيد المحددة",
       ],
     },
-    imagePath: "/media/services/facial-cosmetic-surgery/procedure-face-lift.png",
+    imagePath: "/media/services/facial-cosmetic-surgery/procedure-face-lift.jpg",
   },
   {
     id: "submental-liposuction",
@@ -234,7 +245,7 @@ export const FACIAL_PROCEDURES: readonly FacialProcedure[] = [
         "الحضور لمتابعة مسار التعافي",
       ],
     },
-    imagePath: "/media/services/facial-cosmetic-surgery/procedure-submental-liposuction.png",
+    imagePath: "/media/services/facial-cosmetic-surgery/procedure-submental-liposuction.jpg",
   },
   {
     id: "buccal-fat",
@@ -315,7 +326,7 @@ export const FACIAL_PROCEDURES: readonly FacialProcedure[] = [
         "متابعة مسار التعافي",
       ],
     },
-    imagePath: "/media/services/facial-cosmetic-surgery/procedure-buccal-fat.png",
+    imagePath: "/media/services/facial-cosmetic-surgery/procedure-buccal-fat.jpg",
   },
   {
     id: "cheek-implant",
@@ -399,7 +410,7 @@ export const FACIAL_PROCEDURES: readonly FacialProcedure[] = [
     // Round 2026-08-17: no dedicated cheek-implant photo was supplied —
     // the overview section's own image stands in for now. Flagged to
     // Hamid in this round's report; replace once the real one arrives.
-    imagePath: "/media/services/facial-cosmetic-surgery/section-facial-procedures.png",
+    imagePath: "/media/services/facial-cosmetic-surgery/section-facial-procedures.jpg",
     imageIsPlaceholder: true,
   },
   {
@@ -481,7 +492,7 @@ export const FACIAL_PROCEDURES: readonly FacialProcedure[] = [
         "الحضور لمراجعة مسار التعافي",
       ],
     },
-    imagePath: "/media/services/facial-cosmetic-surgery/procedure-jawline-contouring.png",
+    imagePath: "/media/services/facial-cosmetic-surgery/procedure-jawline-contouring.jpg",
   },
   {
     id: "blepharoplasty",
@@ -562,7 +573,7 @@ export const FACIAL_PROCEDURES: readonly FacialProcedure[] = [
         "الحضور لمراجعة مسار التحسن",
       ],
     },
-    imagePath: "/media/services/facial-cosmetic-surgery/procedure-blepharoplasty.png",
+    imagePath: "/media/services/facial-cosmetic-surgery/procedure-blepharoplasty.jpg",
   },
   {
     id: "chin-surgery",
@@ -643,7 +654,7 @@ export const FACIAL_PROCEDURES: readonly FacialProcedure[] = [
         "الحضور لمتابعة مسار التعافي",
       ],
     },
-    imagePath: "/media/services/facial-cosmetic-surgery/procedure-chin-surgery.png",
+    imagePath: "/media/services/facial-cosmetic-surgery/procedure-chin-surgery.jpg",
   },
 ];
 

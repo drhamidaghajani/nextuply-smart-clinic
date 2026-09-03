@@ -128,6 +128,21 @@ public/media/.DS_Store
 !public/media/video/hero-doctor.optimized.mp4
 !public/media/video/hero-doctor.optimized.webm
 
+# 2026-09-03 — service/gallery image payload optimization (per Hamid).
+# Each original PNG/JPG above is kept as source/backup, untouched; these
+# are the new, actually-served, optimized siblings — see
+# gallery-photos.ts's and facial-cosmetic-procedures.ts's own comments.
+!public/media/doctor-headshot.jpg
+!public/media/gallery/jaw-surgery.optimized.jpg
+!public/media/services/facial-cosmetic-surgery/hero-facial-cosmetic.jpg
+!public/media/services/facial-cosmetic-surgery/section-facial-procedures.jpg
+!public/media/services/facial-cosmetic-surgery/procedure-face-lift.jpg
+!public/media/services/facial-cosmetic-surgery/procedure-submental-liposuction.jpg
+!public/media/services/facial-cosmetic-surgery/procedure-buccal-fat.jpg
+!public/media/services/facial-cosmetic-surgery/procedure-jawline-contouring.jpg
+!public/media/services/facial-cosmetic-surgery/procedure-blepharoplasty.jpg
+!public/media/services/facial-cosmetic-surgery/procedure-chin-surgery.jpg
+
 # 2026-07-15, same amendment, follow-up (per Hamid — the certificate
 # gallery on the About page has the identical bug: real code reference,
 # real file on disk, silently excluded by the blanket rule above).

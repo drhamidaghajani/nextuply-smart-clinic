@@ -2,7 +2,6 @@
 
 import { motion, useReducedMotion } from "framer-motion";
 import Image from "next/image";
-import Link from "next/link";
 
 import type { DoctorStoryDictionary } from "@/i18n/dictionary-types";
 import { localeHref } from "@/i18n/locale-href";
@@ -21,8 +20,9 @@ import type { Locale } from "@/i18n/locales";
  * - Right column is now a cluster: the portrait plus 2 small metric
  *   cards, staggered — not just a bare portrait.
  * - Left column gained a plain bulleted values list (dot markers, not the
- *   01/02/03 numbered list from the first version) and a real CTA
- *   `Link`, not an inert button — see the note above the button below.
+ *   01/02/03 numbered list from the first version) and a real CTA link,
+ *   not an inert button — see the note above that link below (now a
+ *   plain `<a>`, not `next/link`, per the 2026-09-04 bug fix).
  *
  * Real-content flag, again — same issue as before, not a new one: the
  * rebrief's "metric cards" reused the exact same two fabricated example
@@ -274,12 +274,21 @@ export function WhyDrSadighiSection({ dict, locale }: { dict: DoctorStoryDiction
 
           <motion.div {...fadeUp(shouldReduceMotion ? 0 : 0.75)} className="mt-3 sm:mt-6 lg:mt-10">
             <motion.div whileHover={shouldReduceMotion ? undefined : { scale: 1.03 }} transition={{ duration: 0.2 }} className="inline-block">
-              <Link
+              {/* Round 2026-09-04 (bug fix, per Hamid — "button doesn't
+                  work"): plain `<a>`, not `next/link` — same documented
+                  root cause as service-tile.tsx's 2026-08-27 P0 hotfix:
+                  `Link`'s client-side navigation intercepts the click and
+                  waits on a fetch for /about that can get stuck queued
+                  behind other in-flight requests (this server's own
+                  measured TTFB is 600ms-1s+ even on a good connection —
+                  see the P1 performance audit), so the click visibly does
+                  nothing. A native `<a href>` has no JS in the click path. */}
+              <a
                 href={localeHref(locale, "/about")}
                 className="inline-flex items-center justify-center rounded-full border border-gold px-5 py-2 text-xs font-semibold text-warm-white transition-colors duration-200 hover:bg-gold/10 hover:text-gold sm:px-8 sm:py-3.5 sm:text-sm"
               >
                 {dict.cta}
-              </Link>
+              </a>
             </motion.div>
           </motion.div>
         </div>

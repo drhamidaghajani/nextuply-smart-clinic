@@ -69,8 +69,10 @@ export const footer = {
     ...SERVICES.map((service) => ({ label: service.footerLabel.ar, href: getServiceHref("ar", service.slug) })),
     { label: "تعليمات ما قبل وبعد الإجراء", href: "/ar/care-instructions" },
   ],
+  // Round 2026-09-04 (bug fix, per Hamid) — see fa.ts's own comment: the
+  // "د. صديقي" -> #why-dr-sadighi entry was removed as redundant with
+  // "عن الطبيب" below.
   guide: [
-    { label: "د. صديقي", href: "#why-dr-sadighi" },
     { label: "قبل وبعد", href: "/ar/before-after" },
     { label: "الأسئلة الشائعة", href: "#faq" },
     { label: "الفيديوهات", href: "#videos" },

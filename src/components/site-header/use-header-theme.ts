@@ -1,5 +1,6 @@
 "use client";
 
+import { usePathname } from "next/navigation";
 import { useEffect, useState } from "react";
 
 /**
@@ -24,6 +25,26 @@ import { useEffect, useState } from "react";
  * header is now never visible while sized for the hero-integrated look,
  * the previous scroll-based shrink (two height tiers) is gone too — one
  * fixed compact height is enough now that there's nothing to shrink from.
+ *
+ * Round 2026-09-04 (bug fix, per Hamid — real, reproducible: return to
+ * the homepage via a client-side navigation, e.g. clicking the header's
+ * own logo, and the header shows on Hero and is stuck on one flat navy
+ * color instead of tracking sections again). Root cause: `SiteHeader`
+ * lives in the root layout, which Next.js's App Router does NOT remount
+ * across client-side navigations — so this hook's effect, with an empty
+ * dependency array, ran its `document.querySelectorAll` + created its
+ * `IntersectionObserver` exactly ONCE, ever, against whichever page
+ * happened to be mounted first. Navigating to another page and back
+ * (client-side, no full reload) replaces the homepage's actual DOM nodes
+ * with new ones; the original observer keeps watching the now-detached
+ * old elements, which can never intersect anything again, so
+ * `background`/`isOnHero` freeze at whatever they last were the moment
+ * the user navigated away — exactly the reported "stuck navy, shows on
+ * Hero" symptom. The browser Back/Forward button doesn't reproduce it
+ * because Next's router cache can restore the same page instance (and
+ * DOM nodes) rather than creating new ones. Fix: re-run this effect on
+ * every pathname change (`usePathname()` in the dependency array) so a
+ * fresh observer is always watching the CURRENT page's live elements.
  */
 
 const DEFAULT_BACKGROUND = "#0f172a"; // Hero's own bg-deep-navy — correct color for first paint, before the observer's first callback fires.
@@ -49,6 +70,7 @@ function relativeLuminance(hex: string): number {
 }
 
 export function useHeaderTheme(): HeaderTheme {
+  const pathname = usePathname();
   const [background, setBackground] = useState(DEFAULT_BACKGROUND);
   const [isOnHero, setIsOnHero] = useState(true);
 
@@ -83,7 +105,11 @@ export function useHeaderTheme(): HeaderTheme {
 
     sections.forEach((section) => observer.observe(section));
     return () => observer.disconnect();
-  }, []);
+    // `pathname` isn't read inside this effect — it's a deliberate
+    // re-run trigger, not a missing-dependency oversight. See this
+    // function's own doc-comment above for why re-running on every route
+    // change is the actual fix.
+  }, [pathname]);
 
   return { background, isDark: relativeLuminance(background) < 0.5, isOnHero };
 }

@@ -1,6 +1,7 @@
 import { HeroParallax } from "@/components/sections/hero-parallax";
 import { HeroVideo } from "@/components/sections/hero-video";
 import type { HeroDictionary } from "@/i18n/dictionary-types";
+import { AssistantTriggerButton } from "@/modules/smart-clinic-assistant/ui/assistant-trigger-button";
 
 /**
  * HOMEPAGE_STORYBOARD.md §2 "01 — Hero". Round 8 (2026-07-07): plain
@@ -163,12 +164,21 @@ export function Hero({ dict }: { dict: HeroDictionary }) {
             className="animate-rotate-in mt-8 flex flex-wrap items-center justify-center gap-3 sm:mt-10 sm:gap-4 lg:mt-12"
             style={{ animationDelay: `${ctaDelay}ms` }}
           >
-            <button
-              type="button"
+            {/* Round 2026-09-04 (bug fix, per Hamid): this was a plain
+                <button> with no onClick at all — clicking it did nothing.
+                AssistantTriggerButton is the existing shared client leaf
+                for exactly this (Header, Footer, and other CTAs already
+                use it) — reused here rather than writing a new
+                useAssistant() call, per COMPONENT_GUIDE.md's reuse rule.
+                Hero itself stays a Server Component; only this one button
+                is a client leaf, same pattern as HeroVideo/HeroParallax. */}
+            <AssistantTriggerButton
+              intent="consultation_booking"
+              source="homepage"
               className="inline-flex items-center justify-center whitespace-nowrap rounded-full bg-gold px-7 py-3 text-sm font-semibold text-deep-navy transition-all duration-200 hover:bg-gold-hover active:scale-[0.98] sm:px-9 sm:py-3.5 sm:text-base"
             >
               {dict.ctaPrimary}
-            </button>
+            </AssistantTriggerButton>
             {/* Anchor, not a button: scrolls to Featured Services (#services)
                 — a same-page hash link needs no client JS, so Hero stays a
                 Server Component rather than converting the whole file for

@@ -1024,8 +1024,12 @@ export const fa = {
       ...SERVICES.map((service) => ({ label: service.footerLabel.fa, href: getServiceHref("fa", service.slug) })),
       { label: "مراقبت‌های قبل و بعد عمل", href: "/care-instructions" },
     ],
+    // Round 2026-09-04 (bug fix, per Hamid): removed the "دکتر صدیقی" ->
+    // #why-dr-sadighi entry — two "about the doctor" links here (one to a
+    // homepage anchor, one to the real /about page) read as redundant;
+    // "درباره دکتر" below is now the single entry for this, going to the
+    // real page.
     guide: [
-      { label: "دکتر صدیقی", href: "#why-dr-sadighi" },
       { label: "قبل و بعد", href: "/before-after" },
       { label: "سوالات متداول", href: "#faq" },
       { label: "ویدئوها", href: "#videos" },

@@ -70,8 +70,10 @@ export const footer = {
     ...SERVICES.map((service) => ({ label: service.footerLabel.en, href: getServiceHref("en", service.slug) })),
     { label: "Pre & Post Procedure Care", href: "/en/care-instructions" },
   ],
+  // Round 2026-09-04 (bug fix, per Hamid) — see fa.ts's own comment: the
+  // "Dr. Sadighi" -> #why-dr-sadighi entry was removed as redundant with
+  // "About the Doctor" below.
   guide: [
-    { label: "Dr. Sadighi", href: "#why-dr-sadighi" },
     { label: "Before & After", href: "/en/before-after" },
     { label: "FAQ", href: "#faq" },
     { label: "Videos", href: "#videos" },

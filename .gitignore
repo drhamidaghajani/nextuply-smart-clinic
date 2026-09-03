@@ -121,6 +121,13 @@ public/media/.DS_Store
 !public/media/journey/treatment-design.jpeg
 !public/media/video/hero-doctor.mp4
 
+# 2026-09-03 — hero video optimization (per Hamid's ffmpeg authorization).
+# The original hero-doctor.mp4 above is kept as source/backup, untouched;
+# these are the new, actually-served, optimized siblings — see
+# hero-video.tsx's own comment for the full story.
+!public/media/video/hero-doctor.optimized.mp4
+!public/media/video/hero-doctor.optimized.webm
+
 # 2026-07-15, same amendment, follow-up (per Hamid — the certificate
 # gallery on the About page has the identical bug: real code reference,
 # real file on disk, silently excluded by the blanket rule above).

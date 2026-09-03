@@ -117,7 +117,7 @@ export function Hero({ dict }: { dict: HeroDictionary }) {
       data-header-hero
       className="snap-section hero-exit-fade relative flex h-dvh w-full items-center justify-center overflow-hidden bg-deep-navy"
     >
-      <HeroVideo src="/media/video/hero-doctor.mp4" />
+      <HeroVideo src="/media/video/hero-doctor.optimized.mp4" webmSrc="/media/video/hero-doctor.optimized.webm" />
       <div
         aria-hidden
         className="absolute inset-0 bg-gradient-to-b from-deep-navy/35 via-deep-navy/50 to-deep-navy/75"

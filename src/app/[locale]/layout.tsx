@@ -1,4 +1,4 @@
-import type { Metadata } from "next";
+import type { Metadata, Viewport } from "next";
 import { Inter, Vazirmatn } from "next/font/google";
 import localFont from "next/font/local";
 import { notFound } from "next/navigation";
@@ -46,6 +46,37 @@ export const metadata: Metadata = {
   title: "دکتر علیرضا صدیقی | جراحی زیبایی و فک و صورت",
   description:
     "کلینیک دکتر علیرضا صدیقی — متخصص جراحی فک و صورت و زیبایی، تهران و تبریز.",
+  // Round 2026-09-08 (minimal PWA support, per Hamid): `manifest` here is
+  // Next's own metadata field — it renders the `<link rel="manifest">`
+  // tag itself, no manual `<head>` edit needed. `appleWebApp` is the
+  // iOS-specific equivalent of `display: "standalone"` (Safari doesn't
+  // read the web manifest's `display` field for "Add to Home Screen";
+  // it needs these meta tags instead) — `capable: true` + `default`
+  // status bar is the safe, un-opinionated choice (a `black`/`black-
+  // translucent` bar can visually clash with content on some pages this
+  // project doesn't control, e.g. the assistant drawer).
+  manifest: "/manifest.webmanifest",
+  appleWebApp: {
+    capable: true,
+    statusBarStyle: "default",
+    title: "Dr. Sadighi",
+  },
+};
+
+/**
+ * Round 2026-09-08 (minimal PWA support) — `themeColor` moved out of
+ * `metadata` into this separate `viewport` export: Next.js 14+ requires
+ * it here, a `metadata.themeColor` is silently ignored (a real, easy-to-
+ * miss framework change, not a stylistic choice). Same deep-navy token
+ * used site-wide (`--color-deep-navy`, `#0f172a`) — matches the manifest's
+ * own `theme_color` and the maskable icon's backdrop, so the browser
+ * chrome/OS task-switcher color is consistent with every other navy
+ * surface on the site, not a new color introduced for this.
+ */
+export const viewport: Viewport = {
+  themeColor: "#0f172a",
+  width: "device-width",
+  initialScale: 1,
 };
 
 export default async function LocaleLayout({

@@ -1,0 +1,105 @@
+<!doctype html>
+<html lang="fa" dir="rtl">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="theme-color" content="#0f172a" />
+    <title>اتصال اینترنت برقرار نیست</title>
+    <style>
+      /* No external fonts, no external assets — this file must render
+         correctly with zero network access, since that's exactly the
+         condition it exists for. System font stack only. */
+      :root {
+        --cream: #fcfbf4;
+        --warm-white: #faf7f1;
+        --gold: #c9a15a;
+        --charcoal: #2a2a28;
+        --deep-navy: #0f172a;
+      }
+      * {
+        box-sizing: border-box;
+      }
+      html,
+      body {
+        height: 100%;
+        margin: 0;
+      }
+      body {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        min-height: 100dvh;
+        padding: 24px;
+        background: var(--cream);
+        color: var(--charcoal);
+        font-family: Tahoma, "Segoe UI", system-ui, -apple-system, sans-serif;
+        text-align: center;
+      }
+      .card {
+        max-width: 420px;
+      }
+      .mark {
+        width: 56px;
+        height: 56px;
+        margin: 0 auto 24px;
+        border-radius: 9999px;
+        background: var(--deep-navy);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+      }
+      .mark svg {
+        width: 24px;
+        height: 24px;
+        stroke: var(--gold);
+        fill: none;
+        stroke-width: 1.6;
+        stroke-linecap: round;
+        stroke-linejoin: round;
+      }
+      h1 {
+        margin: 0 0 10px;
+        font-size: 18px;
+        font-weight: 700;
+        line-height: 1.6;
+        color: var(--deep-navy);
+      }
+      p {
+        margin: 0 0 28px;
+        font-size: 14px;
+        line-height: 1.9;
+        color: rgba(42, 42, 40, 0.7);
+      }
+      button {
+        appearance: none;
+        border: none;
+        border-radius: 9999px;
+        padding: 12px 28px;
+        font-size: 14px;
+        font-weight: 600;
+        font-family: inherit;
+        color: var(--warm-white);
+        background: var(--gold);
+        cursor: pointer;
+      }
+      button:hover {
+        opacity: 0.92;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="card">
+      <div class="mark" aria-hidden="true">
+        <svg viewBox="0 0 24 24">
+          <path d="M2 8.5c5.5-5 14.5-5 20 0" />
+          <path d="M5 12c3.5-3 10.5-3 14 0" />
+          <path d="M8.5 15.5c2-1.7 5-1.7 7 0" />
+          <line x1="12" y1="19" x2="12" y2="19.01" />
+        </svg>
+      </div>
+      <h1>اتصال اینترنت برقرار نیست</h1>
+      <p>لطفاً چند لحظه بعد دوباره تلاش کنید.</p>
+      <button type="button" onclick="window.location.reload()">تلاش دوباره</button>
+    </div>
+  </body>
+</html>

@@ -7,6 +7,7 @@ import type { FooterDictionary, HeaderDictionary } from "@/i18n/dictionary-types
 import type { Locale } from "@/i18n/locales";
 import { FloatingAssistantTrigger } from "@/modules/smart-clinic-assistant";
 
+import { ServiceWorkerRegister } from "./service-worker-register";
 import { SiteFooter } from "./sections/site-footer";
 import { SiteHeader } from "./site-header";
 
@@ -100,6 +101,7 @@ export function SiteChrome({
       <SiteFooter dict={footerDict} locale={locale} />
       <FloatingAssistantTrigger />
       <AssistantDrawer />
+      <ServiceWorkerRegister />
     </>
   );
 }

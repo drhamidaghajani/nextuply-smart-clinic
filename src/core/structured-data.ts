@@ -1,4 +1,9 @@
-import type { KnowledgeArticleFaqItem, KnowledgeArticleMedicalReview } from "@/content/knowledge-articles";
+import type {
+  KnowledgeArticleFaqItem,
+  KnowledgeArticleMedicalReview,
+  KnowledgeArticleReviewStatus,
+  KnowledgeArticleTranslationStatus,
+} from "@/content/knowledge-articles";
 import type { BreadcrumbItem } from "@/components/page/premium-breadcrumb";
 import { SITE_URL, absoluteUrl } from "@/core/site-config";
 import { localeHref } from "@/i18n/locale-href";
@@ -49,6 +54,14 @@ export function buildBreadcrumbJsonLd(items: readonly BreadcrumbItem[], locale: 
   };
 }
 
+/** A complete standalone JSON-LD document for pages that do not wrap the breadcrumb node in an existing schema.org `@graph`. */
+export function buildStandaloneBreadcrumbJsonLd(items: readonly BreadcrumbItem[], locale: Locale) {
+  return {
+    "@context": "https://schema.org" as const,
+    ...buildBreadcrumbJsonLd(items, locale),
+  };
+}
+
 /**
  * Locale-neutral shape one Knowledge Center article page resolves itself
  * to before building schema — either the Persian `KnowledgeArticle`
@@ -67,7 +80,21 @@ export interface ResolvedKnowledgeContent {
   updatedAt: string;
   structuredDataType: "MedicalWebPage" | "Article";
   medicalReview: KnowledgeArticleMedicalReview;
+  reviewStatus: KnowledgeArticleReviewStatus;
+  translationStatus: KnowledgeArticleTranslationStatus;
   faq?: readonly KnowledgeArticleFaqItem[];
+}
+
+/**
+ * One source of truth for every public medical-review claim. A translated
+ * page is approved only when both the source article and that translation
+ * are doctor-approved; source Persian content requires source approval.
+ */
+export function isKnowledgeContentMedicallyReviewed(
+  content: Pick<ResolvedKnowledgeContent, "reviewStatus" | "translationStatus">,
+  locale: Locale
+): boolean {
+  return content.reviewStatus === "doctor-approved" && (locale === "fa" || content.translationStatus === "doctor-approved");
 }
 
 /**
@@ -80,6 +107,7 @@ export interface ResolvedKnowledgeContent {
  */
 export function buildKnowledgeArticleJsonLd(content: ResolvedKnowledgeContent, locale: Locale, breadcrumbItems: readonly BreadcrumbItem[]) {
   const canonicalUrl = absoluteUrl(localeHref(locale, `/knowledge/${content.slug}`));
+  const isMedicallyReviewed = isKnowledgeContentMedicallyReviewed(content, locale);
 
   const medicalFields =
     content.structuredDataType === "MedicalWebPage"
@@ -100,7 +128,9 @@ export function buildKnowledgeArticleJsonLd(content: ResolvedKnowledgeContent, l
       datePublished: content.publishedAt,
       dateModified: content.updatedAt,
       ...medicalFields,
-      reviewedBy: { "@type": "Physician" as const, name: locale === "fa" ? content.medicalReview.reviewerName : DOCTOR_NAME[locale] },
+      ...(isMedicallyReviewed
+        ? { reviewedBy: { "@type": "Physician" as const, name: locale === "fa" ? content.medicalReview.reviewerName : DOCTOR_NAME[locale] } }
+        : {}),
       author: { "@type": "Physician" as const, name: DOCTOR_NAME[locale] },
       publisher: { "@type": "MedicalOrganization" as const, name: CLINIC_NAME[locale], url: SITE_URL },
     },

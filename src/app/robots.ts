@@ -1,4 +1,5 @@
 import type { MetadataRoute } from "next";
+import { absoluteUrl } from "@/core/site-config";
 
 /**
  * Sitewide `robots.txt` (Next.js metadata route — generates `/robots.txt`
@@ -20,5 +21,6 @@ export default function robots(): MetadataRoute.Robots {
       allow: "/",
       disallow: "/*/internal/",
     },
+    sitemap: absoluteUrl("/sitemap.xml"),
   };
 }

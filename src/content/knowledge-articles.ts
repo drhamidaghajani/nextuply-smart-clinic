@@ -604,9 +604,9 @@ export const KNOWLEDGE_ARTICLES: readonly KnowledgeArticle[] = [
     postId: "8392",
     slug: "25-سوال-متداول-در-مورد-جراحی-زیبایی-بین",
     legacyUrls: ["https://dralirezasadighi.com/25-سوال-متداول-در-مورد-جراحی-زیبایی-بین/"],
-    title: " 25 سوال متداول در مورد جراحی زیبایی بینی",
-    seoTitle: " 25 سوال متداول در مورد جراحی زیبایی بینی",
-    seoDescription: "",
+    title: "25 سوال متداول در مورد جراحی زیبایی بینی",
+    seoTitle: "25 سوال متداول در مورد جراحی زیبایی بینی",
+    seoDescription: "جراحی زیبایی بینی یا رینوپلاستی، یک عمل جراحی است که به منظور بهبود ظاهر و شکل بینی انجام می‌شود. این جراحی می‌تواند به تغییر اندازه، شکل و تعادل بینی با سایر اجزای صورت کمک کند.",
     excerpt: "",
     topicCluster: "rhinoplasty",
     serviceRelation: "rhinoplasty",
@@ -660,7 +660,7 @@ export const KNOWLEDGE_ARTICLES: readonly KnowledgeArticle[] = [
       { question: "چگونه می‌توانم بهترین جراح زیبایی بینی را انتخاب کنم؟", answer: "برای انتخاب بهترین جراح زیبایی بینی، به تجربه و تخصص جراح، نظرات بیماران قبلی، و نمونه‌های کارهای قبلی او توجه کنید. مشاوره حضوری نیز می‌تواند به شما در انتخاب بهتر کمک کند." },
     ],
     structuredDataType: "MedicalWebPage",
-    heroImage: { src: "/media/knowledge/25-سوال-متداول-در-مورد-جراحی-زیبایی-بین/hero.jpg", alt: " 25 سوال متداول در مورد جراحی زیبایی بینی" },
+    heroImage: { src: "/media/knowledge/25-سوال-متداول-در-مورد-جراحی-زیبایی-بین/hero.jpg", alt: "25 سوال متداول در مورد جراحی زیبایی بینی" },
     translations: {
       en: {
       slug: "rhinoplasty-nose-job-25-faq",

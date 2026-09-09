@@ -3,6 +3,7 @@ import { Inter, Vazirmatn } from "next/font/google";
 import localFont from "next/font/local";
 import { notFound } from "next/navigation";
 import { SiteChrome } from "@/components/site-chrome";
+import { SITE_URL } from "@/core/site-config";
 import { getDictionary } from "@/i18n/get-dictionary";
 import {
   LOCALE_DIRECTION,
@@ -43,6 +44,11 @@ export function generateStaticParams() {
 }
 
 export const metadata: Metadata = {
+  // Canonical production origin for relative URL-valued metadata in this
+  // route tree. Deliberately no layout-level canonical: a canonical here
+  // would be inherited by child pages and incorrectly point them all at
+  // the same URL. Route-level canonicals remain the page's responsibility.
+  metadataBase: new URL(SITE_URL),
   title: "دکتر علیرضا صدیقی | جراحی زیبایی و فک و صورت",
   description:
     "کلینیک دکتر علیرضا صدیقی — متخصص جراحی فک و صورت و زیبایی، تهران و تبریز.",

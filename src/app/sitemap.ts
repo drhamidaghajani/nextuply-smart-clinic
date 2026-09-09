@@ -31,6 +31,8 @@ export default function sitemap(): MetadataRoute.Sitemap {
     { url: `${SITE_URL}${localeHref(locale)}`, changeFrequency: "weekly" as const, priority: 1 },
     { url: `${SITE_URL}${localeHref(locale, "/about")}`, changeFrequency: "monthly" as const, priority: 0.7 },
     { url: `${SITE_URL}${localeHref(locale, "/contact")}`, changeFrequency: "monthly" as const, priority: 0.6 },
+    { url: `${SITE_URL}${localeHref(locale, "/services")}`, changeFrequency: "monthly" as const, priority: 0.8 },
+    { url: `${SITE_URL}${localeHref(locale, "/before-after")}`, changeFrequency: "monthly" as const, priority: 0.7 },
     { url: `${SITE_URL}${localeHref(locale, "/knowledge")}`, changeFrequency: "weekly" as const, priority: 0.6 },
     { url: `${SITE_URL}${localeHref(locale, "/care-instructions")}`, changeFrequency: "monthly" as const, priority: 0.6 },
   ]);

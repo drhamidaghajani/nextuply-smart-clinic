@@ -14,7 +14,12 @@ import { ReadingProgressBar } from "@/components/page/reading-progress-bar";
 import { ServiceVisualPanel } from "@/components/page/service-visual-panel";
 import { Reveal } from "@/components/motion/reveal";
 import { absoluteUrl } from "@/core/site-config";
-import { buildKnowledgeArticleHreflangAlternates, buildKnowledgeArticleJsonLd, DOCTOR_NAME } from "@/core/structured-data";
+import {
+  buildKnowledgeArticleHreflangAlternates,
+  buildKnowledgeArticleJsonLd,
+  DOCTOR_NAME,
+  isKnowledgeContentMedicallyReviewed,
+} from "@/core/structured-data";
 import { getServiceById, getServiceHref } from "@/content/services";
 import {
   getKnowledgeArticleBySlug,
@@ -224,6 +229,10 @@ export default async function KnowledgeArticlePage({ params }: { params: Promise
   const backArrow = isRtl ? "→" : "←";
 
   const breadcrumbItems = [{ label: dict.eyebrow, href: localeHref(locale, "/knowledge") }, { label: content.title }];
+  const isMedicallyReviewed = isKnowledgeContentMedicallyReviewed(
+    { reviewStatus: article.reviewStatus, translationStatus: content.translationStatus },
+    locale
+  );
   const jsonLd = buildKnowledgeArticleJsonLd(
     {
       slug: content.slug,
@@ -234,6 +243,8 @@ export default async function KnowledgeArticlePage({ params }: { params: Promise
       updatedAt: article.updatedAt,
       structuredDataType: article.structuredDataType,
       medicalReview: article.medicalReview,
+      reviewStatus: article.reviewStatus,
+      translationStatus: content.translationStatus,
     },
     locale,
     breadcrumbItems
@@ -286,9 +297,11 @@ export default async function KnowledgeArticlePage({ params }: { params: Promise
               </span>
             </div>
 
-            <div className="mt-4">
-              <MedicalReviewBadge reviewerName={locale === "fa" ? article.medicalReview.reviewerName : DOCTOR_NAME[locale]} locale={locale} />
-            </div>
+            {isMedicallyReviewed ? (
+              <div className="mt-4">
+                <MedicalReviewBadge reviewerName={locale === "fa" ? article.medicalReview.reviewerName : DOCTOR_NAME[locale]} locale={locale} />
+              </div>
+            ) : null}
 
             {showToc ? (
               <div className="mt-8 lg:hidden">

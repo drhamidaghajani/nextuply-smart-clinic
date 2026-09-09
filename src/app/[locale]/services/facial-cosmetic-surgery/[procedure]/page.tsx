@@ -12,7 +12,7 @@ import { SERVICE_SLUG_TO_CATEGORY } from "@/content/before-after-cases";
 import { FACIAL_PROCEDURES, getFacialProcedureBySlug, type FacialProcedure } from "@/content/facial-cosmetic-procedures";
 import { getBeforeAfterHref, getServiceById } from "@/content/services";
 import { absoluteUrl } from "@/core/site-config";
-import { buildBreadcrumbJsonLd } from "@/core/structured-data";
+import { buildStandaloneBreadcrumbJsonLd } from "@/core/structured-data";
 import { getDictionary } from "@/i18n/get-dictionary";
 import { localeHref } from "@/i18n/locale-href";
 import { isSupportedLocale, LOCALE_DIRECTION, SUPPORTED_LOCALES, type Locale } from "@/i18n/locales";
@@ -47,8 +47,8 @@ const SERVICE_SLUG = "facial-cosmetic-surgery";
  * the SAME slug in every locale (this route's own convention — every
  * `FacialProcedure.slug` is one string shared across locales, matching
  * how `content/services.ts` itself works, unlike Knowledge articles which
- * get a distinct slug per translation), plus a `BreadcrumbList` JSON-LD
- * via the existing generic `buildBreadcrumbJsonLd` helper.
+ * get a distinct slug per translation), plus a standalone
+ * `BreadcrumbList` JSON-LD document with its own schema.org context.
  */
 export function generateStaticParams() {
   return SUPPORTED_LOCALES.flatMap((locale) => FACIAL_PROCEDURES.map((procedure) => ({ locale, procedure: procedure.slug })));
@@ -117,7 +117,7 @@ export default async function FacialCosmeticProcedurePage({
 
   const relatedProcedures: readonly FacialProcedure[] = FACIAL_PROCEDURES.filter((item) => item.slug !== procedure.slug);
 
-  const breadcrumbJsonLd = buildBreadcrumbJsonLd(
+  const breadcrumbJsonLd = buildStandaloneBreadcrumbJsonLd(
     [
       { label: dict.eyebrow, href: localeHref(locale, "/services") },
       { label: parentService.title, href: parentHref },

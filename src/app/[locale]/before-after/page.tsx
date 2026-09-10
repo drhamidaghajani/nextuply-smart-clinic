@@ -1,13 +1,28 @@
 import { existsSync } from "node:fs";
 import path from "node:path";
+import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import { AssistantCtaSection } from "@/components/page/assistant-cta-section";
 import { BeforeAfterShowcase } from "@/components/page/before-after-showcase";
 import { DisclaimerBanner } from "@/components/page/disclaimer-banner";
 import { PageHero } from "@/components/page/page-hero";
 import { BEFORE_AFTER_CASES, isBeforeAfterCategory, type BeforeAfterCase } from "@/content/before-after-cases";
+import { buildLocalizedPageMetadata } from "@/core/seo-metadata.server";
 import { getDictionary } from "@/i18n/get-dictionary";
 import { isSupportedLocale } from "@/i18n/locales";
+
+export async function generateMetadata({ params }: { params: Promise<{ locale: string }> }): Promise<Metadata> {
+  const { locale } = await params;
+  if (!isSupportedLocale(locale)) return {};
+
+  const page = getDictionary(locale).beforeAfterPage;
+  return buildLocalizedPageMetadata({
+    locale,
+    path: "/before-after",
+    title: page.title,
+    description: page.subtitle,
+  });
+}
 
 /**
  * Task 6 (image validation, 2026-08-25 rebuild): confirms both files of

@@ -1,3 +1,4 @@
+import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import { AssistantCtaSection } from "@/components/page/assistant-cta-section";
 import { ContentSection } from "@/components/page/content-section";
@@ -5,8 +6,22 @@ import { EditorialIntro } from "@/components/page/editorial-intro";
 import { PageHero } from "@/components/page/page-hero";
 import { ServiceJourney } from "@/components/page/service-journey";
 import { TourismNav } from "@/components/page/tourism-nav";
+import { buildLocalizedPageMetadata } from "@/core/seo-metadata.server";
 import { getDictionary } from "@/i18n/get-dictionary";
 import { isSupportedLocale } from "@/i18n/locales";
+
+export async function generateMetadata({ params }: { params: Promise<{ locale: string }> }): Promise<Metadata> {
+  const { locale } = await params;
+  if (!isSupportedLocale(locale)) return {};
+
+  const overview = getDictionary(locale).healthTourism.overview;
+  return buildLocalizedPageMetadata({
+    locale,
+    path: "/health-tourism",
+    title: overview.title,
+    description: overview.subtitle,
+  });
+}
 
 /**
  * Round 2026-07-13 (design-quality pass): the 3-card bordered grid

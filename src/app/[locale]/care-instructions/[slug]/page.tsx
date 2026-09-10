@@ -1,5 +1,6 @@
 import Image from "next/image";
 import Link from "next/link";
+import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import type { ReactNode } from "react";
 import { AssistantCtaSection } from "@/components/page/assistant-cta-section";
@@ -10,12 +11,29 @@ import { PageHero } from "@/components/page/page-hero";
 import { Reveal } from "@/components/motion/reveal";
 import { CARE_TOPIC_IDS, getCareTopicBySlug } from "@/content/care-instructions";
 import { getServiceById, getServiceHref } from "@/content/services";
+import { buildLocalizedPageMetadata } from "@/core/seo-metadata.server";
 import { getDictionary } from "@/i18n/get-dictionary";
 import { localeHref } from "@/i18n/locale-href";
 import { isSupportedLocale, SUPPORTED_LOCALES } from "@/i18n/locales";
 
 export function generateStaticParams() {
   return SUPPORTED_LOCALES.flatMap((locale) => CARE_TOPIC_IDS.map((slug) => ({ locale, slug })));
+}
+
+export async function generateMetadata({ params }: { params: Promise<{ locale: string; slug: string }> }): Promise<Metadata> {
+  const { locale, slug } = await params;
+  if (!isSupportedLocale(locale)) return {};
+
+  const topic = getCareTopicBySlug(slug);
+  if (!topic) return {};
+
+  return buildLocalizedPageMetadata({
+    locale,
+    path: `/care-instructions/${topic.slug}`,
+    title: topic.title[locale],
+    description: topic.shortDescription[locale],
+    imagePaths: topic.imagePath ? [topic.imagePath] : undefined,
+  });
 }
 
 /** cream/warm-white pair, in that order, matching the hex values `ContentSection`'s `headerBg` already uses elsewhere on this page. */

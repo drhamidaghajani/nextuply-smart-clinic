@@ -1,3 +1,4 @@
+import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 
@@ -11,6 +12,7 @@ import { Reveal } from "@/components/motion/reveal";
 import { SERVICE_SLUG_TO_CATEGORY } from "@/content/before-after-cases";
 import { FACIAL_PROCEDURES } from "@/content/facial-cosmetic-procedures";
 import { getBeforeAfterHref, getServiceById } from "@/content/services";
+import { buildLocalizedPageMetadata } from "@/core/seo-metadata.server";
 import { getDictionary } from "@/i18n/get-dictionary";
 import { localeHref } from "@/i18n/locale-href";
 import { isSupportedLocale, LOCALE_DIRECTION, SUPPORTED_LOCALES } from "@/i18n/locales";
@@ -23,6 +25,23 @@ const SERVICE_SLUG = "facial-cosmetic-surgery";
 // .jpg since 2026-09-03 (image payload optimization) — see
 // facial-cosmetic-procedures.ts's own comment on this same batch of images.
 const HERO_IMAGE = "/media/services/facial-cosmetic-surgery/hero-facial-cosmetic.jpg";
+
+export async function generateMetadata({ params }: { params: Promise<{ locale: string }> }): Promise<Metadata> {
+  const { locale } = await params;
+  if (!isSupportedLocale(locale)) return {};
+
+  const dict = getDictionary(locale).servicesPage;
+  const service = dict.items.find((item) => item.slug === SERVICE_SLUG);
+  if (!service) return {};
+
+  return buildLocalizedPageMetadata({
+    locale,
+    path: `/services/${SERVICE_SLUG}`,
+    title: service.title,
+    description: dict.facialCosmetic.heroSubtitle,
+    imagePaths: [HERO_IMAGE],
+  });
+}
 
 /**
  * Round 2026-08-17 — Facial Cosmetic Surgery, rebuilt as a parent/

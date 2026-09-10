@@ -108,6 +108,7 @@ export function isKnowledgeContentMedicallyReviewed(
 export function buildKnowledgeArticleJsonLd(content: ResolvedKnowledgeContent, locale: Locale, breadcrumbItems: readonly BreadcrumbItem[]) {
   const canonicalUrl = absoluteUrl(localeHref(locale, `/knowledge/${content.slug}`));
   const isMedicallyReviewed = isKnowledgeContentMedicallyReviewed(content, locale);
+  const validFaqItems = content.faq?.filter((item) => item.question.trim().length > 0 && item.answer.trim().length > 0) ?? [];
 
   const medicalFields =
     content.structuredDataType === "MedicalWebPage"
@@ -137,11 +138,11 @@ export function buildKnowledgeArticleJsonLd(content: ResolvedKnowledgeContent, l
     buildBreadcrumbJsonLd(breadcrumbItems, locale),
   ];
 
-  if (content.faq && content.faq.length > 0) {
+  if (validFaqItems.length > 0) {
     graph.push({
       "@type": "FAQPage" as const,
       "@id": `${canonicalUrl}#faq`,
-      mainEntity: content.faq.map((item) => ({
+      mainEntity: validFaqItems.map((item) => ({
         "@type": "Question" as const,
         name: item.question,
         acceptedAnswer: { "@type": "Answer" as const, text: item.answer },

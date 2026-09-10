@@ -1,8 +1,10 @@
+import type { Metadata } from "next";
 import dynamic from "next/dynamic";
 import { notFound } from "next/navigation";
 import { SERVICES } from "@/content/services";
 import { resolveFeaturedHomepageArticles } from "@/content/knowledge-center-homepage";
 import { Hero } from "@/components/sections/hero";
+import { buildLocalizedPageMetadata } from "@/core/seo-metadata.server";
 import { getDictionary } from "@/i18n/get-dictionary";
 import { isSupportedLocale } from "@/i18n/locales";
 
@@ -38,6 +40,19 @@ const PatientStoriesSection = dynamic(() => import("@/components/sections/patien
 const KnowledgeCenterSection = dynamic(() => import("@/components/sections/knowledge-center-section").then((m) => m.KnowledgeCenterSection));
 const VideoHubSection = dynamic(() => import("@/components/sections/video-hub-section").then((m) => m.VideoHubSection));
 const FaqSection = dynamic(() => import("@/components/sections/faq-section").then((m) => m.FaqSection));
+
+export async function generateMetadata({ params }: { params: Promise<{ locale: string }> }): Promise<Metadata> {
+  const { locale } = await params;
+  if (!isSupportedLocale(locale)) return {};
+
+  const { hero } = getDictionary(locale);
+  return buildLocalizedPageMetadata({
+    locale,
+    path: "/",
+    title: `${hero.doctorName} | ${hero.doctorSpecialty}`,
+    description: hero.title,
+  });
+}
 
 /**
  * Homepage. Emptied 2026-07-08, rebuilt section-by-section through

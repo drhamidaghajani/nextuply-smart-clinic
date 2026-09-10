@@ -9,6 +9,7 @@ import { Reveal } from "@/components/motion/reveal";
 import { ServiceTile } from "@/components/sections/service-tile";
 import { AssistantTriggerButton } from "@/modules/smart-clinic-assistant/ui/assistant-trigger-button";
 import { SERVICES } from "@/content/services";
+import { buildLocalizedPageMetadata } from "@/core/seo-metadata.server";
 import { getDictionary } from "@/i18n/get-dictionary";
 import { localeHref } from "@/i18n/locale-href";
 import { isSupportedLocale, LOCALE_DIRECTION } from "@/i18n/locales";
@@ -17,7 +18,12 @@ export async function generateMetadata({ params }: { params: Promise<{ locale: s
   const { locale } = await params;
   if (!isSupportedLocale(locale)) return {};
   const dict = getDictionary(locale).about;
-  return { title: dict.metaTitle, description: dict.positioning };
+  return buildLocalizedPageMetadata({
+    locale,
+    path: "/about",
+    title: dict.metaTitle,
+    description: dict.positioning,
+  });
 }
 
 /** First run of digits (Latin, Persian, or Arabic-Indic) in a string, or null — used to pull each credential's real rank number instead of a fake sequential index. */

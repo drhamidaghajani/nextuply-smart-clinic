@@ -1,3 +1,4 @@
+import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { AssistantCtaSection } from "@/components/page/assistant-cta-section";
@@ -6,9 +7,23 @@ import { EditorialIntro } from "@/components/page/editorial-intro";
 import { PageHero } from "@/components/page/page-hero";
 import { ServiceIndexList } from "@/components/page/service-index-list";
 import { SERVICES } from "@/content/services";
+import { buildLocalizedPageMetadata } from "@/core/seo-metadata.server";
 import { getDictionary } from "@/i18n/get-dictionary";
 import { localeHref } from "@/i18n/locale-href";
 import { isSupportedLocale, LOCALE_DIRECTION } from "@/i18n/locales";
+
+export async function generateMetadata({ params }: { params: Promise<{ locale: string }> }): Promise<Metadata> {
+  const { locale } = await params;
+  if (!isSupportedLocale(locale)) return {};
+
+  const dict = getDictionary(locale).servicesPage;
+  return buildLocalizedPageMetadata({
+    locale,
+    path: "/services",
+    title: dict.heading,
+    description: dict.subheading,
+  });
+}
 
 /**
  * Round 2026-07-13 (service-page premium redesign, per Hamid): the

@@ -1,3 +1,4 @@
+import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { AssistantCtaSection } from "@/components/page/assistant-cta-section";
@@ -6,8 +7,22 @@ import { PageHero } from "@/components/page/page-hero";
 import { ServiceVisualPanel } from "@/components/page/service-visual-panel";
 import { Reveal } from "@/components/motion/reveal";
 import { CARE_TOPICS, getCareInstructionHref } from "@/content/care-instructions";
+import { buildLocalizedPageMetadata } from "@/core/seo-metadata.server";
 import { getDictionary } from "@/i18n/get-dictionary";
 import { isSupportedLocale } from "@/i18n/locales";
+
+export async function generateMetadata({ params }: { params: Promise<{ locale: string }> }): Promise<Metadata> {
+  const { locale } = await params;
+  if (!isSupportedLocale(locale)) return {};
+
+  const dict = getDictionary(locale).careInstructions;
+  return buildLocalizedPageMetadata({
+    locale,
+    path: "/care-instructions",
+    title: dict.heading,
+    description: dict.subheading,
+  });
+}
 
 /**
  * New patient-care hub (Hamid's "مراقبت‌های قبل و بعد عمل" brief,

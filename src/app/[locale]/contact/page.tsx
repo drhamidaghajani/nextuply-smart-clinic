@@ -1,10 +1,25 @@
+import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import { AssistantCtaSection } from "@/components/page/assistant-cta-section";
 import { EditorialIntro } from "@/components/page/editorial-intro";
 import { PageHero } from "@/components/page/page-hero";
 import { Reveal } from "@/components/motion/reveal";
+import { buildLocalizedPageMetadata } from "@/core/seo-metadata.server";
 import { getDictionary } from "@/i18n/get-dictionary";
 import { isSupportedLocale } from "@/i18n/locales";
+
+export async function generateMetadata({ params }: { params: Promise<{ locale: string }> }): Promise<Metadata> {
+  const { locale } = await params;
+  if (!isSupportedLocale(locale)) return {};
+
+  const contact = getDictionary(locale).contact;
+  return buildLocalizedPageMetadata({
+    locale,
+    path: "/contact",
+    title: `${contact.eyebrow} | ${contact.title}`,
+    description: contact.subtitle,
+  });
+}
 
 function toTelHref(value: string): string {
   return `tel:${value.replace(/[^0-9+]/g, "")}`;

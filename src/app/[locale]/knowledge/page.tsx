@@ -1,3 +1,4 @@
+import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { AssistantCtaSection } from "@/components/page/assistant-cta-section";
@@ -8,10 +9,24 @@ import { Reveal } from "@/components/motion/reveal";
 import { getReadingTimeLabel } from "@/content/reading-time";
 import { getServiceById } from "@/content/services";
 import { KNOWLEDGE_ARTICLES, type KnowledgeArticle, type KnowledgeArticleTranslation, type KnowledgeTopicCluster } from "@/content/knowledge-articles";
+import { buildLocalizedPageMetadata } from "@/core/seo-metadata.server";
 import { formatDateForLocale } from "@/i18n/format-jalali-date";
 import { getDictionary } from "@/i18n/get-dictionary";
 import { localeHref } from "@/i18n/locale-href";
 import { isSupportedLocale, LOCALE_DIRECTION, type Locale } from "@/i18n/locales";
+
+export async function generateMetadata({ params }: { params: Promise<{ locale: string }> }): Promise<Metadata> {
+  const { locale } = await params;
+  if (!isSupportedLocale(locale)) return {};
+
+  const dict = getDictionary(locale).knowledge;
+  return buildLocalizedPageMetadata({
+    locale,
+    path: "/knowledge",
+    title: dict.heading,
+    description: dict.subheading,
+  });
+}
 
 /**
  * Round 2026-07-13 (design-quality pass): rebuilt as an editorial

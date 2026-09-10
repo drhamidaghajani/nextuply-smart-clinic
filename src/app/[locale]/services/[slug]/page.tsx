@@ -1,3 +1,4 @@
+import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { AssistantCtaSection } from "@/components/page/assistant-cta-section";
@@ -14,6 +15,7 @@ import { PHOTO_POSITION, REAL_PHOTOS } from "@/components/sections/gallery-photo
 import { SERVICE_SLUG_TO_CATEGORY } from "@/content/before-after-cases";
 import { getCareInstructionHref, getCareTopicsForService } from "@/content/care-instructions";
 import { getBeforeAfterHref, getServiceById, SERVICE_TAXONOMY_IDS } from "@/content/services";
+import { buildLocalizedPageMetadata } from "@/core/seo-metadata.server";
 import { localeHref } from "@/i18n/locale-href";
 import { getDictionary } from "@/i18n/get-dictionary";
 import { isSupportedLocale, LOCALE_DIRECTION, SUPPORTED_LOCALES } from "@/i18n/locales";
@@ -33,6 +35,21 @@ export function generateStaticParams() {
   return SUPPORTED_LOCALES.flatMap((locale) =>
     SERVICE_TAXONOMY_IDS.filter((slug) => !OWN_ROUTE_SLUGS.has(slug)).map((slug) => ({ locale, slug })),
   );
+}
+
+export async function generateMetadata({ params }: { params: Promise<{ locale: string; slug: string }> }): Promise<Metadata> {
+  const { locale, slug } = await params;
+  if (!isSupportedLocale(locale)) return {};
+
+  const service = getDictionary(locale).servicesPage.items.find((item) => item.slug === slug);
+  if (!service || OWN_ROUTE_SLUGS.has(slug)) return {};
+
+  return buildLocalizedPageMetadata({
+    locale,
+    path: `/services/${slug}`,
+    title: service.title,
+    description: service.subtitle,
+  });
 }
 
 /**

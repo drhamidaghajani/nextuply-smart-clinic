@@ -38,7 +38,7 @@ const CaseGallerySection = dynamic(() => import("@/components/sections/case-gall
 const PatientJourneySection = dynamic(() => import("@/components/sections/patient-journey-section").then((m) => m.PatientJourneySection));
 const PatientStoriesSection = dynamic(() => import("@/components/sections/patient-stories-section").then((m) => m.PatientStoriesSection));
 const KnowledgeCenterSection = dynamic(() => import("@/components/sections/knowledge-center-section").then((m) => m.KnowledgeCenterSection));
-const VideoHubSection = dynamic(() => import("@/components/sections/video-hub-section").then((m) => m.VideoHubSection));
+const HomepageCareSection = dynamic(() => import("@/components/sections/homepage-care-section").then((m) => m.HomepageCareSection));
 const FaqSection = dynamic(() => import("@/components/sections/faq-section").then((m) => m.FaqSection));
 
 export async function generateMetadata({ params }: { params: Promise<{ locale: string }> }): Promise<Metadata> {
@@ -59,8 +59,8 @@ export async function generateMetadata({ params }: { params: Promise<{ locale: s
  * 2026-07-07 — see git history for the placement rationale of each
  * section below (Hero → Smart Clinic Assistant → Featured Services → Why
  * Dr. Sadighi → Case Gallery/Before-After → Patient Journey → Patient
- * Stories → Knowledge Center → Video Hub → FAQ), none of that changed in
- * this round.
+ * Stories → Knowledge Center → Care → FAQ). The former Video Hub slot was
+ * intentionally replaced with the patient-care gateway in 2026-09.
  *
  * Round 2026-07-13 (docs/adr/0005): `en`/`ar` were first given a minimal
  * "coming soon" holding page instead of the real homepage body, since
@@ -112,7 +112,7 @@ export default async function HomePage({
       <PatientJourneySection dict={dict.patientJourney} locale={locale} />
       <PatientStoriesSection dict={dict.patientStories} locale={locale} instagramHandle={dict.footer.instagram} />
       <KnowledgeCenterSection dict={dict.knowledgeCenter} locale={locale} articles={knowledgeCenterArticles} />
-      <VideoHubSection dict={dict.videoHub} locale={locale} />
+      <HomepageCareSection dict={dict.careInstructions} locale={locale} />
       <FaqSection dict={dict.faqSection} locale={locale} />
     </main>
   );

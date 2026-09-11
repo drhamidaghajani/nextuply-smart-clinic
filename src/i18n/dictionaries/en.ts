@@ -49,9 +49,9 @@ export const header = {
     { href: "#services", label: "Services" },
     { href: "/en/before-after", label: "Before & After" },
     { href: "#faq", label: "FAQ" },
-    { href: "#videos", label: "Videos" },
+    { href: "/en/care-instructions", label: "Care" },
     { href: "/en/knowledge", label: "Knowledge Center" },
-    { href: "#contact", label: "Contact" },
+    { href: "/en/contact", label: "Contact" },
   ],
   ctaLabel: "Book a Consultation",
   openMenuLabel: "Open menu",
@@ -76,9 +76,8 @@ export const footer = {
   guide: [
     { label: "Before & After", href: "/en/before-after" },
     { label: "FAQ", href: "#faq" },
-    { label: "Videos", href: "#videos" },
     { label: "Knowledge Center", href: "/en/knowledge" },
-    { label: "Contact", href: "#contact" },
+    { label: "Contact", href: "/en/contact" },
     { label: "About the Doctor", href: "/en/about" },
     { label: "Treatments", href: "/en/services" },
     { label: "Health Tourism", href: "/en/health-tourism" },
@@ -792,6 +791,8 @@ const contact = {
   ctaButton: "Start a conversation with the Assistant",
   locationsHeading: "Clinic Locations",
   hoursHeading: "Hours",
+  mapTitle: "Dr. Alireza Sadighi Clinic location on Google Maps",
+  mapCta: "View on Google Maps",
 } satisfies ContactPageDictionary;
 
 const servicesPage = {
@@ -1249,6 +1250,8 @@ const careInstructions = {
   eyebrow: "Patient Guide",
   heading: "Pre & Post Procedure Care",
   subheading: "General care guidance for preparing before surgery and a calm recovery afterward.",
+  homepageHeading: "Pre- and Post-Procedure Care",
+  homepageCta: "View Care Guides",
   trustNote: "These guides are prepared under the clinic's medical team and complement — not replace — your doctor's direct instructions.",
   viewGuideCta: "View Guide",
   safetyNote: "These guides are for general care awareness and do not replace direct medical instructions from your doctor.",

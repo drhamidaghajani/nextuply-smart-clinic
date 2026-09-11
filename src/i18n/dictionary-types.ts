@@ -527,6 +527,8 @@ export interface ContactPageDictionary {
   ctaButton: string;
   locationsHeading: string;
   hoursHeading: string;
+  mapTitle: string;
+  mapCta: string;
 }
 
 export interface ServiceDetail {
@@ -725,6 +727,8 @@ export interface CareInstructionsPageDictionary {
   eyebrow: string;
   heading: string;
   subheading: string;
+  homepageHeading: string;
+  homepageCta: string;
   trustNote: string;
   viewGuideCta: string;
   safetyNote: string;

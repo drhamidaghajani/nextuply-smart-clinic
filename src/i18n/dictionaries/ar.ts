@@ -49,9 +49,9 @@ export const header = {
     { href: "#services", label: "الخدمات" },
     { href: "/ar/before-after", label: "قبل وبعد" },
     { href: "#faq", label: "الأسئلة الشائعة" },
-    { href: "#videos", label: "الفيديوهات" },
+    { href: "/ar/care-instructions", label: "العناية" },
     { href: "/ar/knowledge", label: "مركز المعرفة" },
-    { href: "#contact", label: "تواصل معنا" },
+    { href: "/ar/contact", label: "تواصل معنا" },
   ],
   ctaLabel: "احجز استشارة",
   openMenuLabel: "فتح القائمة",
@@ -75,9 +75,8 @@ export const footer = {
   guide: [
     { label: "قبل وبعد", href: "/ar/before-after" },
     { label: "الأسئلة الشائعة", href: "#faq" },
-    { label: "الفيديوهات", href: "#videos" },
     { label: "مركز المعرفة", href: "/ar/knowledge" },
-    { label: "تواصل معنا", href: "#contact" },
+    { label: "تواصل معنا", href: "/ar/contact" },
     { label: "عن الطبيب", href: "/ar/about" },
     { label: "الخدمات العلاجية", href: "/ar/services" },
     { label: "السياحة العلاجية", href: "/ar/health-tourism" },
@@ -776,6 +775,8 @@ const contact = {
   ctaButton: "بدء محادثة مع المساعد الذكي",
   locationsHeading: "مكاتب العيادة",
   hoursHeading: "ساعات العمل",
+  mapTitle: "موقع عيادة الدكتور علیرضا صدیقی على خرائط Google",
+  mapCta: "عرض الموقع على خرائط Google",
 } satisfies ContactPageDictionary;
 
 const servicesPage = {
@@ -1215,6 +1216,8 @@ const careInstructions = {
   eyebrow: "دليل المرضى",
   heading: "تعليمات ما قبل وبعد الإجراء",
   subheading: "إرشادات عامة للعناية، للاستعداد قبل الجراحة والتعافي الهادئ بعدها.",
+  homepageHeading: "العناية قبل الإجراء وبعده",
+  homepageCta: "عرض أدلة العناية",
   trustNote: "أُعدّت هذه الأدلة بإشراف الفريق الطبي للعيادة، وهي مكمّلة لتعليمات الطبيب المباشرة لا بديلاً عنها.",
   viewGuideCta: "عرض الدليل",
   safetyNote: "هذه الإرشادات للتوعية العامة بالعناية ولا تغني عن تعليمات الطبيب المباشرة.",

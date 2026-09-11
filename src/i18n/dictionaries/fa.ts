@@ -19,6 +19,8 @@ export const careInstructions: CareInstructionsPageDictionary = {
   eyebrow: "راهنمای بیماران",
   heading: "مراقبت‌های قبل و بعد عمل",
   subheading: "راهنماهای عمومی مراقبت، برای آمادگی پیش از عمل و بهبودی آرام پس از آن.",
+  homepageHeading: "مراقبت‌های قبل و بعد از عمل",
+  homepageCta: "مشاهده راهنمای مراقبت‌ها",
   trustNote: "این راهنماها زیر نظر تیم درمانی کلینیک تهیه شده‌اند و مکمل دستور مستقیم پزشک‌اند، نه جایگزین آن.",
   viewGuideCta: "مشاهده",
   safetyNote:
@@ -526,9 +528,9 @@ export const fa = {
       { href: "#services", label: "خدمات" },
       { href: "/before-after", label: "قبل و بعد" },
       { href: "#faq", label: "سوالات متداول" },
-      { href: "#videos", label: "ویدئوها" },
+      { href: "/care-instructions", label: "مراقبت‌ها" },
       { href: "/knowledge", label: "دانشنامه" },
-      { href: "#contact", label: "تماس" },
+      { href: "/contact", label: "تماس" },
     ],
     ctaLabel: "رزرو مشاوره",
     openMenuLabel: "باز کردن منو",
@@ -1032,9 +1034,8 @@ export const fa = {
     guide: [
       { label: "قبل و بعد", href: "/before-after" },
       { label: "سوالات متداول", href: "#faq" },
-      { label: "ویدئوها", href: "#videos" },
       { label: "دانشنامه", href: "/knowledge" },
-      { label: "تماس", href: "#contact" },
+      { label: "تماس", href: "/contact" },
       // Added 2026-07-13 (delivery-mode round) — real dedicated pages now
       // exist; these are absolute (locale-prefixed) paths, not in-page
       // anchors like the entries above.
@@ -1605,6 +1606,8 @@ export const fa = {
     ctaButton: "شروع گفتگو با دستیار هوشمند",
     locationsHeading: "دفاتر کلینیک",
     hoursHeading: "ساعات کاری",
+    mapTitle: "موقعیت کلینیک دکتر علیرضا صدیقی در Google Maps",
+    mapCta: "مشاهده در Google Maps",
   },
 
   // Renamed key (not `services`, which is already the homepage's

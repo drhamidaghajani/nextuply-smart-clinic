@@ -8,6 +8,9 @@ import { buildLocalizedPageMetadata } from "@/core/seo-metadata.server";
 import { getDictionary } from "@/i18n/get-dictionary";
 import { isSupportedLocale } from "@/i18n/locales";
 
+const GOOGLE_MAPS_EMBED_URL = "https://www.google.com/maps?q=38.058541996504964,46.36988216151677&z=16&output=embed";
+const GOOGLE_MAPS_SHARE_URL = "https://maps.app.goo.gl/BXsmxvB9qvEx2ZwMA";
+
 export async function generateMetadata({ params }: { params: Promise<{ locale: string }> }): Promise<Metadata> {
   const { locale } = await params;
   if (!isSupportedLocale(locale)) return {};
@@ -61,11 +64,10 @@ function IconClock({ className }: { className?: string }) {
 /**
  * Round 2026-07-13 (design-quality pass): rebuilt from three stacked
  * bordered-card sections to a single editorial contact panel (icon rows,
- * no boxed cards) alongside a quiet map-ready placeholder — no fake
- * embedded map, since no map provider/API key exists yet (documented
- * inline, not silently faked). Data unchanged, still sourced from
- * `footer.locations`/`footer.hours`/`footer.instagram` — single source
- * of truth, same real address/phone/hours the footer shows.
+ * no boxed cards). The clinic map uses a lazy iframe at the approved exact
+ * coordinates, without a Maps SDK or API key. Contact data remains sourced
+ * from `footer.locations`/`footer.hours`/`footer.instagram` — the same real
+ * address, phone, and hours the footer shows.
  */
 export default async function ContactPage({ params }: { params: Promise<{ locale: string }> }) {
   const { locale } = await params;
@@ -130,13 +132,35 @@ export default async function ContactPage({ params }: { params: Promise<{ locale
             </div>
           </Reveal>
 
-          {/* Map-ready placeholder — no map provider/API key exists yet; a
-              real embed is a separate, explicitly-scoped integration, not
-              faked here. */}
           <Reveal delay={0.1}>
-            <div className="flex h-full min-h-[280px] flex-col items-center justify-center rounded-2xl border border-charcoal/10 bg-cream text-center">
-              <IconPin className="h-8 w-8 text-charcoal/25" />
-              <p className="mt-3 max-w-[220px] text-xs leading-5 text-charcoal/40">{footer.locations.tabriz.label}</p>
+            <div className="overflow-hidden rounded-2xl border border-charcoal/10 bg-cream shadow-[0_28px_70px_-42px_rgba(15,23,42,0.45)] sm:rounded-[28px]">
+              <div className="relative min-h-[280px] overflow-hidden bg-charcoal/5 lg:min-h-[360px]">
+                <iframe
+                  src={GOOGLE_MAPS_EMBED_URL}
+                  title={contact.mapTitle}
+                  loading="lazy"
+                  referrerPolicy="no-referrer-when-downgrade"
+                  className="absolute inset-0 h-full w-full border-0 grayscale-[0.12] contrast-[0.96]"
+                />
+                <div aria-hidden className="pointer-events-none absolute inset-0 ring-1 ring-inset ring-charcoal/5" />
+              </div>
+              <div className="flex items-center justify-between gap-4 border-t border-charcoal/10 px-5 py-4 sm:px-6">
+                <div className="min-w-0">
+                  <p className="text-xs font-semibold uppercase tracking-[0.16em] text-gold">{contact.locationsHeading}</p>
+                  <p className="mt-1 truncate text-sm text-charcoal/60">{footer.locations.tabriz.label}</p>
+                </div>
+                <a
+                  href={GOOGLE_MAPS_SHARE_URL}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="inline-flex shrink-0 items-center gap-2 rounded-full border border-charcoal/15 px-4 py-2 text-xs font-semibold text-charcoal transition-[color,border-color,background-color] duration-200 hover:border-gold hover:bg-warm-white hover:text-gold focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-gold sm:text-sm"
+                >
+                  {contact.mapCta}
+                  <svg aria-hidden viewBox="0 0 20 20" fill="none" stroke="currentColor" strokeWidth={1.5} className="h-4 w-4">
+                    <path d="M7 5h8v8M15 5 6 14" strokeLinecap="round" strokeLinejoin="round" />
+                  </svg>
+                </a>
+              </div>
             </div>
           </Reveal>
         </div>

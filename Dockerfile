@@ -25,9 +25,11 @@
 # needs `openssl`/`libc6-compat` for Prisma's engine and for Next.js's
 # native image-optimization module (`sharp`) to work; installed below.
 #
-# No secrets are baked into this image at any stage — real env values are
+# No secrets are baked into this image at any stage — real secret values are
 # supplied at container-run time via `.env.production`/`.env.db` (see
-# docker-compose.production.yml), never `COPY`'d or `ARG`'d here.
+# docker-compose.production.yml), never `COPY`'d or `ARG`'d here. The sole
+# build argument below is GA4's intentionally public measurement ID, which
+# Next.js must receive at build time because it is a `NEXT_PUBLIC_*` value.
 
 FROM node:22-alpine AS deps
 WORKDIR /app
@@ -37,6 +39,8 @@ RUN npm ci
 
 FROM node:22-alpine AS build
 WORKDIR /app
+ARG NEXT_PUBLIC_GA_MEASUREMENT_ID
+ENV NEXT_PUBLIC_GA_MEASUREMENT_ID=$NEXT_PUBLIC_GA_MEASUREMENT_ID
 RUN apk add --no-cache libc6-compat openssl
 COPY --from=deps /app/node_modules ./node_modules
 COPY . .

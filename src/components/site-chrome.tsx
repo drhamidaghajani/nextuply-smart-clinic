@@ -1,12 +1,14 @@
 "use client";
 
 import dynamic from "next/dynamic";
+import { useLayoutEffect } from "react";
 import { usePathname } from "next/navigation";
 
 import type { FooterDictionary, HeaderDictionary } from "@/i18n/dictionary-types";
 import type { Locale } from "@/i18n/locales";
 import { FloatingAssistantTrigger } from "@/modules/smart-clinic-assistant";
 
+import { GoogleAnalytics } from "./analytics/google-analytics";
 import { ServiceWorkerRegister } from "./service-worker-register";
 import { SiteFooter } from "./sections/site-footer";
 import { SiteHeader } from "./site-header";
@@ -75,6 +77,7 @@ const AssistantDrawer = dynamic(() => import("@/modules/smart-clinic-assistant/u
  * `getDictionary(locale)` itself internally.
  */
 const INTERNAL_ROUTE_PATTERN = /^\/[a-z]{2}\/internal(\/|$)/;
+const GA_MEASUREMENT_ID = process.env.NEXT_PUBLIC_GA_MEASUREMENT_ID;
 
 export function SiteChrome({
   headerDict,
@@ -90,12 +93,24 @@ export function SiteChrome({
   const pathname = usePathname();
   const isInternal = INTERNAL_ROUTE_PATTERN.test(pathname);
 
+  useLayoutEffect(() => {
+    if (process.env.NODE_ENV !== "production" || !GA_MEASUREMENT_ID) return;
+
+    // The Google tag survives an App Router transition after its React
+    // component unmounts. Google's documented per-property kill switch is
+    // therefore kept in the shared route boundary and flipped before the
+    // browser paints an internal surface, preventing the retained runtime
+    // (including delayed enhanced-measurement work) from transmitting there.
+    Reflect.set(window, `ga-disable-${GA_MEASUREMENT_ID}`, isInternal);
+  }, [isInternal]);
+
   if (isInternal) {
     return <>{children}</>;
   }
 
   return (
     <>
+      <GoogleAnalytics locale={locale} />
       <SiteHeader dict={headerDict} locale={locale} />
       {children}
       <SiteFooter dict={footerDict} locale={locale} />

@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
+import { TrackedContactLink } from "@/components/analytics/tracked-contact-link";
 import { AssistantCtaSection } from "@/components/page/assistant-cta-section";
 import { EditorialIntro } from "@/components/page/editorial-intro";
 import { PageHero } from "@/components/page/page-hero";
@@ -103,20 +104,20 @@ export default async function ContactPage({ params }: { params: Promise<{ locale
               <div className="flex items-start gap-4">
                 <IconPhone className="mt-0.5 h-5 w-5 shrink-0 text-gold" />
                 <div className="flex flex-col gap-1" dir="ltr">
-                  <a href={toTelHref(footer.locations.tabriz.phone)} className="text-sm text-charcoal/80 transition-colors duration-200 hover:text-gold sm:text-base">
+                  <TrackedContactLink href={toTelHref(footer.locations.tabriz.phone)} eventName="phone_click" eventParams={{ locale, placement: "contact_page" }} className="text-sm text-charcoal/80 transition-colors duration-200 hover:text-gold sm:text-base">
                     {footer.locations.tabriz.phone}
-                  </a>
-                  <a href={toTelHref(footer.locations.tabriz.mobile)} className="text-sm text-charcoal/80 transition-colors duration-200 hover:text-gold sm:text-base">
+                  </TrackedContactLink>
+                  <TrackedContactLink href={toTelHref(footer.locations.tabriz.mobile)} eventName="phone_click" eventParams={{ locale, placement: "contact_page" }} className="text-sm text-charcoal/80 transition-colors duration-200 hover:text-gold sm:text-base">
                     {footer.locations.tabriz.mobile}
-                  </a>
+                  </TrackedContactLink>
                 </div>
               </div>
 
               <div className="flex items-start gap-4">
                 <IconInstagram className="mt-0.5 h-5 w-5 shrink-0 text-gold" />
-                <a href={instagramHref} target="_blank" rel="noopener noreferrer" className="text-sm text-charcoal/80 transition-colors duration-200 hover:text-gold sm:text-base">
+                <TrackedContactLink href={instagramHref} eventName="instagram_click" eventParams={{ locale, placement: "contact_page" }} target="_blank" rel="noopener noreferrer" className="text-sm text-charcoal/80 transition-colors duration-200 hover:text-gold sm:text-base">
                   {footer.instagram}
-                </a>
+                </TrackedContactLink>
               </div>
 
               <div className="flex items-start gap-4">

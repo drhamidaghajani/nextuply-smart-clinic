@@ -109,6 +109,7 @@ function CaseCard({ caseItem, locale }: { caseItem: BeforeAfterCase; locale: Loc
         beforeLabel={BEFORE_LABEL[locale]}
         afterLabel={AFTER_LABEL[locale]}
         ariaLabel={caseItem.title[locale]}
+        locale={locale}
       />
 
       {caseItem.views.length > 1 ? (

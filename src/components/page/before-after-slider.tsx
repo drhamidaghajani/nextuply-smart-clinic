@@ -1,7 +1,10 @@
 "use client";
 
 import Image from "next/image";
-import { useId, useState } from "react";
+import { useId, useRef, useState } from "react";
+
+import { trackEvent } from "@/core/analytics";
+import type { Locale } from "@/i18n/locales";
 
 /**
  * Lightweight before/after comparison slider — no new dependency. The
@@ -30,6 +33,7 @@ export function BeforeAfterSlider({
   beforeLabel,
   afterLabel,
   ariaLabel,
+  locale,
 }: {
   before: string;
   after: string;
@@ -38,9 +42,18 @@ export function BeforeAfterSlider({
   beforeLabel: string;
   afterLabel: string;
   ariaLabel: string;
+  locale: Locale;
 }) {
   const [position, setPosition] = useState(50);
   const id = useId();
+  const interactionTrackedRef = useRef(false);
+
+  const handleChange = (value: number) => {
+    setPosition(value);
+    if (interactionTrackedRef.current) return;
+    interactionTrackedRef.current = true;
+    trackEvent("before_after_interaction", { locale, placement: "before_after_gallery", interaction_type: "slider" });
+  };
 
   return (
     <div className="relative aspect-square w-full select-none overflow-hidden rounded-2xl bg-charcoal/5">
@@ -76,7 +89,7 @@ export function BeforeAfterSlider({
         min={0}
         max={100}
         value={position}
-        onChange={(e) => setPosition(Number(e.target.value))}
+        onChange={(event) => handleChange(Number(event.target.value))}
         className="absolute inset-0 h-full w-full cursor-ew-resize opacity-0"
       />
     </div>

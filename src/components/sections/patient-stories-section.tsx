@@ -1,5 +1,6 @@
 import Image from "next/image";
 
+import { TrackedContactLink } from "@/components/analytics/tracked-contact-link";
 import { getBeforeAfterCasesByCategory, type BeforeAfterCategory } from "@/content/before-after-cases";
 import { getBeforeAfterHref } from "@/content/services";
 import type { PatientStoriesDictionary } from "@/i18n/dictionary-types";
@@ -161,15 +162,17 @@ export function PatientStoriesSection({
               <IconGallery className="h-4 w-4" />
               {dict.beforeAfterCta}
             </a>
-            <a
+            <TrackedContactLink
               href={instagramHref}
+              eventName="instagram_click"
+              eventParams={{ locale, placement: "patient_stories" }}
               target="_blank"
               rel="noopener noreferrer"
               className="inline-flex items-center gap-2 rounded-full border border-warm-white/15 bg-warm-white/5 px-5 py-3 text-sm font-medium text-warm-white transition-colors duration-200 hover:border-gold/40 hover:text-gold"
             >
               <IconInstagram className="h-4 w-4" />
               {dict.instagramCta}
-            </a>
+            </TrackedContactLink>
             <AssistantTriggerButton
               intent="general"
               source="homepage"

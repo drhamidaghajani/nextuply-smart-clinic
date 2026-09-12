@@ -16,8 +16,14 @@ const WORDS_PER_MINUTE = 200;
 function estimateReadingTimeMinutes(sections: readonly KnowledgeArticleSection[]): number {
   const wordCount = sections.reduce((total, section) => {
     const headingWords = section.heading?.split(/\s+/).filter(Boolean).length ?? 0;
-    const paragraphWords = section.paragraphs.reduce((sum, p) => sum + p.split(/\s+/).filter(Boolean).length, 0);
-    return total + headingWords + paragraphWords;
+    const bodyWords = section.blocks
+      ? section.blocks.reduce((sum, block) => {
+          if (block.type === "paragraph" || block.type === "subheading") return sum + block.text.split(/\s+/).filter(Boolean).length;
+          if (block.type === "list") return sum + block.items.reduce((itemSum, item) => itemSum + item.split(/\s+/).filter(Boolean).length, 0);
+          return sum;
+        }, 0)
+      : section.paragraphs.reduce((sum, paragraph) => sum + paragraph.split(/\s+/).filter(Boolean).length, 0);
+    return total + headingWords + bodyWords;
   }, 0);
   return Math.max(1, Math.ceil(wordCount / WORDS_PER_MINUTE));
 }

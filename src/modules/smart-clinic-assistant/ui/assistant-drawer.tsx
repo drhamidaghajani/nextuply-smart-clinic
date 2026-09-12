@@ -4,6 +4,7 @@ import { AnimatePresence, motion, useReducedMotion } from "framer-motion";
 import { useRouter } from "next/navigation";
 import { useEffect, useRef, useState } from "react";
 
+import { trackEvent } from "@/core/analytics";
 import { getDictionary } from "@/i18n/get-dictionary";
 import { localeHref } from "@/i18n/locale-href";
 import { LOCALE_DIRECTION, type Locale } from "@/i18n/locales";
@@ -345,6 +346,7 @@ export function AssistantDrawer() {
   const entryIdRef = useRef(0);
   const seededForRef = useRef<string | null>(null);
   const shownIntroRef = useRef(false);
+  const bookingStartedTrackedRef = useRef(false);
 
   const [mode, setMode] = useState<AssistantMode>("menu");
   const [entries, setEntries] = useState<ConversationEntry[]>([]);
@@ -613,6 +615,7 @@ export function AssistantDrawer() {
 
   /** Round 2026-07-22 (item 4) — "لغو رزرو": abandons the interrupted booking rather than forcing a resume/change-service choice, per the exact 3-chip resume-card spec. Returns to the main menu; the partially-filled booking state is simply not resumed (a fresh "رزرو مشاوره" click starts clean from service selection), no separate reset action needed. */
   const handleCancelBooking = () => {
+    bookingStartedTrackedRef.current = false;
     pushEntry({ kind: "choice", text: dict.aiConversation.cancelBookingCta });
     setReturnStep(null);
     setMode("menu");
@@ -923,6 +926,7 @@ export function AssistantDrawer() {
     setLastServiceId(targetService);
     const label = dict.services.find((service) => service.id === targetService)?.label ?? targetService;
     pushEntry({ kind: "choice", text: `✓ ${dict.aiConversation.serviceSelectedPrefix}${label}` });
+    trackBookingStarted();
     setMode("booking");
     setStep("contact_capture");
   };
@@ -991,8 +995,15 @@ export function AssistantDrawer() {
   };
 
   /** Central router for every non-service-specific intent/step — the main menu, an AI-suggested step, or a chip. Service-specific navigation goes through `handleServiceSelect` instead, which also decides triage vs. straight-to-availability. */
+  const trackBookingStarted = () => {
+    if (bookingStartedTrackedRef.current) return;
+    bookingStartedTrackedRef.current = true;
+    trackEvent("booking_started", { locale, placement: source });
+  };
+
   const routeToStep = (target: AssistantStep) => {
     if (BOOKING_STEPS.includes(target)) {
+      trackBookingStarted();
       setMode("booking");
       setStep(target);
       return;
@@ -1033,6 +1044,8 @@ export function AssistantDrawer() {
         });
         return;
       case "consultation_booking":
+        bookingStartedTrackedRef.current = false;
+        trackEvent("consultation_started", { locale, placement: source });
         pushEntry({
           kind: "assistant",
           text: dict.steps.consultationBooking.intro,
@@ -1067,6 +1080,7 @@ export function AssistantDrawer() {
   };
 
   const seedConversation = (startIntent: AssistantIntent) => {
+    bookingStartedTrackedRef.current = false;
     setEntries([]);
     entryIdRef.current = 0;
     setReturnStep(null);
@@ -1106,6 +1120,7 @@ export function AssistantDrawer() {
     }
     const label = dict.services.find((service) => service.id === serviceId)?.label ?? serviceId;
     pushEntry({ kind: "choice", text: `✓ ${dict.aiConversation.serviceSelectedPrefix}${label}` });
+    trackBookingStarted();
     setMode("booking");
     setStep(serviceId === "general_consultation" ? "appointment_selection" : "triage");
   };
@@ -1160,6 +1175,7 @@ export function AssistantDrawer() {
         });
         setIsSubmittingBooking(false);
         if (result.ok) {
+          if (result.persisted) trackEvent("booking_submitted", { locale, placement: source });
           dispatch({ type: "SUBMITTED", requestId: result.leadId ?? result.request.requestedAt });
           setMode("confirmation");
           setStep("confirmation");
@@ -1363,6 +1379,7 @@ export function AssistantDrawer() {
    * "Main Menu" always lands on populated options, never a dead end.
    */
   const handleBackToMenu = () => {
+    bookingStartedTrackedRef.current = false;
     setMode("menu");
     setStep("general");
     setReturnStep(null);

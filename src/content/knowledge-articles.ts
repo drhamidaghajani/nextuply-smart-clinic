@@ -1,10 +1,11 @@
 import type { ServiceTaxonomyId } from "./services";
 import type { Locale } from "@/i18n/locales";
+import { S_LIFT_ARTICLE } from "./knowledge-s-lift";
 
 /**
  * SINGLE SOURCE OF TRUTH for Knowledge Center articles — migration from the
  * legacy WordPress site (dralirezasadighi.com), per
- * docs/migration/sadighi-wordpress-seo-audit/. 40 articles:
+ * docs/migration/sadighi-wordpress-seo-audit/, plus clinic-supplied originals. 41 articles:
  *
  * Batch 1 (25 articles, 2026-08-23): the 23 approved `migrate-to-knowledge-
  * center` URLs from phase-1-plan/p0-launch-list.csv, plus 2 URL-collision
@@ -41,6 +42,11 @@ import type { Locale } from "@/i18n/locales";
  * review; do not add them here until that review happens and a slug is
  * confirmed (see manual-decisions-needed.md items 4).
  *
+ * Direct article 1 (2026-09-12): S Lift was supplied by Dr. Alireza
+ * Sadighi for verbatim Persian publication, with complete EN/AR
+ * translations kept in the existing translation-review workflow. Its
+ * clinical images render inline rather than as a hero image.
+ *
  * `heroImage`/`mediaStatus`/`sourceImageUrl`/`localImagePath` (Track 4,
  * 2026-08-23): real photos were downloaded from dralirezasadighi.com/wp-
  * content/uploads for Batch 1 articles where one could be verified — see
@@ -63,10 +69,53 @@ export interface KnowledgeArticleFaqItem {
   answer: string;
 }
 
-export interface KnowledgeArticleSection {
+export interface KnowledgeArticleTextLink {
+  /** Exact phrase already present in the body text; the renderer wraps it without rewriting the sentence. */
+  text: string;
+  /** Locale-neutral internal path; localized at render time. */
+  href: string;
+}
+
+export interface KnowledgeArticleClinicalImage {
+  src: string;
+  alt: string;
+  width: number;
+  height: number;
+}
+
+export type KnowledgeArticleClinicalMedia =
+  | {
+      type: "image";
+      image: KnowledgeArticleClinicalImage;
+    }
+  | {
+      type: "comparison";
+      before: KnowledgeArticleClinicalImage;
+      after: KnowledgeArticleClinicalImage;
+      beforeLabel: string;
+      afterLabel: string;
+    };
+
+export type KnowledgeArticleBodyBlock =
+  | { type: "paragraph"; text: string; links?: readonly KnowledgeArticleTextLink[] }
+  | { type: "subheading"; text: string }
+  | { type: "list"; items: readonly string[] }
+  | { type: "clinicalMedia"; media: KnowledgeArticleClinicalMedia };
+
+interface LegacyKnowledgeArticleSection {
   heading?: string;
   paragraphs: readonly string[];
+  blocks?: never;
 }
+
+interface RichKnowledgeArticleSection {
+  heading?: string;
+  paragraphs?: never;
+  /** Ordered editorial blocks for articles that need lists, inline links, or contextual clinical media. */
+  blocks: readonly KnowledgeArticleBodyBlock[];
+}
+
+export type KnowledgeArticleSection = LegacyKnowledgeArticleSection | RichKnowledgeArticleSection;
 
 export interface KnowledgeArticleAparatEmbed {
   videoHash: string;
@@ -83,7 +132,7 @@ export interface KnowledgeArticleMedicalReview {
 /** Editorial content-status workflow — internal, never emitted in public JSON-LD (see src/core/structured-data.ts). */
 export type KnowledgeArticleReviewStatus = "imported" | "needs-doctor-review" | "doctor-approved" | "needs-rewrite";
 
-export type KnowledgeArticleMediaStatus = "migrated" | "missing" | "low-confidence" | "needs-manual-selection";
+export type KnowledgeArticleMediaStatus = "migrated" | "inline-clinical" | "missing" | "low-confidence" | "needs-manual-selection";
 
 /** "source" for the Persian article itself; every translation is "translated-needs-review" in phase 1 (no doctor-approved translations exist yet). */
 export type KnowledgeArticleTranslationStatus = "source" | "translated-needs-review" | "doctor-approved";
@@ -106,6 +155,10 @@ export interface KnowledgeArticleTranslation {
   excerpt: string;
   contentSections: readonly KnowledgeArticleSection[];
   faq?: readonly KnowledgeArticleFaqItem[];
+  /** Optional visible heading for the FAQ block. */
+  faqHeading?: string;
+  /** Zero-based section index after which FAQ renders; omitted preserves the legacy after-all-sections behavior. */
+  faqAfterSectionIndex?: number;
   translationStatus: KnowledgeArticleTranslationStatus;
 }
 
@@ -124,7 +177,7 @@ export type KnowledgeTopicCluster =
   | "uncategorized";
 
 export interface KnowledgeArticle {
-  /** Original WordPress post_id — kept for traceability back to the source export, not used by any route. */
+  /** Stable source identifier (legacy WordPress post_id or a `direct-*` ID for clinic-supplied originals); not used by routes. */
   postId: string;
   /** URL segment under /{locale}/knowledge/[slug] — the original WordPress Persian slug, preserved verbatim. */
   slug: string;
@@ -150,6 +203,8 @@ export interface KnowledgeArticle {
   contentSections: readonly KnowledgeArticleSection[];
   /** Present only for the "۲۵ سوال متداول..." (FAQ-style) source posts — additive to contentSections, not a replacement. */
   faq?: readonly KnowledgeArticleFaqItem[];
+  faqHeading?: string;
+  faqAfterSectionIndex?: number;
   /** None of the 25 phase-1 articles have one (has_aparat = False for all — see wordpress-content-inventory.csv) — field exists so a future video-bearing article needs no interface change. */
   aparatEmbeds?: readonly KnowledgeArticleAparatEmbed[];
   structuredDataType: "MedicalWebPage" | "Article";
@@ -4057,6 +4112,7 @@ export const KNOWLEDGE_ARTICLES: readonly KnowledgeArticle[] = [
     sourceImageUrl: "",
     localImagePath: "",
   },
+  S_LIFT_ARTICLE,
 ];
 
 /**

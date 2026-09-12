@@ -1,5 +1,6 @@
 import Link from "next/link";
 
+import { TrackedContactLink } from "@/components/analytics/tracked-contact-link";
 import { ClinicLogo } from "@/components/clinic-logo";
 import { LanguageSwitcher } from "@/components/language-switcher";
 import type { FooterDictionary } from "@/i18n/dictionary-types";
@@ -135,12 +136,12 @@ export function SiteFooter({ dict, locale }: { dict: FooterDictionary; locale: L
                 </p>
               ))}
               <div className="mt-2 flex flex-wrap items-center justify-center gap-x-3 gap-y-1 lg:justify-start">
-                <a href={toTelHref(dict.locations.tabriz.phone)} className="transition-colors duration-200 hover:text-gold" dir="ltr">
+                <TrackedContactLink href={toTelHref(dict.locations.tabriz.phone)} eventName="phone_click" eventParams={{ locale, placement: "site_footer" }} className="transition-colors duration-200 hover:text-gold" dir="ltr">
                   {toLocaleDigits(dict.locations.tabriz.phone, locale)}
-                </a>
-                <a href={toTelHref(dict.locations.tabriz.mobile)} className="transition-colors duration-200 hover:text-gold" dir="ltr">
+                </TrackedContactLink>
+                <TrackedContactLink href={toTelHref(dict.locations.tabriz.mobile)} eventName="phone_click" eventParams={{ locale, placement: "site_footer" }} className="transition-colors duration-200 hover:text-gold" dir="ltr">
                   {toLocaleDigits(dict.locations.tabriz.mobile, locale)}
-                </a>
+                </TrackedContactLink>
               </div>
             </div>
             <div>
@@ -202,14 +203,16 @@ export function SiteFooter({ dict, locale }: { dict: FooterDictionary; locale: L
           </a>
         </p>
         <div className="flex items-center gap-4">
-          <a
+          <TrackedContactLink
             href={`https://instagram.com/${dict.instagram.replace("@", "")}`}
+            eventName="instagram_click"
+            eventParams={{ locale, placement: "site_footer" }}
             target="_blank"
             rel="noreferrer"
             className="text-warm-white/40 transition-colors duration-200 hover:text-gold"
           >
             {dict.instagram}
-          </a>
+          </TrackedContactLink>
           <LanguageSwitcher tone="light" />
         </div>
       </div>

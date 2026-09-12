@@ -2,6 +2,7 @@
 
 import { createContext, useCallback, useContext, useState } from "react";
 
+import { trackEvent } from "@/core/analytics";
 import type { Locale } from "@/i18n/locales";
 
 import type { AssistantIntent, AssistantStep, LeadSource } from "../application/types";
@@ -51,11 +52,12 @@ export function AssistantProvider({ children, locale }: { children: React.ReactN
   const [source, setSource] = useState<LeadSource>("assistant");
 
   const open = useCallback((nextIntent: AssistantIntent = "general", nextSource: LeadSource = "assistant") => {
+    trackEvent("assistant_open", { locale, placement: nextSource });
     setIntent(nextIntent);
     setStep(nextIntent);
     setSource(nextSource);
     setIsOpen(true);
-  }, []);
+  }, [locale]);
 
   const close = useCallback(() => setIsOpen(false), []);
 

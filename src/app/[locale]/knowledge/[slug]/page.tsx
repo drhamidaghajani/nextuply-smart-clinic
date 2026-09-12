@@ -1,11 +1,13 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound } from "next/navigation";
+import { Fragment } from "react";
 import { AparatEmbed } from "@/components/page/aparat-embed";
 import { ArticleToc } from "@/components/page/article-toc";
 import { AssistantCtaSection } from "@/components/page/assistant-cta-section";
 import { EditorialCardGrid, type EditorialCardItem } from "@/components/page/editorial-card-grid";
 import { KnowledgeLatestArticles, type KnowledgeLatestArticleItem } from "@/components/page/knowledge-latest-articles";
+import { KnowledgeArticleSectionContent } from "@/components/page/knowledge-article-content";
 import { KnowledgeArticleSidebar } from "@/components/page/knowledge-sidebar";
 import { MedicalReviewBadge } from "@/components/page/medical-review-badge";
 import { PageFaq } from "@/components/page/page-faq";
@@ -132,6 +134,7 @@ export async function generateMetadata({ params }: { params: Promise<{ locale: s
   const { article, content } = resolved;
 
   const canonical = localeHref(locale, `/knowledge/${content.slug}`);
+  const socialImages = article.heroImage ? [absoluteUrl(article.heroImage.src)] : undefined;
   return {
     title: content.seoTitle,
     description: content.seoDescription,
@@ -149,7 +152,13 @@ export async function generateMetadata({ params }: { params: Promise<{ locale: s
       // heroImage is always a local downloaded file (never the old WordPress
       // URL — see knowledge-articles.ts's own field doc-comment), so it's
       // safe to reference directly here.
-      images: article.heroImage ? [{ url: absoluteUrl(article.heroImage.src) }] : undefined,
+      images: socialImages,
+    },
+    twitter: {
+      card: socialImages ? "summary_large_image" : "summary",
+      title: content.seoTitle,
+      description: content.seoDescription,
+      images: socialImages,
     },
   };
 }
@@ -250,11 +259,13 @@ export default async function KnowledgeArticlePage({ params }: { params: Promise
     breadcrumbItems
   );
 
-  const headedSections = content.contentSections
-    .map((section, index) => ({ ...section, anchorId: `section-${index}` }))
-    .filter((section): section is typeof section & { heading: string } => Boolean(section.heading));
-  const showToc = headedSections.length >= 4;
-  const tocHeadings = headedSections.map((s) => ({ id: s.anchorId, text: s.heading }));
+  const tocHeadings = content.contentSections.flatMap((section, index) => {
+    const headings = section.heading ? [{ id: `section-${index}`, text: section.heading }] : [];
+    if (content.faqHeading && content.faqAfterSectionIndex === index) headings.push({ id: "article-faq", text: content.faqHeading });
+    return headings;
+  });
+  if (content.faqHeading && content.faqAfterSectionIndex === undefined) tocHeadings.push({ id: "article-faq", text: content.faqHeading });
+  const showToc = tocHeadings.length >= 4;
 
   const relatedService = article.serviceRelation ? getServiceById(article.serviceRelation) : undefined;
 
@@ -311,21 +322,26 @@ export default async function KnowledgeArticlePage({ params }: { params: Promise
 
             <div className="mt-8 space-y-8">
               {content.contentSections.map((section, index) => (
-                <Reveal key={section.heading ?? `section-${index}`}>
-                  <div className="space-y-4" id={section.heading ? `section-${index}` : undefined}>
-                    {section.heading ? <h2 className="text-lg font-bold leading-snug text-charcoal sm:text-xl">{section.heading}</h2> : null}
-                    {section.paragraphs.map((paragraph, paragraphIndex) => (
-                      <p key={paragraphIndex} className="text-[15px] leading-8 text-charcoal/75 sm:text-base sm:leading-9">
-                        {paragraph}
-                      </p>
-                    ))}
-                  </div>
-                </Reveal>
+                <Fragment key={section.heading ?? `section-${index}`}>
+                  <Reveal>
+                    <div className="space-y-4" id={section.heading ? `section-${index}` : undefined}>
+                      {section.heading ? <h2 className="text-lg font-bold leading-snug text-charcoal sm:text-xl">{section.heading}</h2> : null}
+                      <KnowledgeArticleSectionContent section={section} locale={locale} />
+                    </div>
+                  </Reveal>
+                  {content.faq && content.faq.length > 0 && content.faqAfterSectionIndex === index ? (
+                    <div className="pt-6" id="article-faq">
+                      {content.faqHeading ? <h2 className="mb-4 text-lg font-bold leading-snug text-charcoal sm:text-xl">{content.faqHeading}</h2> : null}
+                      <PageFaq items={content.faq} />
+                    </div>
+                  ) : null}
+                </Fragment>
               ))}
             </div>
 
-            {content.faq && content.faq.length > 0 ? (
-              <div className="mt-14">
+            {content.faq && content.faq.length > 0 && content.faqAfterSectionIndex === undefined ? (
+              <div className="mt-14" id={content.faqHeading ? "article-faq" : undefined}>
+                {content.faqHeading ? <h2 className="mb-4 text-lg font-bold leading-snug text-charcoal sm:text-xl">{content.faqHeading}</h2> : null}
                 <PageFaq items={content.faq} />
               </div>
             ) : null}

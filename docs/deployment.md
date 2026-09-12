@@ -216,7 +216,7 @@ cp .env.production.example .env.production
 cp .env.db.example .env.db
 ```
 
-Fill in real values in both (see §2's table and §12.9's required-secrets list below) — **never** commit either real file (`.gitignore` already excludes every `.env*` except the `.example` files). `DATABASE_URL` in `.env.production` and `POSTGRES_USER`/`POSTGRES_PASSWORD`/`POSTGRES_DB` in `.env.db` must describe the **same** database — the compose file wires `sadighi-app` to reach Postgres at the hostname `sadighi-postgres` (the container name, resolved via Docker's internal DNS on the `sadighi-internal` network), not `localhost`.
+Fill in real values in both (see §2's table and §12.9's required-secrets list below) — **never** commit either real file (`.gitignore` already excludes every `.env*` except the `.example` files). Set the public `NEXT_PUBLIC_GA_MEASUREMENT_ID` in `.env.production` before the image build; an empty value deliberately builds with analytics disabled. `DATABASE_URL` in `.env.production` and `POSTGRES_USER`/`POSTGRES_PASSWORD`/`POSTGRES_DB` in `.env.db` must describe the **same** database — the compose file wires `sadighi-app` to reach Postgres at the hostname `sadighi-postgres` (the container name, resolved via Docker's internal DNS on the `sadighi-internal` network), not `localhost`.
 
 Lock both files down — they contain real secrets:
 
@@ -229,8 +229,9 @@ chmod 600 .env.production .env.db
 ```bash
 cd /opt/nextuply/apps/sadighi
 
-# Build the app image (Dockerfile — see its own comments for the multi-stage reasoning)
-sudo docker compose -f docker-compose.production.yml build
+# Build the app image. --env-file makes the public GA measurement ID
+# available to Compose interpolation and the approved Docker build arg.
+sudo docker compose --env-file .env.production -f docker-compose.production.yml build
 
 # Start Postgres first, alone — the app's migration/verification steps below need it running
 sudo docker compose -f docker-compose.production.yml up -d sadighi-postgres
@@ -279,6 +280,8 @@ curl -s https://sadighi.nextuply.com/robots.txt
 
 All three locale roots should return `200`. Then confirm `/fa/internal/assistant-leads` requires `INTERNAL_ADMIN_TOKEN` (§7/production checklist), and run through a real booking flow end-to-end per §9's staging checklist.
 
+For GA4, verify the production browser loads `gtag/js` only on public pages, sends one query-free `page_view` per canonical App Router navigation, and sends no measurement requests on either a fresh internal-route load or a public → authenticated-internal SPA transition. The latter must include a network check after internal scroll/click/idle activity: the retained Google runtime is intentionally blocked there by its per-measurement-ID `ga-disable-*` switch. In the GA4 web stream, open **Enhanced Measurement → Page views** and disable **Page changes based on browser history events**; the application emits those SPA page views manually, so leaving Google's history listener enabled creates duplicates. Current Google Analytics can create `_ga`/`_ga_<container-id>` cookies. Cookie consent and Consent Mode are a separate privacy/legal follow-up and are intentionally not implemented here.
+
 ### 12.9 Required real secrets for this deployment
 
 Everything below must be a real, freshly-generated value in `.env.production`/`.env.db` on the server — none of them exist anywhere in this repo or its git history:
@@ -298,7 +301,7 @@ sudo docker compose -f docker-compose.production.yml down
 # Roll back to a previous image if the new build is bad — rebuild from a
 # known-good git ref, then repeat §12.5's build/up steps
 git checkout <previous-good-ref>
-sudo docker compose -f docker-compose.production.yml build
+sudo docker compose --env-file .env.production -f docker-compose.production.yml build
 sudo docker compose -f docker-compose.production.yml up -d sadighi-app
 ```
 

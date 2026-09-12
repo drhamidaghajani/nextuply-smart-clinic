@@ -118,16 +118,16 @@ Other high-impact recent history:
 
 - The current legacy redirect table contains approximately 280 entries; an older comment says 278.
 - Canonical host/protocol normalization and legacy redirects are designed to avoid redirect chains and self-loops.
-- Forty Knowledge articles have been migrated (25 in the first batch, 15 in the second).
+- Forty migrated Knowledge articles are present (25 in the first batch, 15 in the second), plus the clinic-supplied S-Lift article implemented in FA/EN/AR. The S-Lift Persian source remains `needs-doctor-review`; both translations remain `translated-needs-review`.
 - All migrated medical articles remain marked `needs-doctor-review`.
-- English translations exist for roughly 27 articles and Arabic for roughly 25; translated medical copy also needs review.
+- English translations exist for roughly 28 articles and Arabic for roughly 26; translated medical copy also needs review.
 - Batch 3/4 planning lists roughly 55 additional migration candidates, plus content that requires business/medical decisions, merging, redirect-only handling, or rejection.
 - Route-level metadata coverage is incomplete; several EN/AR route families inherit Persian metadata.
 - `metadataBase` is absent.
 - Sitemap coverage omits at least the service index and Before/After index.
 - Robots rules protect internal routes but do not explicitly declare the sitemap.
 - Knowledge article/FAQ/breadcrumb schema exists; sitewide clinic/service/procedure schema remains incomplete.
-- GA4 and conversion tracking are not implemented.
+- Privacy-safe native GA4 measurement is implemented in the working tree for public production pages only, gated by `NEXT_PUBLIC_GA_MEASUREMENT_ID`. It uses manual canonical App Router page views and seven allowlisted events; it has not been committed or deployed. Because `gtag.js` survives a same-document App Router transition after the public analytics component unmounts, the shared route boundary now flips Google's documented `ga-disable-<measurement-id>` transmission switch on every internal route. A production-runtime browser probe verified zero attempted GA requests on both a fresh authenticated internal load and a public → authenticated-internal SPA transition (including delayed scroll, outbound-click, and custom-event probes), while the public page view still transmitted. Production still requires the GA4 Enhanced Measurement history-event page-view toggle to be disabled and a separate cookie/consent review.
 
 ## Known open issues
 
@@ -162,7 +162,7 @@ Other high-impact recent history:
 ## Current priority queue
 
 1. **Technical SEO hardening:** add a deliberate `metadataBase`; complete locale-correct route metadata, canonical/hreflang generation, sitemap/robots coverage, and MedicalClinic/MedicalProcedure/Breadcrumb schema where appropriate.
-2. **Analytics plan and approval:** define consent/privacy handling and map approved GA4/Search Console integration to the existing event taxonomy without sending PII. Do not install before approval.
+2. **Analytics production verification and privacy follow-up:** after an explicitly approved deployment, verify GA4 DebugView/Realtime, disable Enhanced Measurement history-event page views, and decide cookie/consent handling through legal/privacy review. Search Console integration remains separate.
 3. **Broken route/link repair:** verify every public CTA and replace the `/booking` dead end with the existing assistant booking intent unless product direction changes.
 4. **Booking/lead integrity:** make persistence failures truthful, reserve/check availability transactionally, and verify failure/retry behavior.
 5. **Content migration and clinical review:** complete remaining WordPress decisions, optimize required media, and obtain doctor approval for medical content in all locales.
@@ -172,7 +172,7 @@ Security/session hardening and a read-only production health audit should be inc
 ## Incomplete current-scope items
 
 - Complete localized technical SEO across every public route family.
-- Approved GA4/conversion/Search Console integration.
+- GA4 production configuration/verification and cookie-consent decision; Search Console integration remains separate.
 - Eliminate the broken `/booking` destination.
 - Production-safe booking persistence and concurrency handling.
 - Current evidence for database, OTP, AI Gateway, n8n, backups, restore, disk monitoring, and deployed SHA.

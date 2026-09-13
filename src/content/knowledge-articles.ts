@@ -45,7 +45,9 @@ import { S_LIFT_ARTICLE } from "./knowledge-s-lift";
  * Direct article 1 (2026-09-12): S Lift was supplied by Dr. Alireza
  * Sadighi for verbatim Persian publication, with complete EN/AR
  * translations kept in the existing translation-review workflow. Its
- * clinical images render inline rather than as a hero image.
+ * clinical images render inline; since 2026-09-13 the non-graphic
+ * `after.jpg` also serves as the article's `heroImage` (with `socialImage:
+ * null`, so that patient photo never becomes the OG/Twitter card).
  *
  * `heroImage`/`mediaStatus`/`sourceImageUrl`/`localImagePath` (Track 4,
  * 2026-08-23): real photos were downloaded from dralirezasadighi.com/wp-
@@ -60,8 +62,9 @@ import { S_LIFT_ARTICLE } from "./knowledge-s-lift";
  * only ever set to a LOCAL downloaded file path; `sourceImageUrl` is
  * provenance metadata only and must never be used as a live image src (no
  * permanent hotlinking to the old WordPress site). Articles with no
- * verified image render the premium no-image editorial hero state instead
- * — see knowledge/[slug]/page.tsx.
+ * verified image render no media slot at all — `KnowledgeArticleHero` is
+ * simply not mounted for them, rather than a decorative placeholder panel
+ * standing in for the missing photo.
  */
 
 export interface KnowledgeArticleFaqItem {
@@ -69,10 +72,44 @@ export interface KnowledgeArticleFaqItem {
   answer: string;
 }
 
-export interface KnowledgeArticleTextLink {
-  /** Exact phrase already present in the body text; the renderer wraps it without rewriting the sentence. */
-  text: string;
-  /** Locale-neutral internal path; localized at render time. */
+/**
+ * An inline link anchor inside a paragraph. Round 2026-09-13 (Knowledge
+ * detail redesign): split into a discriminated union so a rich article can
+ * carry authoritative EXTERNAL references (PubMed/ASPS) without them being
+ * rewritten by `localeHref`. `kind` is optional and its absence means
+ * INTERNAL — every legacy link in this file omits it, and the renderer
+ * therefore branches on `kind === "external"`, never the inverse.
+ */
+export type KnowledgeArticleTextLink =
+  | {
+      /** Omitted for every legacy/internal link — absence means internal. */
+      kind?: "internal";
+      /** Exact phrase already present in the body text; the renderer wraps it without rewriting the sentence. */
+      text: string;
+      /** Locale-neutral internal path; localized at render time. */
+      href: string;
+    }
+  | {
+      kind: "external";
+      text: string;
+      /** Absolute URL to an external authority. NEVER passed through `localeHref`. */
+      href: string;
+    };
+
+/**
+ * One scientific/editorial reference for a rich Knowledge article
+ * (2026-09-13). Rendered structurally by the article template after the
+ * last content section and before the FAQ — never as a manually
+ * positioned content section. Titles stay in their original language
+ * (PubMed titles remain English in every locale); only the surrounding
+ * UI/labels localize.
+ */
+export interface KnowledgeArticleReference {
+  /** Official title, verbatim — never translated or editorially rewritten. */
+  title: string;
+  /** Short provenance line, e.g. "Dermatologic Surgery · 2001" or the issuing body's name. */
+  source: string;
+  /** Absolute external URL. Structural external link — never localized. */
   href: string;
 }
 
@@ -81,6 +118,8 @@ export interface KnowledgeArticleClinicalImage {
   alt: string;
   width: number;
   height: number;
+  /** Optional short caption for clinical-documentation figures (e.g. incision/suture detail shots). */
+  caption?: string;
 }
 
 export type KnowledgeArticleClinicalMedia =
@@ -159,6 +198,14 @@ export interface KnowledgeArticleTranslation {
   faqHeading?: string;
   /** Zero-based section index after which FAQ renders; omitted preserves the legacy after-all-sections behavior. */
   faqAfterSectionIndex?: number;
+  /**
+   * Optional per-translation reference set. The template resolves
+   * `content.references ?? article.references`, so a shared article-level
+   * set (the normal case — e.g. S Lift's five sources) is declared once
+   * and renders identically in every locale, while a translation can still
+   * override with its own list when that is genuinely different.
+   */
+  references?: readonly KnowledgeArticleReference[];
   translationStatus: KnowledgeArticleTranslationStatus;
 }
 
@@ -208,8 +255,47 @@ export interface KnowledgeArticle {
   /** None of the 25 phase-1 articles have one (has_aparat = False for all — see wordpress-content-inventory.csv) — field exists so a future video-bearing article needs no interface change. */
   aparatEmbeds?: readonly KnowledgeArticleAparatEmbed[];
   structuredDataType: "MedicalWebPage" | "Article";
-  /** Only ever a LOCAL downloaded file under /media/knowledge/<slug>/ — never a live WordPress URL. Absent when mediaStatus !== "migrated". */
-  heroImage?: { src: string; alt: string };
+  /**
+   * The article's hero media, when it has one.
+   *
+   * Invariant (2026-09-13 correction): `heroImage.src` must always reference
+   * an APPROVED LOCAL asset (under `/media/knowledge/<slug>/` or another
+   * committed local path) — never a live WordPress URL. It may come from
+   * either the migrated WordPress media library OR directly supplied clinic
+   * media (S Lift's `after.jpg` is the latter).
+   *
+   * `mediaStatus` is PROVENANCE/WORKFLOW metadata only and has no runtime
+   * consumers; it is not a gate on this field. S Lift is the worked example:
+   * `mediaStatus: "inline-clinical"` together with a real `heroImage`.
+   */
+  heroImage?: {
+    src: string;
+    /** Default (Persian) alt text — the fallback when `altByLocale` has no entry for the current locale. Every pre-existing article relies on this field alone. */
+    alt: string;
+    /** Optional per-locale alt text (2026-09-13). Read as `altByLocale?.[locale] ?? alt`. */
+    altByLocale?: Partial<Record<Locale, string>>;
+    /** Intrinsic pixel dimensions when known (2026-09-13) — lets `KnowledgeArticleHero` keep the true aspect ratio instead of forcing a 16:9 cover crop. Set on exactly one article today (S Lift); the other 40 omit it and keep their original 16:9 treatment. */
+    width?: number;
+    height?: number;
+  };
+  /**
+   * Social share-card image override (2026-09-13).
+   *
+   * - `undefined` — unchanged default: fall back to `heroImage.src`.
+   * - `null` — emit NO OpenGraph/Twitter image for this article.
+   * - object — use this explicit image instead of the hero.
+   *
+   * Exists so an article whose hero is patient clinical photography (e.g.
+   * S Lift's `after.jpg`) can show that photo on the page without it
+   * becoming external social-preview media. Deliberately a content field,
+   * never a slug check inside the metadata code.
+   */
+  socialImage?: { src: string } | null;
+  /**
+   * Shared scientific references for this article, used by every locale
+   * unless a translation supplies its own. See `KnowledgeArticleTranslation.references`.
+   */
+  references?: readonly KnowledgeArticleReference[];
   mediaStatus: KnowledgeArticleMediaStatus;
   needsMediaReview: boolean;
   /** Provenance/audit only (the original WordPress image URL this article's heroImage was downloaded from, if any) — NEVER render this as a live <img src>. */

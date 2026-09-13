@@ -153,7 +153,25 @@ export function SiteFooter({ dict, locale }: { dict: FooterDictionary; locale: L
                 <p key={line}>{line}</p>
               ))}
             </div>
-            <p>{dict.instagramLabel}{dict.instagram}</p>
+            {/* Contact-column Instagram (2026-09-13): was plain text — the only
+                Instagram rendering in the footer that wasn't a working link.
+                Same URL derivation and same `instagram_click` /
+                `placement: "site_footer"` analytics contract as the bottom-bar
+                link below ("site_footer" is the only footer value the analytics
+                union accepts), so no second username is hardcoded here. */}
+            <p>
+              {dict.instagramLabel}
+              <TrackedContactLink
+                href={`https://instagram.com/${dict.instagram.replace("@", "")}`}
+                eventName="instagram_click"
+                eventParams={{ locale, placement: "site_footer" }}
+                target="_blank"
+                rel="noreferrer"
+                className="transition-colors duration-200 hover:text-gold"
+              >
+                {dict.instagram}
+              </TrackedContactLink>
+            </p>
           </div>
         </div>
 

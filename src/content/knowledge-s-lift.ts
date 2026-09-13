@@ -1,25 +1,98 @@
-import type { KnowledgeArticle, KnowledgeArticleClinicalImage, KnowledgeArticleSection } from "./knowledge-articles";
+import type {
+  KnowledgeArticle,
+  KnowledgeArticleClinicalImage,
+  KnowledgeArticleReference,
+  KnowledgeArticleSection,
+} from "./knowledge-articles";
 
 const MEDIA_BASE = "/media/knowledge/اس-لیفت-شقیقه";
 
-function clinicalImage(fileName: string, alt: string, width: number, height: number): KnowledgeArticleClinicalImage {
-  return { src: `${MEDIA_BASE}/${fileName}`, alt, width, height };
+function clinicalImage(fileName: string, alt: string, width: number, height: number, caption?: string): KnowledgeArticleClinicalImage {
+  return { src: `${MEDIA_BASE}/${fileName}`, alt, width, height, caption };
 }
 
 const faBefore = clinicalImage("before.jpg", "تصویر قبل از اس لیفت شقیقه دکتر علیرضا صدیقی", 918, 1280);
 const faAfter = clinicalImage("after.jpg", "تصویر بعد از اس لیفت شقیقه دکتر علیرضا صدیقی", 1051, 1497);
-const faIncision = clinicalImage("incision.jpg", "نمای بالینی محل برش اس لیفت در ناحیه خط رویش مو", 1200, 1600);
-const faSuture = clinicalImage("suture.jpg", "نمای نزدیک بخیه پوستی محل برش اس لیفت شقیقه", 1200, 1600);
+const faIncision = clinicalImage(
+  "incision.jpg",
+  "نمای بالینی محل برش اس لیفت در ناحیه خط رویش مو",
+  1200,
+  1600,
+  "نمای بالینی محل برش اس لیفت در ناحیه خط رویش مو"
+);
+const faSuture = clinicalImage("suture.jpg", "نمای نزدیک بخیه پوستی محل برش اس لیفت شقیقه", 1200, 1600, "نمای نزدیک بخیه پوستی محل برش");
 
 const enBefore = clinicalImage("before.jpg", "Before S Lift temple lift by Dr. Alireza Sadighi", 918, 1280);
 const enAfter = clinicalImage("after.jpg", "After S Lift temple lift by Dr. Alireza Sadighi", 1051, 1497);
-const enIncision = clinicalImage("incision.jpg", "Clinical view of the S Lift incision at the hairline", 1200, 1600);
-const enSuture = clinicalImage("suture.jpg", "Close-up view of the skin sutures at the S Lift temple incision", 1200, 1600);
+const enIncision = clinicalImage(
+  "incision.jpg",
+  "Clinical view of the S Lift incision at the hairline",
+  1200,
+  1600,
+  "Clinical view of the S Lift incision at the hairline"
+);
+const enSuture = clinicalImage(
+  "suture.jpg",
+  "Close-up view of the skin sutures at the S Lift temple incision",
+  1200,
+  1600,
+  "Close-up of the skin sutures at the S Lift temple incision"
+);
 
 const arBefore = clinicalImage("before.jpg", "صورة قبل إجراء إس ليفت لشد الصدغ لدى الدكتور عليرضا صديقي", 918, 1280);
 const arAfter = clinicalImage("after.jpg", "صورة بعد إجراء إس ليفت لشد الصدغ لدى الدكتور عليرضا صديقي", 1051, 1497);
-const arIncision = clinicalImage("incision.jpg", "منظر سريري لموضع شق إس ليفت عند خط الشعر", 1200, 1600);
-const arSuture = clinicalImage("suture.jpg", "منظر مقرب لغرز الجلد في موضع شق إس ليفت للصدغ", 1200, 1600);
+const arIncision = clinicalImage(
+  "incision.jpg",
+  "منظر سريري لموضع شق إس ليفت عند خط الشعر",
+  1200,
+  1600,
+  "منظر سريري لموضع شق إس ليفت عند خط الشعر"
+);
+const arSuture = clinicalImage("suture.jpg", "منظر مقرب لغرز الجلد في موضع شق إس ليفت للصدغ", 1200, 1600, "منظر مقرب لغرز الجلد في موضع الشق");
+
+/**
+ * Authoritative external sources for the S Lift article (2026-09-13).
+ * Verified against NCBI E-utilities (all three PMIDs resolve to exactly
+ * these titles) and plasticsurgery.org (the old `/facelift/risks-and-safety`
+ * URL now 301s to the overview page, so the overview itself is cited).
+ *
+ * Declared ONCE at article level: the template resolves
+ * `content.references ?? article.references`, so FA/EN/AR all render this
+ * same set without duplicating the array into each translation.
+ *
+ * These provide historical S-Lift terminology context, general facelift
+ * safety/recovery context, and general tissue-sealant literature. They do
+ * NOT validate Dr. Sadighi's own current technique — titles are kept in
+ * their official English form and must never be translated or used to
+ * imply equivalence with the clinic's method.
+ */
+const S_LIFT_REFERENCES: readonly KnowledgeArticleReference[] = [
+  {
+    title: "The S-lift facelift featuring the U-suture and O-suture combined with skin resurfacing",
+    source: "Dermatologic Surgery · 2001",
+    href: "https://pubmed.ncbi.nlm.nih.gov/11231235/",
+  },
+  {
+    title: "Minimal access cranial suspension lift: a modified S-lift",
+    source: "Plastic and Reconstructive Surgery · 2002",
+    href: "https://pubmed.ncbi.nlm.nih.gov/11994618/",
+  },
+  {
+    title: "Use of tissue sealants in face-lifts: a metaanalysis",
+    source: "Aesthetic Plastic Surgery · 2009",
+    href: "https://pubmed.ncbi.nlm.nih.gov/19089492/",
+  },
+  {
+    title: "American Society of Plastic Surgeons — Facelift overview, including risks and safety information",
+    source: "American Society of Plastic Surgeons",
+    href: "https://www.plasticsurgery.org/cosmetic-procedures/facelift",
+  },
+  {
+    title: "American Society of Plastic Surgeons — Facelift Recovery",
+    source: "American Society of Plastic Surgeons",
+    href: "https://www.plasticsurgery.org/cosmetic-procedures/facelift/recovery",
+  },
+];
 
 const faSections: readonly KnowledgeArticleSection[] = [
   {
@@ -163,6 +236,7 @@ const faSections: readonly KnowledgeArticleSection[] = [
       {
         type: "paragraph",
         text: "یکی از نکات جذاب این روش این است که نتیجه اولیه تقریباً بلافاصله بعد از انجام عمل قابل مشاهده است. با این حال، نتیجه نهایی و طبیعی‌تر معمولاً بعد از فروکش کردن تورم اولیه و اثرگذاری کامل مواد جوان‌ساز تزریق‌شده، یعنی حدود یک تا دو هفته بعد، کاملاً خودش را نشان می‌دهد.",
+        links: [{ text: "نتیجه اولیه", href: "/before-after" }],
       },
       {
         type: "paragraph",
@@ -187,6 +261,7 @@ const faSections: readonly KnowledgeArticleSection[] = [
       {
         type: "paragraph",
         text: "البته بهترین راه برای اطمینان از اینکه این روش برای شما مناسب است یا خیر، مشاوره حضوری با پزشک متخصص است تا بر اساس شرایط پوست و صورت شما، بهترین تصمیم گرفته شود.",
+        links: [{ text: "پزشک متخصص", href: "/about" }],
       },
     ],
   },
@@ -197,6 +272,27 @@ const faSections: readonly KnowledgeArticleSection[] = [
       {
         type: "paragraph",
         text: "جراحی فیس‌لیفت معمولاً شامل برش‌های بزرگ‌تر، بیهوشی عمومی، بخیه و دوره نقاهت طولانی‌تر (معمولاً چند هفته) است. در مقابل، اس لیفت بدون نخ، با برشی کوچک و با بی‌حسی موضعی انجام می‌شود، به کمک مواد جوان‌ساز طبیعی خود فرد تقویت می‌شود و دوره نقاهت آن در حدود یک هفته است. از نظر نتیجه، فیس‌لیفت جراحی معمولاً برای افتادگی‌های ناحیه گونه و نیمه تحتانی صورت گزینه بهتری است، در حالی که اس لیفت برای افتادگی‌های ناحیه شقیقه، انتخابی هوشمندانه، کم‌ریسک‌تر و با نتیجه‌ای کاملاً طبیعی و ماندگار محسوب می‌شود.",
+      },
+    ],
+  },
+  {
+    heading: "مقایسه برش و میزان دستکاری با روش اندوسکوپیک",
+    blocks: [
+      {
+        type: "paragraph",
+        text: "یکی دیگر از مزایای اس لیفت، کوچک‌تر بودن محل برش و محدودتر بودن دستکاری بافت‌ها در مقایسه با روش‌های اندوسکوپیک است. در اس لیفت، لیفت از طریق یک برش حدود یک سانتی‌متری در داخل مو انجام می‌شود؛ بنابراین وسعت برش و ناحیه‌ای که تحت جراحی و دستکاری قرار می‌گیرد محدودتر است.",
+      },
+      {
+        type: "paragraph",
+        text: "با توجه به محدودتر بودن محل مداخله و میزان دستکاری بافت‌ها، احتمال آسیب یا تحریک ساختارهای عصبی ناحیه نیز می‌تواند کمتر باشد. عوارض عصبی پس از جراحی‌های ناحیه شقیقه ممکن است به شکل بی‌حسی، گزگز، کاهش حس پوست یا در موارد نادر اختلالات حرکتی موقت بروز کند. کوچک بودن برش و انجام لیفت در محدوده مشخص در روش اس لیفت، می‌تواند به کاهش احتمال چنین عوارضی کمک کند.",
+      },
+      {
+        type: "paragraph",
+        text: "در روش اندوسکوپیک نیز برش‌ها نسبت به جراحی‌های باز کوچک هستند، اما برای وارد کردن ابزار و دوربین و آزادسازی بافت‌ها، معمولاً ناحیه وسیع‌تری در زیر پوست مورد مداخله قرار می‌گیرد. در مقابل، در اس لیفت با یک برش کوچک داخل مو و دستکاری محدودتر بافت، هدف این است که علاوه بر ایجاد نتیجه طبیعی، میزان آسیب بافتی و احتمال بروز عوارض عصبی نیز تا حد امکان کاهش پیدا کند.",
+      },
+      {
+        type: "paragraph",
+        text: "البته احتمال بروز عوارض در هر روش جراحی به عوامل مختلفی از جمله آناتومی هر فرد، تکنیک مورد استفاده و مهارت و تجربه پزشک بستگی دارد و نمی‌توان احتمال عوارض را در هیچ روش جراحی به‌طور کامل صفر دانست.",
       },
     ],
   },
@@ -232,27 +328,6 @@ const faSections: readonly KnowledgeArticleSection[] = [
       {
         type: "paragraph",
         text: "اگر شما هم به فکر لیفت ناحیه شقیقه هستید و می‌خواهید بدون ریسک‌های جراحی سنگین، نتیجه‌ای طبیعی، ماندگار و چشمگیر داشته باشید، مشاوره با یک متخصص مجرب می‌تواند اولین قدم درست برای شما باشد.",
-      },
-    ],
-  },
-  {
-    heading: "برش کوچک‌تر و عوارض عصبی کمتر اس لیفت نسبت به روش اندوسکوپیک",
-    blocks: [
-      {
-        type: "paragraph",
-        text: "یکی دیگر از مزایای اس لیفت، کوچک‌تر بودن محل برش و محدودتر بودن دستکاری بافت‌ها در مقایسه با روش‌های اندوسکوپیک است. در اس لیفت، لیفت از طریق یک برش حدود یک سانتی‌متری در داخل مو انجام می‌شود؛ بنابراین وسعت برش و ناحیه‌ای که تحت جراحی و دستکاری قرار می‌گیرد محدودتر است.",
-      },
-      {
-        type: "paragraph",
-        text: "با توجه به محدودتر بودن محل مداخله و میزان دستکاری بافت‌ها، احتمال آسیب یا تحریک ساختارهای عصبی ناحیه نیز می‌تواند کمتر باشد. عوارض عصبی پس از جراحی‌های ناحیه شقیقه ممکن است به شکل بی‌حسی، گزگز، کاهش حس پوست یا در موارد نادر اختلالات حرکتی موقت بروز کند. کوچک بودن برش و انجام لیفت در محدوده مشخص در روش اس لیفت، می‌تواند به کاهش احتمال چنین عوارضی کمک کند.",
-      },
-      {
-        type: "paragraph",
-        text: "در روش اندوسکوپیک نیز برش‌ها نسبت به جراحی‌های باز کوچک هستند، اما برای وارد کردن ابزار و دوربین و آزادسازی بافت‌ها، معمولاً ناحیه وسیع‌تری در زیر پوست مورد مداخله قرار می‌گیرد. در مقابل، در اس لیفت با یک برش کوچک داخل مو و دستکاری محدودتر بافت، هدف این است که علاوه بر ایجاد نتیجه طبیعی، میزان آسیب بافتی و احتمال بروز عوارض عصبی نیز تا حد امکان کاهش پیدا کند.",
-      },
-      {
-        type: "paragraph",
-        text: "البته احتمال بروز عوارض در هر روش جراحی به عوامل مختلفی از جمله آناتومی هر فرد، تکنیک مورد استفاده و مهارت و تجربه پزشک بستگی دارد و نمی‌توان احتمال عوارض را در هیچ روش جراحی به‌طور کامل صفر دانست.",
       },
     ],
   },
@@ -426,6 +501,7 @@ const enSections: readonly KnowledgeArticleSection[] = [
       {
         type: "paragraph",
         text: "One appealing point about this method is that the initial result is visible almost immediately after the operation. However, the final and more natural result usually reveals itself fully after the initial swelling has subsided and the injected rejuvenating substances have taken full effect—that is, about one to two weeks later.",
+        links: [{ text: "the initial result", href: "/before-after" }],
       },
       {
         type: "paragraph",
@@ -450,6 +526,7 @@ const enSections: readonly KnowledgeArticleSection[] = [
       {
         type: "paragraph",
         text: "Of course, the best way to make sure whether this method is suitable for you is an in-person consultation with a specialist so that the best decision can be made based on the condition of your skin and face.",
+        links: [{ text: "specialist", href: "/about" }],
       },
     ],
   },
@@ -460,6 +537,27 @@ const enSections: readonly KnowledgeArticleSection[] = [
       {
         type: "paragraph",
         text: "Facelift surgery usually involves larger incisions, general anesthesia, sutures, and a longer recovery period (usually several weeks). In contrast, S Lift is performed without threads, with a small incision and local anesthesia, is reinforced with the person's own natural rejuvenating substances, and has a recovery period of about one week. In terms of results, surgical facelift is usually a better option for sagging in the cheek area and lower half of the face, while S Lift is considered an intelligent, lower-risk choice for sagging in the temple area, with a completely natural and lasting result.",
+      },
+    ],
+  },
+  {
+    heading: "Incision size and tissue handling compared with the endoscopic approach",
+    blocks: [
+      {
+        type: "paragraph",
+        text: "Another advantage of S Lift is the smaller incision site and more limited tissue manipulation compared with endoscopic methods. In S Lift, the lift is performed through an incision about one centimeter long inside the hair; therefore, the extent of the incision and the area subjected to surgery and manipulation are more limited.",
+      },
+      {
+        type: "paragraph",
+        text: "Given the more limited intervention site and degree of tissue manipulation, the likelihood of damage to or irritation of the area's nerve structures may also be lower. Neurological complications after surgery in the temple area may appear as numbness, tingling, reduced skin sensation, or, in rare cases, temporary movement disorders. The small incision and performance of the lift within a defined area in the S Lift method may help reduce the likelihood of such complications.",
+      },
+      {
+        type: "paragraph",
+        text: "In the endoscopic method, the incisions are also small compared with open surgery, but a broader area beneath the skin is usually manipulated to insert instruments and a camera and to release the tissues. In contrast, with a small incision inside the hair and more limited tissue manipulation in S Lift, the aim is to reduce tissue damage and the likelihood of neurological complications as much as possible, in addition to creating a natural result.",
+      },
+      {
+        type: "paragraph",
+        text: "Of course, the likelihood of complications in every surgical method depends on various factors, including each person's anatomy, the technique used, and the doctor's skill and experience, and the possibility of complications cannot be considered completely zero in any surgical method.",
       },
     ],
   },
@@ -495,27 +593,6 @@ const enSections: readonly KnowledgeArticleSection[] = [
       {
         type: "paragraph",
         text: "If you are also considering a temple-area lift and want a natural, lasting, and striking result without the risks of major surgery, consulting an experienced specialist can be the right first step for you.",
-      },
-    ],
-  },
-  {
-    heading: "A smaller incision and fewer neurological complications with S Lift compared with the endoscopic method",
-    blocks: [
-      {
-        type: "paragraph",
-        text: "Another advantage of S Lift is the smaller incision site and more limited tissue manipulation compared with endoscopic methods. In S Lift, the lift is performed through an incision about one centimeter long inside the hair; therefore, the extent of the incision and the area subjected to surgery and manipulation are more limited.",
-      },
-      {
-        type: "paragraph",
-        text: "Given the more limited intervention site and degree of tissue manipulation, the likelihood of damage to or irritation of the area's nerve structures may also be lower. Neurological complications after surgery in the temple area may appear as numbness, tingling, reduced skin sensation, or, in rare cases, temporary movement disorders. The small incision and performance of the lift within a defined area in the S Lift method may help reduce the likelihood of such complications.",
-      },
-      {
-        type: "paragraph",
-        text: "In the endoscopic method, the incisions are also small compared with open surgery, but a broader area beneath the skin is usually manipulated to insert instruments and a camera and to release the tissues. In contrast, with a small incision inside the hair and more limited tissue manipulation in S Lift, the aim is to reduce tissue damage and the likelihood of neurological complications as much as possible, in addition to creating a natural result.",
-      },
-      {
-        type: "paragraph",
-        text: "Of course, the likelihood of complications in every surgical method depends on various factors, including each person's anatomy, the technique used, and the doctor's skill and experience, and the possibility of complications cannot be considered completely zero in any surgical method.",
       },
     ],
   },
@@ -689,6 +766,7 @@ const arSections: readonly KnowledgeArticleSection[] = [
       {
         type: "paragraph",
         text: "من النقاط الجذابة في هذه الطريقة أن النتيجة الأولية تكون مرئية فوراً تقريباً بعد إجراء العملية. ومع ذلك، تظهر النتيجة النهائية والأكثر طبيعية بالكامل عادة بعد زوال التورم الأولي واكتمال تأثير المواد المجددة للشباب المحقونة، أي بعد نحو أسبوع إلى أسبوعين.",
+        links: [{ text: "النتيجة الأولية", href: "/before-after" }],
       },
       {
         type: "paragraph",
@@ -713,6 +791,7 @@ const arSections: readonly KnowledgeArticleSection[] = [
       {
         type: "paragraph",
         text: "وبالطبع، أفضل طريقة للتأكد مما إذا كانت هذه الطريقة مناسبة لكم هي الاستشارة الحضورية مع طبيب متخصص حتى يُتخذ أفضل قرار بناءً على حالة جلدكم ووجهكم.",
+        links: [{ text: "طبيب متخصص", href: "/about" }],
       },
     ],
   },
@@ -723,6 +802,27 @@ const arSections: readonly KnowledgeArticleSection[] = [
       {
         type: "paragraph",
         text: "تتضمن جراحة شد الوجه عادة شقوقاً أكبر وتخديراً عاماً وغرزاً وفترة تعاف أطول (عادة عدة أسابيع). وفي المقابل، يُجرى إس ليفت من دون خيوط، وبشق صغير، وتحت التخدير الموضعي، ويُعزز بالمواد الطبيعية المجددة للشباب الخاصة بالشخص نفسه، وتبلغ فترة التعافي منه نحو أسبوع واحد. ومن حيث النتيجة، تكون جراحة شد الوجه عادة خياراً أفضل لترهل منطقة الخد والنصف السفلي من الوجه، في حين يُعد إس ليفت خياراً ذكياً وأقل خطورة لترهل منطقة الصدغ، مع نتيجة طبيعية تماماً ودائمة.",
+      },
+    ],
+  },
+  {
+    heading: "مقارنة حجم الشق ومدى التعامل مع الأنسجة في الطريقة التنظيرية",
+    blocks: [
+      {
+        type: "paragraph",
+        text: "من المزايا الأخرى لإس ليفت صغر موضع الشق ومحدودية التعامل مع الأنسجة مقارنة بالطرق التنظيرية. ففي إس ليفت، يُجرى الشد عبر شق بطول سنتيمتر واحد تقريباً داخل الشعر؛ ولذلك يكون امتداد الشق والمنطقة التي تخضع للجراحة والتعامل معها أكثر محدودية.",
+      },
+      {
+        type: "paragraph",
+        text: "وبالنظر إلى محدودية موضع التدخل ومقدار التعامل مع الأنسجة، فقد يكون احتمال إصابة البنى العصبية في المنطقة أو تهيجها أقل أيضاً. وقد تظهر المضاعفات العصبية بعد جراحات منطقة الصدغ في صورة خدر أو وخز أو انخفاض إحساس الجلد، أو في حالات نادرة اضطرابات حركية مؤقتة. ويمكن لصغر الشق وإجراء الشد ضمن نطاق محدد في طريقة إس ليفت أن يساعدا على تقليل احتمال هذه المضاعفات.",
+      },
+      {
+        type: "paragraph",
+        text: "وفي الطريقة التنظيرية أيضاً تكون الشقوق صغيرة مقارنة بالجراحات المفتوحة، لكن إدخال الأدوات والكاميرا وتحرير الأنسجة يتطلب عادة التعامل مع منطقة أوسع تحت الجلد. وفي المقابل، يكون الهدف في إس ليفت، من خلال شق صغير داخل الشعر وتعامل أكثر محدودية مع الأنسجة، هو تقليل مقدار الضرر النسيجي واحتمال حدوث مضاعفات عصبية إلى أقصى حد ممكن، بالإضافة إلى تحقيق نتيجة طبيعية.",
+      },
+      {
+        type: "paragraph",
+        text: "وبالطبع، يعتمد احتمال حدوث المضاعفات في أي طريقة جراحية على عوامل مختلفة، منها تشريح جسم كل شخص والتقنية المستخدمة ومهارة الطبيب وخبرته، ولا يمكن اعتبار احتمال المضاعفات صفراً تماماً في أي طريقة جراحية.",
       },
     ],
   },
@@ -758,27 +858,6 @@ const arSections: readonly KnowledgeArticleSection[] = [
       {
         type: "paragraph",
         text: "إذا كنتم تفكرون أيضاً في شد منطقة الصدغ وتريدون نتيجة طبيعية ودائمة ولافتة من دون مخاطر الجراحات الكبرى، فقد تكون استشارة اختصاصي متمرس الخطوة الأولى الصحيحة لكم.",
-      },
-    ],
-  },
-  {
-    heading: "شق أصغر ومضاعفات عصبية أقل لإس ليفت مقارنة بالطريقة التنظيرية",
-    blocks: [
-      {
-        type: "paragraph",
-        text: "من المزايا الأخرى لإس ليفت صغر موضع الشق ومحدودية التعامل مع الأنسجة مقارنة بالطرق التنظيرية. ففي إس ليفت، يُجرى الشد عبر شق بطول سنتيمتر واحد تقريباً داخل الشعر؛ ولذلك يكون امتداد الشق والمنطقة التي تخضع للجراحة والتعامل معها أكثر محدودية.",
-      },
-      {
-        type: "paragraph",
-        text: "وبالنظر إلى محدودية موضع التدخل ومقدار التعامل مع الأنسجة، فقد يكون احتمال إصابة البنى العصبية في المنطقة أو تهيجها أقل أيضاً. وقد تظهر المضاعفات العصبية بعد جراحات منطقة الصدغ في صورة خدر أو وخز أو انخفاض إحساس الجلد، أو في حالات نادرة اضطرابات حركية مؤقتة. ويمكن لصغر الشق وإجراء الشد ضمن نطاق محدد في طريقة إس ليفت أن يساعدا على تقليل احتمال هذه المضاعفات.",
-      },
-      {
-        type: "paragraph",
-        text: "وفي الطريقة التنظيرية أيضاً تكون الشقوق صغيرة مقارنة بالجراحات المفتوحة، لكن إدخال الأدوات والكاميرا وتحرير الأنسجة يتطلب عادة التعامل مع منطقة أوسع تحت الجلد. وفي المقابل، يكون الهدف في إس ليفت، من خلال شق صغير داخل الشعر وتعامل أكثر محدودية مع الأنسجة، هو تقليل مقدار الضرر النسيجي واحتمال حدوث مضاعفات عصبية إلى أقصى حد ممكن، بالإضافة إلى تحقيق نتيجة طبيعية.",
-      },
-      {
-        type: "paragraph",
-        text: "وبالطبع، يعتمد احتمال حدوث المضاعفات في أي طريقة جراحية على عوامل مختلفة، منها تشريح جسم كل شخص والتقنية المستخدمة ومهارة الطبيب وخبرته، ولا يمكن اعتبار احتمال المضاعفات صفراً تماماً في أي طريقة جراحية.",
       },
     ],
   },
@@ -837,7 +916,6 @@ export const S_LIFT_ARTICLE = {
       contentSections: enSections,
       faq: enFaq,
       faqHeading: "Frequently asked questions about S Lift",
-      faqAfterSectionIndex: 12,
       translationStatus: "translated-needs-review",
     },
     ar: {
@@ -849,7 +927,6 @@ export const S_LIFT_ARTICLE = {
       contentSections: arSections,
       faq: arFaq,
       faqHeading: "الأسئلة الشائعة حول إس ليفت",
-      faqAfterSectionIndex: 12,
       translationStatus: "translated-needs-review",
     },
   },
@@ -859,10 +936,21 @@ export const S_LIFT_ARTICLE = {
   contentSections: faSections,
   faq: faFaq,
   faqHeading: "سوالات متداول درباره اس لیفت",
-  faqAfterSectionIndex: 12,
   structuredDataType: "MedicalWebPage",
   mediaStatus: "inline-clinical",
   needsMediaReview: false,
   sourceImageUrl: "",
-  localImagePath: "",
+  localImagePath: `${MEDIA_BASE}/after.jpg`,
+  heroImage: {
+    src: `${MEDIA_BASE}/after.jpg`,
+    alt: "تصویر بعد از اس لیفت شقیقه دکتر علیرضا صدیقی",
+    altByLocale: {
+      en: "After S Lift temple lift by Dr. Alireza Sadighi",
+      ar: "صورة بعد إجراء إس ليفت لشد الصدغ لدى الدكتور عليرضا صديقي",
+    },
+    width: 1051,
+    height: 1497,
+  },
+  socialImage: null,
+  references: S_LIFT_REFERENCES,
 } as const satisfies KnowledgeArticle;

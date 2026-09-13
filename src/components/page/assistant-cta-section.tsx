@@ -25,6 +25,13 @@ import type { AssistantIntent } from "@/modules/smart-clinic-assistant/applicati
  * existing page using this component gets the header reading correctly
  * over this final section instead of keeping whatever light `tone` the
  * previous section left behind.
+ *
+ * Round 2026-09-13 (Knowledge article final QA): added the optional
+ * `contentClassName` above so a caller can reserve horizontal space inside
+ * the centered content box — the fixed assistant trigger is `fixed right-5`
+ * (76px footprint), and this block's `max-w-2xl` content box is centred, so
+ * on narrow viewports its trailing text sat under the bubble. Undefined for
+ * every existing caller, so no other page changes.
  */
 export function AssistantCtaSection({
   heading,
@@ -33,6 +40,7 @@ export function AssistantCtaSection({
   intent = "general",
   secondaryLabel,
   secondaryHref,
+  contentClassName,
 }: {
   heading: string;
   body: string;
@@ -40,6 +48,13 @@ export function AssistantCtaSection({
   intent?: AssistantIntent;
   secondaryLabel?: string;
   secondaryHref?: string;
+  /**
+   * Additive opt-in on the inner content box only — the section's dark
+   * background stays full-bleed. Knowledge article detail uses it to reserve
+   * the physical assistant safe zone; every other caller omits it and renders
+   * exactly as before.
+   */
+  contentClassName?: string;
 }) {
   return (
     <section data-header-bg="#0f172a" className="relative overflow-hidden bg-gradient-to-br from-deep-navy to-[#1a2540] px-6 py-20 sm:px-8 sm:py-24">
@@ -47,7 +62,7 @@ export function AssistantCtaSection({
         aria-hidden
         className="animate-ambient-light pointer-events-none absolute -top-16 start-1/3 h-[300px] w-[300px] rounded-full bg-gold/15 blur-[100px]"
       />
-      <Reveal className="relative mx-auto max-w-2xl text-center">
+      <Reveal className={contentClassName ? `relative mx-auto max-w-2xl text-center ${contentClassName}` : "relative mx-auto max-w-2xl text-center"}>
         <h2 className="text-balance text-xl font-bold leading-tight text-warm-white sm:text-2xl lg:text-[28px]">{heading}</h2>
         <p className="mx-auto mt-3 max-w-lg text-sm leading-7 text-warm-white/70 sm:text-base">{body}</p>
         <div className="mt-7 flex flex-wrap items-center justify-center gap-4">

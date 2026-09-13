@@ -899,6 +899,7 @@ export const S_LIFT_ARTICLE = {
   excerpt: "راهکاری طبیعی وبه روش بدون نخ برای لیفت شقیقه و جوان‌سازی صورت",
   topicCluster: "facial-cosmetic-surgery",
   serviceRelation: "facial-cosmetic-surgery",
+  procedureRelation: "temple-face-lift",
   medicalReview: {
     reviewerName: "دکتر علیرضا صدیقی",
     reviewerCredentialsRef: "about",

@@ -61,3 +61,37 @@ export function buildLocalizedPageMetadata({
     },
   };
 }
+
+/**
+ * Batch SEO-01 (2026-09-13) — service and procedure pages were shipping
+ * their hero strapline as the meta description. Those strings are written
+ * for a hero, not for a search result: measured across all three locales
+ * they run 32–122 characters, thin next to the ~155-character snippet
+ * Google is willing to render, while the facial-cosmetic hub's
+ * `heroSubtitle` went the other way at 202–299 characters and was
+ * truncated mid-sentence on every search result.
+ *
+ * `overview` copy is the doctor-reviewed, procedure-naming summary already
+ * published on the page, but in full it is far too long (189–313
+ * characters). Its FIRST sentence, however, is a self-contained statement
+ * that carries the treatment's own localized name — so it is used when it
+ * lands in the 80–165 character window, and the existing fallback string
+ * is kept untouched otherwise.
+ *
+ * This awards no new keywords and authors no new claims: it only selects
+ * an existing approved sentence verbatim, so nothing here rewrites
+ * doctor-supplied copy. The window's upper bound is Google's ~155–160
+ * character snippet budget with a small allowance for the narrower
+ * average glyph in Persian/Arabic; the lower bound rejects a stub
+ * sentence that would leave the description thinner than the strapline it
+ * replaced.
+ */
+const META_DESCRIPTION_MIN_LENGTH = 80;
+const META_DESCRIPTION_MAX_LENGTH = 165;
+
+export function preferredMetaDescription(overview: string, fallback: string): string {
+  const firstSentence = overview.trim().match(/^.*?[.!؟]/)?.[0]?.trim() ?? "";
+  return firstSentence.length >= META_DESCRIPTION_MIN_LENGTH && firstSentence.length <= META_DESCRIPTION_MAX_LENGTH
+    ? firstSentence
+    : fallback;
+}

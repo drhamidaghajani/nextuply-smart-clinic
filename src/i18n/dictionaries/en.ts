@@ -828,6 +828,7 @@ const servicesPage = {
   beforeAfterBandHeading: "See real results",
   beforeAfterBandNote: "Every patient's result depends on their own structure and circumstances; these images are for general awareness, not a prediction of your own outcome.",
   careGuideHeading: "Related Care Guide",
+  relatedKnowledgeHeading: "Related articles",
   includedItemsLabel: "Includes:",
   includedItemsHeading: "What this treatment includes",
   // Round 2026-08-17 (Dr. Sadighi's feedback) — the Facial Cosmetic

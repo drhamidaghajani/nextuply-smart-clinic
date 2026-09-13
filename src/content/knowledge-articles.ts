@@ -1,3 +1,4 @@
+import type { FacialProcedureSlug } from "./facial-cosmetic-procedures";
 import type { ServiceTaxonomyId } from "./services";
 import type { Locale } from "@/i18n/locales";
 import { S_LIFT_ARTICLE } from "./knowledge-s-lift";
@@ -237,6 +238,18 @@ export interface KnowledgeArticle {
   topicCluster: KnowledgeTopicCluster;
   /** Which service this article supports — omitted for topics with no service page (doctor-profile, clinic-info, care-instructions, general-dental, uncategorized). */
   serviceRelation?: ServiceTaxonomyId;
+  /**
+   * SEO-01 (2026-09-13): the single facial-cosmetic *procedure* page this
+   * article is unambiguously about, when there is exactly one —
+   * `serviceRelation: "facial-cosmetic-surgery"` points at the parent hub,
+   * which is too coarse for an article that is really about one procedure
+   * (S Lift → `temple-face-lift`). Deliberately omitted wherever an article
+   * spans more than one procedure (e.g. the chin-and-jaw-angle FAQ) or no
+   * procedure page exists at all (filler, botulinum toxin, fat injection):
+   * a wrong mapping would push patients to a treatment page that isn't the
+   * one they searched for.
+   */
+  procedureRelation?: FacialProcedureSlug;
   medicalReview: KnowledgeArticleMedicalReview;
   /** Defaults to "needs-doctor-review" for every phase-1 migrated article — see doctor-review-list.csv. Applies uniformly across Persian AND every translation (medical accuracy review, not a per-language concern). */
   reviewStatus: KnowledgeArticleReviewStatus;
@@ -897,6 +910,7 @@ export const KNOWLEDGE_ARTICLES: readonly KnowledgeArticle[] = [
     excerpt: "جراحی لیفت ابرو یک روش زیبایی است که به منظور بالا بردن و جوان‌سازی ناحیه ابرو و کاهش چین و چروک‌های پیشانی انجام می‌شود.",
     topicCluster: "facial-cosmetic-surgery",
     serviceRelation: "facial-cosmetic-surgery",
+    procedureRelation: "temple-face-lift",
     medicalReview: {
       reviewerName: "دکتر علیرضا صدیقی",
       reviewerCredentialsRef: "about",
@@ -1044,6 +1058,7 @@ export const KNOWLEDGE_ARTICLES: readonly KnowledgeArticle[] = [
     excerpt: "جراحی لیفت صورت یک روش جراحی زیبایی است که برای کشیدن و سفت کردن پوست صورت و کاهش نشانه‌های پیری انجام می‌شود. این جراحی به بهبود افتادگی پوست، چین و چروک‌ها و خطوط عمیق کمک می‌کند…",
     topicCluster: "facial-cosmetic-surgery",
     serviceRelation: "facial-cosmetic-surgery",
+    procedureRelation: "temple-face-lift",
     medicalReview: {
       reviewerName: "دکتر علیرضا صدیقی",
       reviewerCredentialsRef: "about",
@@ -1899,6 +1914,7 @@ export const KNOWLEDGE_ARTICLES: readonly KnowledgeArticle[] = [
     excerpt: "بلفاروپلاستی نوعی جراحی است که روی پلک ها انجام می شود. این کار برای از بین بردن پوست اضافی پلک های بالایی و همچنین کاهش پف پلک های پایین انجام می شود. دلایل زیادی وجود دارد که ممک…",
     topicCluster: "blepharoplasty",
     serviceRelation: "facial-cosmetic-surgery",
+    procedureRelation: "blepharoplasty",
     medicalReview: {
       reviewerName: "دکتر علیرضا صدیقی",
       reviewerCredentialsRef: "about",
@@ -3179,6 +3195,7 @@ export const KNOWLEDGE_ARTICLES: readonly KnowledgeArticle[] = [
     excerpt: "چانه یکی از عناصر کلیدی در تعیین تناسب و زیبایی چهره است. ناهماهنگی در فرم چانه می‌تواند تأثیر قابل‌توجهی بر ظاهر کلی صورت داشته باشد. روش‌های متعددی برای اصلاح فرم چانه وجود دارد …",
     topicCluster: "facial-cosmetic-surgery",
     serviceRelation: "facial-cosmetic-surgery",
+    procedureRelation: "chin-surgery-implant",
     medicalReview: {
       reviewerName: "دکتر علیرضا صدیقی",
       reviewerCredentialsRef: "about",
@@ -3899,6 +3916,7 @@ export const KNOWLEDGE_ARTICLES: readonly KnowledgeArticle[] = [
     excerpt: "لیفت ابرو و شقیقه یک روش جراحی زیبایی است که برای کشیدن و محکم کردن محدوده ابرو و کاهش پوست اضافی در اطراف چشم به منظور ایجاد انعطاف و جوانسازی پوست انجام می‌شود. این روش بهبودی ظا…",
     topicCluster: "facial-cosmetic-surgery",
     serviceRelation: "facial-cosmetic-surgery",
+    procedureRelation: "temple-face-lift",
     medicalReview: {
       reviewerName: "دکتر علیرضا صدیقی",
       reviewerCredentialsRef: "about",
@@ -3978,6 +3996,7 @@ export const KNOWLEDGE_ARTICLES: readonly KnowledgeArticle[] = [
     excerpt: "با افزایش سن، پوست ناحیه اطراف چشم و شقیقه‌ها به‌مرور خاصیت ارتجاعی خود را از دست می‌دهد و دچار افتادگی می‌شود. این تغییرات باعث می‌شوند چهره خسته، پژمرده یا حتی مسن‌تر از حالت واق…",
     topicCluster: "facial-cosmetic-surgery",
     serviceRelation: "facial-cosmetic-surgery",
+    procedureRelation: "temple-face-lift",
     medicalReview: {
       reviewerName: "دکتر علیرضا صدیقی",
       reviewerCredentialsRef: "about",
@@ -4279,14 +4298,24 @@ export function getRelatedKnowledgeArticlesForLocale(
 }
 
 /**
+ * One article as a given locale sees it: for `fa` the article's own
+ * top-level fields (Persian is the source, never a translation), for
+ * `en`/`ar` its translation entry. `undefined` when that locale has no
+ * translation — the "never link to an untranslated article" rule, in one
+ * place instead of repeated in every locale-aware lookup below.
+ */
+function localeView(article: KnowledgeArticle, locale: Locale): { article: KnowledgeArticle; content: KnowledgeArticleTranslation } | undefined {
+  if (locale === "fa") return { article, content: { ...article, translationStatus: article.translationStatus } };
+  const content = article.translations?.[locale];
+  return content ? { article, content } : undefined;
+}
+
+/**
  * Most-recently-updated articles for a locale, excluding the current one —
  * powers the article detail page's sidebar "Latest articles" block
- * (2026-08-25 staging QA pass). `fa` reads every article's own top-level
- * fields; `en`/`ar` only ever include articles that actually have a
- * translation for that locale — same "never link to an untranslated
- * article" rule as `getRelatedKnowledgeArticlesForLocale`. Sorted by
- * `updatedAt` (an ISO `YYYY-MM-DD` string, so a plain string comparison
- * already sorts chronologically — no `Date` parsing needed).
+ * (2026-08-25 staging QA pass). Sorted by `updatedAt` (an ISO
+ * `YYYY-MM-DD` string, so a plain string comparison already sorts
+ * chronologically — no `Date` parsing needed).
  */
 export function getLatestKnowledgeArticles(
   locale: Locale,
@@ -4295,14 +4324,55 @@ export function getLatestKnowledgeArticles(
 ): readonly { article: KnowledgeArticle; content: KnowledgeArticleTranslation }[] {
   const candidates: { article: KnowledgeArticle; content: KnowledgeArticleTranslation }[] = [];
   for (const article of KNOWLEDGE_ARTICLES) {
-    if (locale === "fa") {
-      if (article.slug === excludeSlug) continue;
-      candidates.push({ article, content: { ...article, translationStatus: article.translationStatus } });
-    } else {
-      const content = article.translations?.[locale];
-      if (!content || content.slug === excludeSlug) continue;
-      candidates.push({ article, content });
-    }
+    const view = localeView(article, locale);
+    if (!view || view.content.slug === excludeSlug) continue;
+    candidates.push(view);
   }
   return candidates.sort((a, b) => (a.article.updatedAt < b.article.updatedAt ? 1 : -1)).slice(0, limit);
+}
+
+/**
+ * SEO-01 (2026-09-13) — the service→knowledge half of the intent-ownership
+ * graph: articles mapped to one service, newest first, for the "related
+ * articles" block on that service's canonical page
+ * (`components/page/service-related-knowledge.tsx`). Ordering is recency
+ * (the same `updatedAt` string comparison `getLatestKnowledgeArticles`
+ * uses, `slug` as a tie-break so the output is stable across builds) —
+ * this repo has no traffic data to rank by, and inventing a hand-kept
+ * "importance" list would drift the moment a new article ships.
+ */
+function articlesMatching(
+  matches: (article: KnowledgeArticle) => boolean,
+  locale: Locale,
+  limit: number
+): readonly { article: KnowledgeArticle; content: KnowledgeArticleTranslation }[] {
+  const found: { article: KnowledgeArticle; content: KnowledgeArticleTranslation }[] = [];
+  for (const article of KNOWLEDGE_ARTICLES) {
+    if (!matches(article)) continue;
+    const view = localeView(article, locale);
+    if (view) found.push(view);
+  }
+  return found
+    .sort((a, b) =>
+      a.article.updatedAt === b.article.updatedAt ? (a.content.slug < b.content.slug ? -1 : 1) : a.article.updatedAt < b.article.updatedAt ? 1 : -1
+    )
+    .slice(0, limit);
+}
+
+/** Articles supporting one service taxonomy entry — used on `/services/[slug]` and the facial-cosmetic hub. */
+export function getKnowledgeArticlesForService(
+  serviceId: ServiceTaxonomyId,
+  locale: Locale,
+  limit = 3
+): readonly { article: KnowledgeArticle; content: KnowledgeArticleTranslation }[] {
+  return articlesMatching((article) => article.serviceRelation === serviceId, locale, limit);
+}
+
+/** Articles about one facial-cosmetic procedure — used on `/services/facial-cosmetic-surgery/[procedure]`. */
+export function getKnowledgeArticlesForProcedure(
+  procedureSlug: FacialProcedureSlug,
+  locale: Locale,
+  limit = 3
+): readonly { article: KnowledgeArticle; content: KnowledgeArticleTranslation }[] {
+  return articlesMatching((article) => article.procedureRelation === procedureSlug, locale, limit);
 }

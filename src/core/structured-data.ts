@@ -63,6 +63,59 @@ export function buildStandaloneBreadcrumbJsonLd(items: readonly BreadcrumbItem[]
 }
 
 /**
+ * Batch SEO-01 (2026-09-13) — the 9 canonical commercial service pages
+ * (`/services/<slug>` and `/services/facial-cosmetic-surgery/<procedure>`)
+ * had no page-level structured data at all; only the 7 procedure pages
+ * carried a bare `BreadcrumbList`. They now emit one `MedicalProcedure`
+ * node plus that same breadcrumb, in one `@graph`, mirroring how
+ * `buildKnowledgeArticleJsonLd` already composes its graph.
+ *
+ * Deliberately emits ONLY facts the page already renders and the
+ * repository already owns: the page's own localized `name`/`description`
+ * strings and the clinic name each locale's dictionary already uses
+ * (via `CLINIC_NAME`). No `offers`, `priceRange`, `aggregateRating`,
+ * `review`, `award`, `outcome`, `howPerformed` or `followup` — none of
+ * those have an approved source in this repository, and inventing them to
+ * chase a rich result is exactly the medical-claim fabrication this batch
+ * is meant to avoid.
+ *
+ * `path` is the locale-neutral route only (`/services/rhinoplasty`);
+ * `localeHref` applies the `/en`/`/ar` prefix (and the bare-root Persian
+ * convention) so the emitted `url` can never drift from the canonical tag
+ * the same page renders.
+ */
+export function buildMedicalProcedureJsonLd({
+  name,
+  description,
+  path,
+  locale,
+  breadcrumbItems,
+}: {
+  name: string;
+  description: string;
+  path: string;
+  locale: Locale;
+  breadcrumbItems: readonly BreadcrumbItem[];
+}) {
+  const canonicalUrl = absoluteUrl(localeHref(locale, path));
+  return {
+    "@context": "https://schema.org" as const,
+    "@graph": [
+      {
+        "@type": "MedicalProcedure" as const,
+        "@id": `${canonicalUrl}#procedure`,
+        name,
+        description,
+        url: canonicalUrl,
+        inLanguage: locale,
+        provider: { "@type": "MedicalOrganization" as const, name: CLINIC_NAME[locale], url: SITE_URL },
+      },
+      buildBreadcrumbJsonLd(breadcrumbItems, locale),
+    ],
+  };
+}
+
+/**
  * Locale-neutral shape one Knowledge Center article page resolves itself
  * to before building schema — either the Persian `KnowledgeArticle`
  * directly, or an en/ar `KnowledgeArticleTranslation` merged with its

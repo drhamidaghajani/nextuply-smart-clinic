@@ -631,6 +631,13 @@ export interface ServicesPageDictionary {
   /** Round 2026-07-13 (patient-care hub) — links a service detail page to its related `/care-instructions/[slug]` guide(s). */
   careGuideHeading: string;
   /**
+   * Batch SEO-01 (2026-09-13) — heading for the service→knowledge
+   * section (`components/page/service-related-knowledge.tsx`) on service
+   * and procedure pages. One shared label across every service rather
+   * than per-service copy, same reasoning as `careGuideHeading` above.
+   */
+  relatedKnowledgeHeading: string;
+  /**
    * Round 2026-07-26 (doctor feedback, per Hamid) — shared labels for the
    * `includedItems` preview added to `ServiceTaxonomyItem`
    * (`content/services.ts`). `includedItemsLabel` is the compact "شامل:"

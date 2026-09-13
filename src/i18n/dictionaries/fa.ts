@@ -1650,6 +1650,7 @@ export const fa = {
     beforeAfterBandHeading: "نمونه‌های واقعی را ببینید",
     beforeAfterBandNote: "نتیجه هر بیمار بر اساس ساختار و شرایط فردی متفاوت است؛ این تصاویر برای آگاهی اولیه‌اند، نه پیش‌بینی نتیجه شما.",
     careGuideHeading: "راهنمای مراقبت مرتبط",
+    relatedKnowledgeHeading: "مقالات مرتبط",
     includedItemsLabel: "شامل:",
     includedItemsHeading: "این خدمت شامل چه مواردی می‌شود؟",
     // Round 2026-08-17 (بازخورد مستقیم دکتر صدیقی) — صفحه جراحی‌های

@@ -289,6 +289,28 @@ function main() {
   check("Batch 2: condylar hyperplasia (standalone)", resolveLegacyPath("/بیماری-کندیلار-هایپرپلاژیا-علل،-تشخی"), "/knowledge/بیماری-کندیلار-هایپرپلاژیا-علل،-تشخی");
   check("Batch 2: orthognathic surgery stages (standalone)", resolveLegacyPath("/جراحی-فک-ارتوگناتیک-مراحل-و-روند-درما"), "/knowledge/جراحی-فک-ارتوگناتیک-مراحل-و-روند-درما");
 
+  // Batch SEO-01 (2026-09-13): the high-value legacy URLs the batch's own
+  // GSC evidence surfaced. Each one is asserted as a ONE-HOP redirect to
+  // its final current canonical target — target !== source (no self-loop),
+  // the target itself must not resolve to another legacy entry (no chain),
+  // and no target may be a public `/fa/...` URL. Targets below are the
+  // values `resolveLegacyPath` actually returns today; the map itself was
+  // deliberately NOT edited by this batch.
+  const SEO01_HIGH_VALUE_LEGACY_PATHS: Record<string, string> = {
+    "/جراحی-فک-نی-نی-سایت": "/knowledge/جراحی-فک-نی-نی-سایت",
+    "/european-nose-job": "/knowledge/european-nose-job",
+    "/لیفت-شقیقه-گلایدینگ": "/knowledge/لیفت-شقیقه-گلایدینگ",
+    "/لیفت-ابرو-و-شقیقه": "/knowledge/لیفت-ابرو-و-شقیقه",
+    "/best-rhinoplasty-surgeon-tabriz": "/services/rhinoplasty",
+    "/جراحی-فک-ارتوگناتیک-مراحل-و-روند-درما": "/knowledge/جراحی-فک-ارتوگناتیک-مراحل-و-روند-درما",
+  };
+  for (const [source, expected] of Object.entries(SEO01_HIGH_VALUE_LEGACY_PATHS)) {
+    check(`SEO-01 one-hop: ${source} -> ${expected}`, resolveLegacyPath(source), expected);
+    check(`SEO-01 no self-loop: ${source}`, expected === normalizeLegacyPath(source), false);
+    check(`SEO-01 no chain: ${expected}`, resolveLegacyPath(expected), null);
+    check(`SEO-01 no public /fa target: ${expected}`, expected === "/fa" || expected.startsWith("/fa/"), false);
+  }
+
   // Known redirect issue fix (approved, 2026-08-26): must never point at
   // /about again — the mis-redirect this exact check guards against.
   check("FIX: wisdom-tooth-timing mis-redirect no longer points at /about", resolveLegacyPath("/همهچیز-درباره-دندان-عقل-زمان-مناسب-ب"), "/knowledge/تفاوت-کشیدن-دندان-و-جراحی-دندان-عقل");

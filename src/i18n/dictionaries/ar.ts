@@ -812,6 +812,7 @@ const servicesPage = {
   beforeAfterBandHeading: "شاهدوا نتائج حقيقية",
   beforeAfterBandNote: "تختلف نتيجة كل مريض حسب بنيته وظروفه الفردية؛ هذه الصور للاطلاع العام فقط، وليست توقعاً لنتيجتكم الشخصية.",
   careGuideHeading: "دليل العناية ذو الصلة",
+  relatedKnowledgeHeading: "مقالات ذات صلة",
   includedItemsLabel: "يشمل:",
   includedItemsHeading: "ماذا يشمل هذا العلاج؟",
   // Round 2026-08-17 (Dr. Sadighi's feedback) — the Facial Cosmetic

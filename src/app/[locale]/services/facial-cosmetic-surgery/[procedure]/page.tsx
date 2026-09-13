@@ -7,12 +7,14 @@ import { ContentSection } from "@/components/page/content-section";
 import { DisclaimerBanner } from "@/components/page/disclaimer-banner";
 import { PageFaq } from "@/components/page/page-faq";
 import { ServiceHero } from "@/components/page/service-hero";
+import { ServiceRelatedKnowledge } from "@/components/page/service-related-knowledge";
 import { Reveal } from "@/components/motion/reveal";
 import { SERVICE_SLUG_TO_CATEGORY } from "@/content/before-after-cases";
 import { FACIAL_PROCEDURES, getFacialProcedureBySlug, type FacialProcedure } from "@/content/facial-cosmetic-procedures";
+import { getKnowledgeArticlesForProcedure } from "@/content/knowledge-articles";
 import { getBeforeAfterHref, getServiceById } from "@/content/services";
-import { absoluteUrl } from "@/core/site-config";
-import { buildStandaloneBreadcrumbJsonLd } from "@/core/structured-data";
+import { buildLocalizedPageMetadata, preferredMetaDescription } from "@/core/seo-metadata.server";
+import { buildMedicalProcedureJsonLd } from "@/core/structured-data";
 import { getDictionary } from "@/i18n/get-dictionary";
 import { localeHref } from "@/i18n/locale-href";
 import { isSupportedLocale, LOCALE_DIRECTION, SUPPORTED_LOCALES, type Locale } from "@/i18n/locales";
@@ -40,29 +42,22 @@ const SERVICE_SLUG = "facial-cosmetic-surgery";
  * that component) — the CTA sections below are additional, not the only
  * way to reach it.
  *
- * SEO (approved as a SCOPED improvement for these 7 new routes only —
- * neither the parent `facial-cosmetic-surgery/page.tsx` nor the generic
- * `services/[slug]/page.tsx` have `generateMetadata` today, so this is
- * new ground, not a retrofit): canonical + hreflang across fa/en/ar using
- * the SAME slug in every locale (this route's own convention — every
- * `FacialProcedure.slug` is one string shared across locales, matching
- * how `content/services.ts` itself works, unlike Knowledge articles which
- * get a distinct slug per translation), plus a standalone
- * `BreadcrumbList` JSON-LD document with its own schema.org context.
+ * SEO: originally hand-rolled here (2026-08-26, this route's own
+ * canonical + hreflang + a standalone `BreadcrumbList`). Batch SEO-01
+ * (2026-09-13) folded it onto the shared
+ * `buildLocalizedPageMetadata`, which produces the byte-identical
+ * canonical/hreflang set this file used to build by hand and adds the
+ * OpenGraph/Twitter blocks it was missing. Slug stays the SAME in every
+ * locale (this route's own convention — every `FacialProcedure.slug` is
+ * one string shared across locales, matching how `content/services.ts`
+ * itself works, unlike Knowledge articles which get a distinct slug per
+ * translation). Structured data is now one
+ * `MedicalProcedure`+`BreadcrumbList` graph from
+ * `buildMedicalProcedureJsonLd`, which replaced the standalone breadcrumb
+ * document.
  */
 export function generateStaticParams() {
   return SUPPORTED_LOCALES.flatMap((locale) => FACIAL_PROCEDURES.map((procedure) => ({ locale, procedure: procedure.slug })));
-}
-
-function proceduresHreflangAlternates(slug: string) {
-  const languages: Record<string, string> = {
-    fa: absoluteUrl(`/services/facial-cosmetic-surgery/${slug}`),
-    "fa-IR": absoluteUrl(`/services/facial-cosmetic-surgery/${slug}`),
-    en: absoluteUrl(`/en/services/facial-cosmetic-surgery/${slug}`),
-    ar: absoluteUrl(`/ar/services/facial-cosmetic-surgery/${slug}`),
-  };
-  languages["x-default"] = languages.fa!;
-  return languages;
 }
 
 export async function generateMetadata({
@@ -75,22 +70,17 @@ export async function generateMetadata({
   const procedure = getFacialProcedureBySlug(procedureSlug);
   if (!procedure) return {};
 
-  const canonical = localeHref(locale, `/services/facial-cosmetic-surgery/${procedure.slug}`);
-  return {
+  return buildLocalizedPageMetadata({
+    locale,
+    path: `/services/facial-cosmetic-surgery/${procedure.slug}`,
     title: procedure.title[locale],
-    description: procedure.summary[locale],
-    alternates: {
-      canonical,
-      languages: proceduresHreflangAlternates(procedure.slug),
-    },
-    openGraph: {
-      title: procedure.title[locale],
-      description: procedure.summary[locale],
-      type: "article",
-      url: absoluteUrl(canonical),
-      images: procedure.imageIsPlaceholder ? undefined : [{ url: absoluteUrl(procedure.imagePath) }],
-    },
-  };
+    // Batch SEO-01 (2026-09-13) — the procedure's own `summary` strapline
+    // (51-127 characters) stays the fallback, but the first sentence of its
+    // approved `intro` copy is used when it fits a search snippet, since it
+    // names the procedure and states what it does.
+    description: preferredMetaDescription(procedure.intro[locale], procedure.summary[locale]),
+    imagePaths: procedure.imageIsPlaceholder ? [] : [procedure.imagePath],
+  });
 }
 
 export default async function FacialCosmeticProcedurePage({
@@ -117,18 +107,28 @@ export default async function FacialCosmeticProcedurePage({
 
   const relatedProcedures: readonly FacialProcedure[] = FACIAL_PROCEDURES.filter((item) => item.slug !== procedure.slug);
 
-  const breadcrumbJsonLd = buildStandaloneBreadcrumbJsonLd(
-    [
-      { label: dict.eyebrow, href: localeHref(locale, "/services") },
-      { label: parentService.title, href: parentHref },
-      { label: procedure.title[locale] },
-    ],
-    locale
-  );
+  // One source for both the visible trail and the JSON-LD trail.
+  const breadcrumbItems = [
+    { label: dict.eyebrow, href: localeHref(locale, "/services") },
+    { label: parentService.title, href: parentHref },
+    { label: procedure.title[locale] },
+  ];
+  const procedureJsonLd = buildMedicalProcedureJsonLd({
+    name: procedure.title[locale],
+    description: procedure.summary[locale],
+    path: `/services/facial-cosmetic-surgery/${procedure.slug}`,
+    locale,
+    breadcrumbItems,
+  });
+
+  // Batch SEO-01 (2026-09-13) — commercial → informational direction for
+  // this specific procedure, resolved from each article's typed
+  // `procedureRelation`.
+  const relatedKnowledge = getKnowledgeArticlesForProcedure(procedure.slug, locale);
 
   return (
     <main>
-      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(breadcrumbJsonLd) }} />
+      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(procedureJsonLd) }} />
 
       <ServiceHero
         eyebrow={parentService.eyebrow}
@@ -153,11 +153,7 @@ export default async function FacialCosmeticProcedurePage({
         // "contain" for its own gallery photos) is unaffected.
         photoFit="cover"
         locale={locale}
-        breadcrumb={[
-          { label: dict.eyebrow, href: localeHref(locale, "/services") },
-          { label: parentService.title, href: parentHref },
-          { label: procedure.title[locale] },
-        ]}
+        breadcrumb={breadcrumbItems}
         ctaPrimaryLabel={dict.heroCtaPrimary}
         ctaSecondaryLabel={page.backToParentCta}
         ctaSecondaryHref={parentHref}
@@ -232,6 +228,18 @@ export default async function FacialCosmeticProcedurePage({
           ))}
         </div>
       </ContentSection>
+
+      {/* Batch SEO-01 (2026-09-13) — warm-white between the cream "other
+          procedures" section and the navy assistant CTA, keeping this
+          page's alternation intact. Renders nothing when this locale has
+          no matching Knowledge article. */}
+      <ServiceRelatedKnowledge
+        locale={locale}
+        heading={dict.relatedKnowledgeHeading}
+        items={relatedKnowledge.map(({ content }) => ({ slug: content.slug, title: content.title }))}
+        tone="warm-white"
+        headerBg="#faf7f1"
+      />
 
       <AssistantCtaSection heading={page.finalCtaHeading} body={page.finalCtaBody} buttonLabel={page.finalCtaButton} intent="consultation_booking" />
 

@@ -49,6 +49,27 @@ export const FACIAL_PROCEDURE_IDS = [
 
 export type FacialProcedureId = (typeof FACIAL_PROCEDURE_IDS)[number];
 
+/**
+ * SEO-01 (2026-09-13): the route segments of the 7 procedures below, as a
+ * literal tuple rather than loose strings — the Knowledge Center's
+ * `procedureRelation` field (`content/knowledge-articles.ts`) is typed
+ * against this union, so a typo in an article's procedure mapping is a
+ * compile error instead of a link that silently never renders. Must stay
+ * in sync with `FACIAL_PROCEDURES`' own `slug` values; `slug` on the
+ * interface is typed to this union for exactly that reason.
+ */
+export const FACIAL_PROCEDURE_SLUGS = [
+  "temple-face-lift",
+  "double-chin-liposuction",
+  "buccal-fat-removal",
+  "cheek-implant",
+  "jawline-contouring",
+  "blepharoplasty",
+  "chin-surgery-implant",
+] as const;
+
+export type FacialProcedureSlug = (typeof FACIAL_PROCEDURE_SLUGS)[number];
+
 export interface FacialProcedure {
   /** Same-page anchor target (`#<id>`) — NOT a route. See this file's doc-comment. */
   id: FacialProcedureId;
@@ -63,7 +84,7 @@ export interface FacialProcedure {
    * (still used as a React key and historically meaningful) never has to
    * change to satisfy a URL requirement, and vice versa.
    */
-  slug: string;
+  slug: FacialProcedureSlug;
   title: Record<Locale, string>;
   /** One-line description shown on the overview card. */
   summary: Record<Locale, string>;

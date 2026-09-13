@@ -8,11 +8,14 @@ import { DisclaimerBanner } from "@/components/page/disclaimer-banner";
 import { ProcedureLinkCard } from "@/components/page/facial-cosmetic/procedure-link-card";
 import { PageFaq } from "@/components/page/page-faq";
 import { ServiceHero } from "@/components/page/service-hero";
+import { ServiceRelatedKnowledge } from "@/components/page/service-related-knowledge";
 import { Reveal } from "@/components/motion/reveal";
 import { SERVICE_SLUG_TO_CATEGORY } from "@/content/before-after-cases";
 import { FACIAL_PROCEDURES } from "@/content/facial-cosmetic-procedures";
+import { getKnowledgeArticlesForService } from "@/content/knowledge-articles";
 import { getBeforeAfterHref, getServiceById } from "@/content/services";
-import { buildLocalizedPageMetadata } from "@/core/seo-metadata.server";
+import { buildLocalizedPageMetadata, preferredMetaDescription } from "@/core/seo-metadata.server";
+import { buildStandaloneBreadcrumbJsonLd } from "@/core/structured-data";
 import { getDictionary } from "@/i18n/get-dictionary";
 import { localeHref } from "@/i18n/locale-href";
 import { isSupportedLocale, LOCALE_DIRECTION, SUPPORTED_LOCALES } from "@/i18n/locales";
@@ -38,7 +41,13 @@ export async function generateMetadata({ params }: { params: Promise<{ locale: s
     locale,
     path: `/services/${SERVICE_SLUG}`,
     title: service.title,
-    description: dict.facialCosmetic.heroSubtitle,
+    // Batch SEO-01 (2026-09-13) — was `dict.facialCosmetic.heroSubtitle`, a
+    // hero strapline measured at 202 (fa) / 299 (en) / 239 (ar) characters,
+    // i.e. truncated mid-sentence on every search result. This hub is a
+    // category page (no single procedure to name), so it now uses the same
+    // overview-then-strapline rule as the service detail pages; both of
+    // those strings are already-published copy used verbatim.
+    description: preferredMetaDescription(service.overview, service.subtitle),
     imagePaths: [HERO_IMAGE],
   });
 }
@@ -119,10 +128,23 @@ export default async function FacialCosmeticSurgeryPage({ params }: { params: Pr
   const beforeAfterHref = getBeforeAfterHref(locale, (taxonomyItem && SERVICE_SLUG_TO_CATEGORY[taxonomyItem.slug]) ?? null);
   const arrow = LOCALE_DIRECTION[locale] === "rtl" ? "→" : "←";
 
+  // Batch SEO-01 (2026-09-13) — this hub's own articles, resolved from each
+  // article's typed `serviceRelation`, newest first.
+  const relatedKnowledge = getKnowledgeArticlesForService(SERVICE_SLUG, locale);
+
+  // Breadcrumb-only structured data: a category hub is not one
+  // `MedicalProcedure`, and deliberately not an `ItemList` of its 7 child
+  // procedures in this batch (see the SEO-01 report). The trail matches the
+  // hero's visible breadcrumb exactly.
+  const breadcrumbItems = [{ label: dict.eyebrow, href: localeHref(locale, "/services") }, { label: service.title }];
+  const breadcrumbJsonLd = buildStandaloneBreadcrumbJsonLd(breadcrumbItems, locale);
+
   return (
     // `.smooth-anchor-scroll` opts this page (and only this page) into
     // smooth anchor scrolling — see globals.css.
     <main className="smooth-anchor-scroll">
+      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(breadcrumbJsonLd) }} />
+
       <ServiceHero
         eyebrow={service.eyebrow}
         title={service.title}
@@ -133,7 +155,7 @@ export default async function FacialCosmeticSurgeryPage({ params }: { params: Pr
         // `cover` fills it edge-to-edge and still crops nothing.
         photoFit="cover"
         locale={locale}
-        breadcrumb={[{ label: dict.eyebrow, href: localeHref(locale, "/services") }, { label: service.title }]}
+        breadcrumb={breadcrumbItems}
         ctaPrimaryLabel={dict.heroCtaPrimary}
         ctaSecondaryLabel={page.heroCtaProcedures}
         ctaSecondaryHref="#procedures"
@@ -205,6 +227,17 @@ export default async function FacialCosmeticSurgeryPage({ params }: { params: Pr
       <ContentSection heading={page.faqHeading} tone="cream" headerBg="#fcfbf4">
         <PageFaq items={page.faq} />
       </ContentSection>
+
+      {/* Batch SEO-01 (2026-09-13) — warm-white between the cream FAQ and
+          the navy assistant CTA, keeping this page's alternation intact.
+          Renders nothing when this locale has no matching article. */}
+      <ServiceRelatedKnowledge
+        locale={locale}
+        heading={dict.relatedKnowledgeHeading}
+        items={relatedKnowledge.map(({ content }) => ({ slug: content.slug, title: content.title }))}
+        tone="warm-white"
+        headerBg="#faf7f1"
+      />
 
       <AssistantCtaSection
         heading={page.finalCtaHeading}

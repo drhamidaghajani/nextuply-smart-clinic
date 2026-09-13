@@ -8,14 +8,17 @@ import { PageFaq } from "@/components/page/page-faq";
 import { ServiceBeforeAfterBand } from "@/components/page/service-before-after-band";
 import { ServiceHero } from "@/components/page/service-hero";
 import { ServiceJourney } from "@/components/page/service-journey";
+import { ServiceRelatedKnowledge } from "@/components/page/service-related-knowledge";
 import { ServiceSplitStory } from "@/components/page/service-split-story";
 import { ServiceVisualPanel } from "@/components/page/service-visual-panel";
 import { Reveal } from "@/components/motion/reveal";
 import { PHOTO_POSITION, REAL_PHOTOS } from "@/components/sections/gallery-photos";
 import { SERVICE_SLUG_TO_CATEGORY } from "@/content/before-after-cases";
 import { getCareInstructionHref, getCareTopicsForService } from "@/content/care-instructions";
+import { getKnowledgeArticlesForService } from "@/content/knowledge-articles";
 import { getBeforeAfterHref, getServiceById, SERVICE_TAXONOMY_IDS } from "@/content/services";
-import { buildLocalizedPageMetadata } from "@/core/seo-metadata.server";
+import { buildLocalizedPageMetadata, preferredMetaDescription } from "@/core/seo-metadata.server";
+import { buildMedicalProcedureJsonLd } from "@/core/structured-data";
 import { localeHref } from "@/i18n/locale-href";
 import { getDictionary } from "@/i18n/get-dictionary";
 import { isSupportedLocale, LOCALE_DIRECTION, SUPPORTED_LOCALES } from "@/i18n/locales";
@@ -48,7 +51,12 @@ export async function generateMetadata({ params }: { params: Promise<{ locale: s
     locale,
     path: `/services/${slug}`,
     title: service.title,
-    description: service.subtitle,
+    // Batch SEO-01 (2026-09-13) — was the hero strapline alone (32-122
+    // characters across locales). `preferredMetaDescription` promotes the
+    // first sentence of this service's own approved `overview` copy when
+    // it fits a search snippet, and otherwise leaves the strapline
+    // exactly as it was. No new wording is authored either way.
+    description: preferredMetaDescription(service.overview, service.subtitle),
   });
 }
 
@@ -111,8 +119,31 @@ export default async function ServiceDetailPage({ params }: { params: Promise<{ 
   const careTopics = taxonomyItem ? getCareTopicsForService(taxonomyItem.id) : [];
   const arrow = LOCALE_DIRECTION[locale] === "rtl" ? "←" : "→";
 
+  // Batch SEO-01 (2026-09-13) — commercial → informational direction of
+  // the intent-ownership graph: this canonical service page points at the
+  // Knowledge Center articles that actually discuss this treatment, which
+  // are resolved from each article's own typed `serviceRelation` (never a
+  // hand-maintained list here, so the two directions cannot drift).
+  // Articles without a translation for this locale are skipped by
+  // `getKnowledgeArticlesForService`, so an /en or /ar page can never link
+  // a visitor into Persian body text.
+  const relatedKnowledge = taxonomyItem ? getKnowledgeArticlesForService(taxonomyItem.id, locale) : [];
+
+  // One breadcrumb source for both the visible trail and the JSON-LD, so
+  // the two can't drift apart.
+  const breadcrumbItems = [{ label: dict.eyebrow, href: localeHref(locale, "/services") }, { label: service.title }];
+  const procedureJsonLd = buildMedicalProcedureJsonLd({
+    name: service.title,
+    description: service.subtitle,
+    path: `/services/${slug}`,
+    locale,
+    breadcrumbItems,
+  });
+
   return (
     <main>
+      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(procedureJsonLd) }} />
+
       <ServiceHero
         eyebrow={service.eyebrow}
         title={service.title}
@@ -122,7 +153,7 @@ export default async function ServiceDetailPage({ params }: { params: Promise<{ 
         photoPosition={heroPhotoPosition}
         photoFit={heroPhotoFit}
         locale={locale}
-        breadcrumb={[{ label: dict.eyebrow, href: localeHref(locale, "/services") }, { label: service.title }]}
+        breadcrumb={breadcrumbItems}
         ctaPrimaryLabel={dict.heroCtaPrimary}
         ctaSecondaryLabel={dict.heroCtaSecondary}
         ctaSecondaryHref={beforeAfterHref}
@@ -248,6 +279,20 @@ export default async function ServiceDetailPage({ params }: { params: Promise<{ 
         note={dict.beforeAfterBandNote}
         ctaLabel={dict.beforeAfterCta}
         href={beforeAfterHref}
+      />
+
+      {/* Batch SEO-01 (2026-09-13). Sits between the navy before/after band
+          and the warm-white disclaimer, so the cream tone restores the
+          page's alternation no matter whether this service has a care
+          guide chip row above it. Renders nothing at all when this
+          service has no matching Knowledge article in this locale
+          (facial-rejuvenation, facial-reconstruction-surgery today). */}
+      <ServiceRelatedKnowledge
+        locale={locale}
+        heading={dict.relatedKnowledgeHeading}
+        items={relatedKnowledge.map(({ content }) => ({ slug: content.slug, title: content.title }))}
+        tone="cream"
+        headerBg="#fcfbf4"
       />
 
       {/* Deliberately a light section (not navy) — the surrounding

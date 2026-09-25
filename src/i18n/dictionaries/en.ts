@@ -16,6 +16,7 @@ import type {
   KnowledgePageDictionary,
   PatientJourneyDictionary,
   PatientStoriesDictionary,
+  PwaInstallDictionary,
   ServicesDictionary,
   ServicesPageDictionary,
   VideoHubDictionary,
@@ -104,6 +105,32 @@ export const footer = {
   copyrightSuffix: "Digital architecture by",
   linkedInAriaLabel: "Nextuply on LinkedIn",
 } satisfies FooterDictionary;
+
+/**
+ * PWA install experience (2026-09-25). Mirrors `fa.ts`'s `pwaInstall` slice,
+ * which is the approved source copy, in the same calm, plain, patient-facing
+ * register as the rest of this file. Step titles keep the native iOS menu
+ * labels in parentheses alongside their English names, so the wording
+ * matches what the patient actually sees on screen.
+ */
+export const pwaInstall = {
+  promptTitle: "Faster access to the clinic",
+  promptBody:
+    "Add Dr. Sadighi's clinic to your home screen so services, information, and consultation are always one tap away.",
+  installCta: "Install the app",
+  notNowCta: "Not now",
+  closeLabel: "Close",
+  instructionsTitle: "Add to Home Screen",
+  instructionsIntro: "On iPhone and iPad, the clinic is added to your home screen through Safari's Share menu.",
+  instructionsSteps: [
+    { title: "Share", hint: "Tap the Share icon in Safari's bottom bar." },
+    { title: "Add to Home Screen", hint: "Choose it from the list that opens." },
+    { title: "Add", hint: "Tap Add in the top corner of the screen to confirm." },
+  ],
+  instructionsNote:
+    "Once these three steps are done, the clinic icon appears on your home screen and opens from there.",
+  instructionsDoneCta: "Got it",
+} satisfies PwaInstallDictionary;
 
 export const hero = {
   title: "The architecture of beauty — with a surgeon's precision and an artist's eye",
@@ -1735,6 +1762,7 @@ const careInstructions = {
 export const en = {
   header,
   footer,
+  pwaInstall,
   hero,
   aiConcierge,
   services,

@@ -1077,6 +1077,38 @@ export const fa = {
     copyrightSuffix: "معماری دیجیتال توسط",
     linkedInAriaLabel: "Nextuply در لینکدین",
   },
+  // Round 2026-09-25 (PWA install experience, per Hamid's brief) — his
+  // exact copy, given verbatim. `installCta` intentionally doubles as the
+  // footer's persistent entry label (same action, one string, so the two
+  // can never drift apart — see `PwaInstallDictionary`). The three iOS
+  // steps match his required sequence exactly:
+  // اشتراک‌گذاری (Share) → افزودن به صفحه اصلی (Add to Home Screen) → افزودن (Add).
+  pwaInstall: {
+    promptTitle: "دسترسی سریع‌تر به کلینیک",
+    promptBody:
+      "کلینیک دکتر صدیقی را به صفحه اصلی گوشی اضافه کنید تا دسترسی به خدمات، اطلاعات و مشاوره سریع‌تر باشد.",
+    installCta: "نصب اپلیکیشن",
+    notNowCta: "فعلاً نه",
+    closeLabel: "بستن",
+    instructionsTitle: "افزودن به صفحه اصلی",
+    instructionsIntro: "در آیفون و آیپد، نصب از طریق منوی اشتراک‌گذاری مرورگر سافاری انجام می‌شود.",
+    instructionsSteps: [
+      {
+        title: "اشتراک‌گذاری (Share)",
+        hint: "روی آیکون اشتراک‌گذاری در نوار پایین سافاری بزنید.",
+      },
+      {
+        title: "افزودن به صفحه اصلی (Add to Home Screen)",
+        hint: "این گزینه را در فهرستی که باز می‌شود انتخاب کنید.",
+      },
+      {
+        title: "افزودن (Add)",
+        hint: "برای تأیید، در گوشه بالای صفحه روی «افزودن» بزنید.",
+      },
+    ],
+    instructionsNote: "پس از این سه مرحله، آیکون کلینیک روی صفحه اصلی گوشی شما اضافه می‌شود و از همان‌جا باز می‌شود.",
+    instructionsDoneCta: "متوجه شدم",
+  },
   // Round 2026-07-12 (per Hamid — contract-driven Smart Clinic Assistant
   // rebuild): supersedes the 2026-07-09 `assistantModes` key (its
   // `consultation.openingMessage`/`quickActions` were never consumed by

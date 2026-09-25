@@ -46,6 +46,34 @@ export interface FooterDictionary {
   linkedInAriaLabel: string;
 }
 
+/**
+ * PWA install experience (2026-09-25) — the install bottom-sheet copy, the
+ * iOS "Add to Home Screen" instruction steps, and the label of the
+ * reusable install entry rendered in the footer's راهنما column. Lives
+ * here rather than being inferred from `fa.ts` for the same reason every
+ * other slice does: `fa.ts` is `as const`, so `en`/`ar` could never
+ * satisfy `Dictionary["pwaInstall"]`.
+ *
+ * `installCta` is deliberately ONE string used in two places — the sheet's
+ * primary button and the footer entry — because they are the same action
+ * and must never drift apart in wording.
+ */
+export interface PwaInstallDictionary {
+  promptTitle: string;
+  promptBody: string;
+  installCta: string;
+  notNowCta: string;
+  /** Accessible name for the sheet's close (×) button and its backdrop. */
+  closeLabel: string;
+  instructionsTitle: string;
+  instructionsIntro: string;
+  /** Exactly 3 ordered steps, rendered as-is in array order. */
+  instructionsSteps: readonly { title: string; hint: string }[];
+  instructionsNote: string;
+  /** Label of the "I understand" button that closes the instructions view. */
+  instructionsDoneCta: string;
+}
+
 export interface HeroDictionary {
   title: string;
   doctorName: string;

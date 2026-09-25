@@ -4,11 +4,13 @@ import dynamic from "next/dynamic";
 import { useLayoutEffect } from "react";
 import { usePathname } from "next/navigation";
 
-import type { FooterDictionary, HeaderDictionary } from "@/i18n/dictionary-types";
+import type { FooterDictionary, HeaderDictionary, PwaInstallDictionary } from "@/i18n/dictionary-types";
 import type { Locale } from "@/i18n/locales";
 import { FloatingAssistantTrigger } from "@/modules/smart-clinic-assistant";
 
 import { GoogleAnalytics } from "./analytics/google-analytics";
+import { PwaInstallPrompt } from "./pwa-install/pwa-install-prompt";
+import { PwaInstallProvider } from "./pwa-install/pwa-install-provider";
 import { ServiceWorkerRegister } from "./service-worker-register";
 import { SiteFooter } from "./sections/site-footer";
 import { SiteHeader } from "./site-header";
@@ -82,11 +84,13 @@ const GA_MEASUREMENT_ID = process.env.NEXT_PUBLIC_GA_MEASUREMENT_ID;
 export function SiteChrome({
   headerDict,
   footerDict,
+  pwaInstallDict,
   locale,
   children,
 }: {
   headerDict: HeaderDictionary;
   footerDict: FooterDictionary;
+  pwaInstallDict: PwaInstallDictionary;
   locale: Locale;
   children: React.ReactNode;
 }) {
@@ -109,7 +113,16 @@ export function SiteChrome({
   }
 
   return (
-    <>
+    <PwaInstallProvider dict={pwaInstallDict} locale={locale}>
+      {/* Round 2026-09-25 (PWA install experience): the provider and the
+          sheet are mounted HERE, in the public branch only — so they are
+          structurally absent from `/{locale}/internal/*` (which returns
+          early above), cannot be reached by any internal page, and add
+          nothing to the internal bundle path. `PwaInstallPrompt` renders
+          `null` unless there is a real install path, and its own
+          auto-promotion is mobile-only and 7-day-suppressed once
+          dismissed. Nothing in the Smart Clinic Assistant's tree is
+          touched by this. */}
       <GoogleAnalytics locale={locale} />
       <SiteHeader dict={headerDict} locale={locale} />
       {children}
@@ -117,6 +130,7 @@ export function SiteChrome({
       <FloatingAssistantTrigger />
       <AssistantDrawer />
       <ServiceWorkerRegister />
-    </>
+      <PwaInstallPrompt />
+    </PwaInstallProvider>
   );
 }

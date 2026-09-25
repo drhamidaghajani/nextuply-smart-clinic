@@ -9,7 +9,7 @@ import { PageFaq } from "@/components/page/page-faq";
 import { ServiceHero } from "@/components/page/service-hero";
 import { ServiceRelatedKnowledge } from "@/components/page/service-related-knowledge";
 import { Reveal } from "@/components/motion/reveal";
-import { SERVICE_SLUG_TO_CATEGORY } from "@/content/before-after-cases";
+import { FACIAL_PROCEDURE_TO_CATEGORY } from "@/content/before-after-cases";
 import { FACIAL_PROCEDURES, getFacialProcedureBySlug, type FacialProcedure } from "@/content/facial-cosmetic-procedures";
 import { getKnowledgeArticlesForProcedure } from "@/content/knowledge-articles";
 import { getBeforeAfterHref, getServiceById } from "@/content/services";
@@ -101,7 +101,14 @@ export default async function FacialCosmeticProcedurePage({
   if (!parentService) notFound();
 
   const taxonomyItem = getServiceById(SERVICE_SLUG);
-  const beforeAfterHref = getBeforeAfterHref(locale, (taxonomyItem && SERVICE_SLUG_TO_CATEGORY[taxonomyItem.slug]) ?? null);
+  // Round 2026-09-25 (real before/after cases): resolved PER PROCEDURE, not
+  // per parent service. This page's parent (`facial-cosmetic-surgery`) owns
+  // seven procedures and only `temple-face-lift` has published cases, so a
+  // service-level lookup would have sent every other procedure to a filter
+  // that comes back empty. Procedures with no cases keep the general
+  // `/before-after` index — `FACIAL_PROCEDURE_TO_CATEGORY` only ever lists
+  // procedures with real pairs behind them.
+  const beforeAfterHref = getBeforeAfterHref(locale, FACIAL_PROCEDURE_TO_CATEGORY[procedure.slug] ?? null);
   const arrow = LOCALE_DIRECTION[locale] === "rtl" ? "→" : "←";
   const parentHref = localeHref(locale, "/services/facial-cosmetic-surgery");
 

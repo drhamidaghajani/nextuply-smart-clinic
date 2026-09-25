@@ -3,6 +3,7 @@ import Link from "next/link";
 import { TrackedContactLink } from "@/components/analytics/tracked-contact-link";
 import { ClinicLogo } from "@/components/clinic-logo";
 import { LanguageSwitcher } from "@/components/language-switcher";
+import { PwaInstallEntry } from "@/components/pwa-install/pwa-install-entry";
 import type { FooterDictionary } from "@/i18n/dictionary-types";
 import { localeHref } from "@/i18n/locale-href";
 import { LOCALE_DIRECTION, type Locale } from "@/i18n/locales";
@@ -193,6 +194,11 @@ export function SiteFooter({ dict, locale }: { dict: FooterDictionary; locale: L
                 </li>
               )
             )}
+            {/* Round 2026-09-25 (PWA install experience): persistent install
+                entry, appended after the existing guide links rather than
+                taking one of their slots. Self-hiding when this browser has
+                no working install path — see its own doc-comment. */}
+            <PwaInstallEntry />
           </ul>
         </div>
       </div>

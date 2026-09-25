@@ -3,6 +3,7 @@ import { Inter, Vazirmatn } from "next/font/google";
 import localFont from "next/font/local";
 import { notFound } from "next/navigation";
 import { SiteChrome } from "@/components/site-chrome";
+import { PWA_MANIFEST_PATH, pwaShortName } from "@/core/pwa-manifest";
 import { SITE_URL } from "@/core/site-config";
 import { getDictionary } from "@/i18n/get-dictionary";
 import {
@@ -43,31 +44,50 @@ export function generateStaticParams() {
   return SUPPORTED_LOCALES.map((locale) => ({ locale }));
 }
 
-export const metadata: Metadata = {
-  // Canonical production origin for relative URL-valued metadata in this
-  // route tree. Deliberately no layout-level canonical: a canonical here
-  // would be inherited by child pages and incorrectly point them all at
-  // the same URL. Route-level canonicals remain the page's responsibility.
-  metadataBase: new URL(SITE_URL),
-  title: "دکتر علیرضا صدیقی | جراحی زیبایی و فک و صورت",
-  description:
-    "کلینیک دکتر علیرضا صدیقی — متخصص جراحی فک و صورت و زیبایی، تهران و تبریز.",
-  // Round 2026-09-08 (minimal PWA support, per Hamid): `manifest` here is
-  // Next's own metadata field — it renders the `<link rel="manifest">`
-  // tag itself, no manual `<head>` edit needed. `appleWebApp` is the
-  // iOS-specific equivalent of `display: "standalone"` (Safari doesn't
-  // read the web manifest's `display` field for "Add to Home Screen";
-  // it needs these meta tags instead) — `capable: true` + `default`
-  // status bar is the safe, un-opinionated choice (a `black`/`black-
-  // translucent` bar can visually clash with content on some pages this
-  // project doesn't control, e.g. the assistant drawer).
-  manifest: "/manifest.webmanifest",
-  appleWebApp: {
-    capable: true,
-    statusBarStyle: "default",
-    title: "Dr. Sadighi",
-  },
-};
+export async function generateMetadata({
+  params,
+}: {
+  params: Promise<{ locale: string }>;
+}): Promise<Metadata> {
+  const { locale } = await params;
+  if (!isSupportedLocale(locale)) return {};
+
+  return {
+    // Canonical production origin for relative URL-valued metadata in this
+    // route tree. Deliberately no layout-level canonical: a canonical here
+    // would be inherited by child pages and incorrectly point them all at
+    // the same URL. Route-level canonicals remain the page's responsibility.
+    metadataBase: new URL(SITE_URL),
+    title: "دکتر علیرضا صدیقی | جراحی زیبایی و فک و صورت",
+    description:
+      "کلینیک دکتر علیرضا صدیقی — متخصص جراحی فک و صورت و زیبایی، تهران و تبریز.",
+    // Round 2026-09-08 (minimal PWA support, per Hamid): `manifest` is
+    // Next's own metadata field — it renders the `<link rel="manifest">`
+    // tag itself, no manual `<head>` edit needed.
+    //
+    // Round 2026-09-25 (locale-aware PWA launch, per Hamid's brief): now
+    // resolved per locale, so an install started from `/en` or `/ar`
+    // launches that locale instead of the Persian root. `fa` keeps the
+    // exact bare path it had before (served by the pre-existing static
+    // `public/manifest.webmanifest`); `en`/`ar` resolve to the generated
+    // `/[locale]/manifest.webmanifest` — see `core/pwa-manifest.ts`.
+    manifest: PWA_MANIFEST_PATH[locale],
+    // iOS-specific equivalent of `display: "standalone"` (Safari doesn't
+    // read the web manifest's `display` field for "Add to Home Screen";
+    // it needs these meta tags instead) — `capable: true` + `default`
+    // status bar is the safe, un-opinionated choice (a `black`/`black-
+    // translucent` bar can visually clash with content on some pages this
+    // project doesn't control, e.g. the assistant drawer). `title` is the
+    // home-screen label on iOS, so it now follows the same localized short
+    // name the manifest's `short_name` uses, instead of one hardcoded
+    // English string for every locale.
+    appleWebApp: {
+      capable: true,
+      statusBarStyle: "default",
+      title: pwaShortName(locale),
+    },
+  };
+}
 
 /**
  * Round 2026-09-08 (minimal PWA support) — `themeColor` moved out of
@@ -132,7 +152,12 @@ export default async function LocaleLayout({
             everything (cheap — just a context provider, no DOM), so
             nothing on the public side changes. */}
         <AssistantProvider locale={locale}>
-          <SiteChrome headerDict={dict.header} footerDict={dict.footer} locale={locale}>
+          <SiteChrome
+            headerDict={dict.header}
+            footerDict={dict.footer}
+            pwaInstallDict={dict.pwaInstall}
+            locale={locale}
+          >
             {children}
           </SiteChrome>
         </AssistantProvider>

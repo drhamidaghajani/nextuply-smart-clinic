@@ -25,10 +25,12 @@ At reconciliation:
 
 - Story-led homepage with Hero, Smart Clinic Assistant, featured services, doctor positioning, case gallery, treatment journey, patient stories, Knowledge Center, Video Hub, FAQ, and footer.
 - About, contact, service index, eight primary service families, and facial-cosmetic procedure detail routes.
-- Before/After gallery and care-instruction routes.
+- Before/After gallery and care-instruction routes. The gallery publishes **40 real cases across 5 categories** from `content/before-after-cases.ts` (the single source of truth): 24 from the 2026-08-25 legacy upload served out of `public/media/before-after/`, plus 16 imported on 2026-09-25 and served as metadata-free WebP from `public/images/before-after/<treatment>/case-NN/`. Cases are paired strictly by numeric filename suffix; the 2026-09-25 batch had no incomplete pair and added the temporal/face-lift category.
 - Knowledge Center with 40 migrated articles; translations exist only where content has been prepared.
 - Health Tourism overview, visa, hotel, and transfer routes in FA/EN/AR; these are real localized pages, linked in the footer and represented in the sitemap.
 - Persian public URLs are bare-root; English and Arabic remain prefixed.
+- **Install experience (added 2026-09-25, per Hamid's brief):** a premium install bottom sheet plus a persistent «نصب اپلیکیشن» entry in the footer's راهنما column, built on the existing manifest/service worker without replacing them. Auto-promotion is mobile-only, ~5s after hydration or shortly after the first meaningful interaction, suppressed for 7 days on dismissal, never on `/{locale}/internal/*`, and never shown when the app already runs standalone. The native prompt is only ever invoked from an explicit CTA press; iOS gets a three-step manual instruction view instead, and browsers with no working install path show no CTA at all. The `fa` copy is Hamid's exact wording; `en`/`ar` mirror it in each locale's register.
+- **Locale-aware install (added 2026-09-25, same round):** each locale links its own manifest — `fa` → `/manifest.webmanifest` (the static file), `en` → `/en/manifest.webmanifest`, `ar` → `/ar/manifest.webmanifest` — so an install launches the language it was started from. Manifest data lives in `src/core/pwa-manifest.ts`; the EN/AR manifests are prerendered per locale by `src/app/[locale]/manifest.webmanifest/route.ts`. `id`/`scope` remain `/` so it is still one app (no duplicate icons), `/fa/manifest.webmanifest` still 404s, and `[locale]/layout.tsx` now uses `generateMetadata` to resolve the per-locale `manifest` and iOS home-screen title.
 
 ### Smart Clinic Assistant
 
@@ -72,14 +74,14 @@ At reconciliation:
 6. **Verified assistant access:** server-side OTP/session validation gates costly AI and real submissions.
 7. **AI boundary:** production AI belongs behind the internal AI Gateway, with minimal structured PII in its payload.
 8. **Manual booking confirmation:** the assistant submits requests; it does not promise confirmed appointments or calendar ownership.
-9. **Conservative PWA:** offline shell/static assets only, with internal/data/action/media traffic excluded.
+9. **Conservative PWA:** offline shell/static assets only, with internal/data/action/media traffic excluded. Install promotion sits on top of that unchanged base, is patient-facing routes only, and is never automatic — see the install-experience note under Public experience.
 10. **Performance over framework purity:** native anchors remain on specific homepage links because Next navigation failed under video connection pressure.
 
 ## Verified production history
 
 Facts carried forward from prior production verification unless newer evidence contradicts them:
 
-- `manifest.webmanifest`, `sw.js`, `offline.html`, and 192/512/maskable icons are live; the service worker was activated and running.
+- `manifest.webmanifest` (Persian, static), the generated `/en`/`/ar` manifests, `sw.js`, `offline.html`, and 192/512/maskable icons are live; the service worker was activated and running.
 - Hero uses an optimized WebM (repository file 3,362,718 bytes) plus MP4 fallback (5,466,224 bytes); the ~20.5 MB original remains preserved as source. No hero poster is intended.
 - Video Hub uses optimized sources.
 - Heavy service/gallery assets were optimized.
@@ -155,7 +157,7 @@ Other high-impact recent history:
 ### UX, content, and media
 
 - Video Hub still reuses the hero video and contains provisional duration/content.
-- Some Before/After and Knowledge media remains large; `public/` is approximately 184 MB.
+- Some Before/After and Knowledge media remains large; `public/` is approximately 184 MB. The 2026-09-25 imported before/after set is optimized (4.97 MB of WebP) but the older `public/media/before-after/` PNGs are not, and the imported source photos are only 1254×1254 — below `CONTENT_INVENTORY.md` §8's 2000 px minimum, so higher-resolution re-exports from the clinic remain worthwhile.
 - Medical article content and translations require doctor review.
 - Remaining WordPress content needs migration, merge, reject, or redirect decisions.
 

@@ -16,6 +16,7 @@ import type {
   KnowledgePageDictionary,
   PatientJourneyDictionary,
   PatientStoriesDictionary,
+  PwaInstallDictionary,
   ServicesDictionary,
   ServicesPageDictionary,
   VideoHubDictionary,
@@ -103,6 +104,33 @@ export const footer = {
   copyrightSuffix: "الهندسة الرقمية بواسطة",
   linkedInAriaLabel: "Nextuply على لينكدإن",
 } satisfies FooterDictionary;
+
+/**
+ * PWA install experience (2026-09-25). Mirrors `fa.ts`'s `pwaInstall` slice,
+ * which is the approved source copy, in the same formal Modern Standard
+ * Arabic register as the rest of this file. Step titles keep the native iOS
+ * menu labels in parentheses alongside their Arabic names, so the wording
+ * matches what the patient actually sees on screen.
+ */
+export const pwaInstall = {
+  promptTitle: "وصول أسرع إلى العيادة",
+  promptBody:
+    "أضف عيادة الدكتور صديقي إلى الشاشة الرئيسية لهاتفك لتكون الخدمات والمعلومات والاستشارة على بُعد لمسة واحدة.",
+  installCta: "تثبيت التطبيق",
+  notNowCta: "ليس الآن",
+  closeLabel: "إغلاق",
+  instructionsTitle: "إضافة إلى الشاشة الرئيسية",
+  instructionsIntro:
+    "على أجهزة iPhone وiPad، تُضاف العيادة إلى الشاشة الرئيسية من خلال قائمة المشاركة في متصفح Safari.",
+  instructionsSteps: [
+    { title: "مشاركة (Share)", hint: "اضغط على أيقونة المشاركة في الشريط السفلي لمتصفح Safari." },
+    { title: "إضافة إلى الشاشة الرئيسية (Add to Home Screen)", hint: "اخترها من القائمة التي تظهر." },
+    { title: "إضافة (Add)", hint: "اضغط على «إضافة» في أعلى الشاشة للتأكيد." },
+  ],
+  instructionsNote:
+    "بعد إتمام هذه الخطوات الثلاث تظهر أيقونة العيادة على الشاشة الرئيسية لهاتفك، وتُفتح من هناك.",
+  instructionsDoneCta: "فهمت",
+} satisfies PwaInstallDictionary;
 
 export const hero = {
   title: "هندسة الجمال، بدقة جرّاح ونظرة فنان",
@@ -1701,6 +1729,7 @@ const careInstructions = {
 export const ar = {
   header,
   footer,
+  pwaInstall,
   hero,
   aiConcierge,
   services,

@@ -1,7 +1,7 @@
 import Image from "next/image";
 
 import { TrackedContactLink } from "@/components/analytics/tracked-contact-link";
-import { getBeforeAfterCasesByCategory, type BeforeAfterCategory } from "@/content/before-after-cases";
+import { getPreviewCase, type BeforeAfterCategory } from "@/content/before-after-cases";
 import { getBeforeAfterHref } from "@/content/services";
 import type { PatientStoriesDictionary } from "@/i18n/dictionary-types";
 import { LOCALE_DIRECTION, type Locale } from "@/i18n/locales";
@@ -30,6 +30,17 @@ import { Reveal } from "@/components/motion/reveal";
  *   category-level description with its own "results vary" note already
  *   built in, a generic sequential "Patient N" label, never a fabricated
  *   name or narrative).
+ *
+ * Round 2026-09-25 (real before/after case import): each pick now goes
+ * through `getPreviewCase(category)` rather than indexing the category
+ * array directly, so a case the clinic flags `featured` leads its
+ * category and otherwise the most recently published case does. Because
+ * the newly imported batch is ordered first per category, this section
+ * now shows the newest real results — the same 3 cards, 3 categories,
+ * same layout; only which real case fills each card changed. The new
+ * temporal/face-lift category is deliberately NOT added as a fourth card:
+ * that would change this approved section's shape, and is a curation call
+ * for Hamid rather than something to decide here.
  * - Three real CTAs: the full before/after gallery, the clinic's actual
  *   Instagram profile (same handle already used in `site-footer.tsx`/
  *   `contact/page.tsx` — no new handle invented, and no Instagram API
@@ -92,7 +103,7 @@ export function PatientStoriesSection({
   locale: Locale;
   instagramHandle: string;
 }) {
-  const cases = PREVIEW_CATEGORIES.map((category) => getBeforeAfterCasesByCategory(category)[0]).filter((item) => item !== undefined);
+  const cases = PREVIEW_CATEGORIES.map((category) => getPreviewCase(category)).filter((item) => item !== undefined);
   const instagramHref = `https://instagram.com/${instagramHandle.replace("@", "")}`;
 
   return (

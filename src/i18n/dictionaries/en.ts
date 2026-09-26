@@ -130,6 +130,7 @@ export const pwaInstall = {
   instructionsNote:
     "Once these three steps are done, the clinic icon appears on your home screen and opens from there.",
   instructionsDoneCta: "Got it",
+  unavailableNote: "If no install window appeared, choose \u201cInstall app\u201d or \u201cAdd to Home screen\u201d from your browser menu.",
 } satisfies PwaInstallDictionary;
 
 export const hero = {

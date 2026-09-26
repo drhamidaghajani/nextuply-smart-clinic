@@ -196,8 +196,10 @@ export function SiteFooter({ dict, locale }: { dict: FooterDictionary; locale: L
             )}
             {/* Round 2026-09-25 (PWA install experience): persistent install
                 entry, appended after the existing guide links rather than
-                taking one of their slots. Self-hiding when this browser has
-                no working install path — see its own doc-comment. */}
+                taking one of their slots. Round 2026-09-26 (Phase 1): it is
+                no longer conditional on a native install event being
+                available, so it is visible on every public page in a normal
+                browser tab — see its own doc-comment. */}
             <PwaInstallEntry />
           </ul>
         </div>

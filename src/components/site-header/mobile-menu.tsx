@@ -4,6 +4,7 @@ import { AnimatePresence, motion, useReducedMotion } from "framer-motion";
 import { useEffect } from "react";
 
 import { LanguageSwitcher } from "@/components/language-switcher";
+import { PwaInstallEntry } from "@/components/pwa-install/pwa-install-entry";
 import type { HeaderDictionary } from "@/i18n/dictionary-types";
 import type { Locale } from "@/i18n/locales";
 import { resolveNavHref } from "@/i18n/resolve-nav-href";
@@ -98,6 +99,16 @@ export function MobileMenu({
 
           <div className="flex flex-col items-center gap-5 px-6 pb-10">
             <LanguageSwitcher tone="light" />
+            {/* Round 2026-09-26 (Phase 1 — visible install entry): the
+                secondary-action area, deliberately beside the language
+                switcher and consultation CTA and never among the primary
+                `navItems` above. `onAfterOpen` closes this overlay as the
+                install sheet opens, so the two are never stacked — the
+                sheet renders `null` while it is closed, and both sit at
+                `z-50`, so closing first also decides which one owns the
+                stacking context. Self-hiding only when the app is already
+                running installed (see its own doc-comment). */}
+            <PwaInstallEntry placement="mobileMenu" onAfterOpen={onClose} />
             <AssistantTriggerButton
               intent="consultation_booking"
               source="header"

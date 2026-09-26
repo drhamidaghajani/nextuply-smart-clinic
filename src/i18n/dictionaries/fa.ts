@@ -1108,6 +1108,9 @@ export const fa = {
     ],
     instructionsNote: "پس از این سه مرحله، آیکون کلینیک روی صفحه اصلی گوشی شما اضافه می‌شود و از همان‌جا باز می‌شود.",
     instructionsDoneCta: "متوجه شدم",
+    // Round 40 (per Hamid): the long per-browser tutorial is gone. One quiet
+    // line under the CTA, for the rare browser that shows no install dialog.
+    unavailableNote: "اگر پنجره نصب باز نشد، از منوی مرورگر گزینه «نصب اپلیکیشن» یا «افزودن به صفحه اصلی» را انتخاب کنید.",
   },
   // Round 2026-07-12 (per Hamid — contract-driven Smart Clinic Assistant
   // rebuild): supersedes the 2026-07-09 `assistantModes` key (its

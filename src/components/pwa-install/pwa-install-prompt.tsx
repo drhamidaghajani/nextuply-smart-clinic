@@ -5,12 +5,27 @@ import { useEffect, useId, useRef, useState } from "react";
 import type { PwaInstallDictionary } from "@/i18n/dictionary-types";
 import { LOCALE_DIRECTION, type Locale } from "@/i18n/locales";
 
-import { isDismissedWithinWindow, isMobileDevice, usePwaInstall } from "./pwa-install-provider";
+import { isDismissedWithinWindow, isMobileDevice, isRunningStandalone, usePwaInstall } from "./pwa-install-provider";
 
 /**
  * Round 2026-09-25 (PWA install experience, per Hamid's brief). The one
  * install sheet, mounted once from `SiteChrome`'s public branch — so it
  * exists on patient-facing routes only and never on `/{locale}/internal/*`.
+ *
+ * Round 40 (2026-09-26, per Hamid): the per-browser "manual instructions" list
+ * is REMOVED. It answered a question nobody was asking — a desktop visitor
+ * does not come looking for an install inside the browser, and a long
+ * Chrome/Safari/Firefox/Android/iOS tutorial read as noise. Two views remain:
+ * the offer (`intro`), whose CTA installs on the patient's device, and the
+ * genuinely-required iOS Add-to-Home-Screen steps. Entries no longer route
+ * anywhere else, so pressing any entry here shows this same sheet.
+ *
+ * Three views, all reached by an explicit press: `intro` (the offer) and
+ * `ios-steps` (Safari's real Add-to-Home-Screen taps) — added 2026-09-26 — plus
+ * the auto-promotion that opens `intro` on its own. The popup *policy* below is
+ * deliberately unchanged in this round; only the persistent entries' visibility
+ * and their press target were changed, and popup behavior remains a separate,
+ * later decision.
  *
  * TIMING (the brief's "after ~5 seconds OR after the first meaningful user
  * interaction"):
@@ -48,8 +63,7 @@ const FOCUSABLE_SELECTOR =
   'a[href], button:not([disabled]), input:not([disabled]), select:not([disabled]), textarea:not([disabled]), [tabindex]:not([tabindex="-1"])';
 
 export function PwaInstallPrompt() {
-  const { dict, locale, path, isInstalled, isSheetOpen, view, openSheet, requestInstall, dismiss } =
-    usePwaInstall();
+  const { dict, locale, isSheetOpen, view, openSheet, requestInstall, dismiss } = usePwaInstall();
 
   const titleId = useId();
   const sheetRef = useRef<HTMLDivElement | null>(null);
@@ -61,7 +75,11 @@ export function PwaInstallPrompt() {
 
   /* Auto-promotion — see the timing note above. */
   useEffect(() => {
-    if (!path || isInstalled || isSheetOpen) return;
+    if (isSheetOpen) return;
+    // Already running as the installed app → never promote installation.
+    // Read from the runtime directly rather than from a stored/derived flag,
+    // matching the entry's own visibility rule.
+    if (isRunningStandalone()) return;
     if (isDismissedWithinWindow()) return;
     if (!isMobileDevice()) return;
 
@@ -118,7 +136,7 @@ export function PwaInstallPrompt() {
       stopListeningForEngagement();
       document.removeEventListener("visibilitychange", handleVisibility);
     };
-  }, [path, isInstalled, isSheetOpen, openSheet]);
+  }, [isSheetOpen, openSheet]);
 
   /* Mount/visibility two-phase so BOTH the entrance and the exit actually
      transition — a single `isSheetOpen` flag would only ever animate in. */
@@ -278,6 +296,12 @@ export function PwaInstallPrompt() {
                 {dict.notNowCta}
               </button>
             </div>
+            {/* Round 40 (per Hamid): one quiet line replacing the removed
+                per-browser tutorial. It is always present rather than
+                appearing only on failure — the sheet cannot know whether the
+                browser will show its own dialog before it is asked, so
+                guessing would make it flash in and out. */}
+            <p className="mt-4 text-center text-xs leading-6 text-charcoal/50">{dict.unavailableNote}</p>
           </>
         )}
       </div>

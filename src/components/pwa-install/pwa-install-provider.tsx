@@ -1,6 +1,6 @@
 "use client";
 
-import { createContext, useCallback, useContext, useEffect, useMemo, useRef, useState } from "react";
+import { createContext, useCallback, useContext, useEffect, useMemo, useState } from "react";
 
 import type { PwaInstallDictionary } from "@/i18n/dictionary-types";
 import type { Locale } from "@/i18n/locales";
@@ -19,27 +19,48 @@ import type { Locale } from "@/i18n/locales";
  * is new here is only the *promotion/consent* layer that sits on top of
  * them.
  *
- * Three install paths exist, and only two of them are real:
- * - `"native"` — the browser gave us a `beforeinstallprompt` event we are
- *   holding (Android/Chromium, and desktop Chromium/Edge). We can install
- *   for real, but only after an explicit CTA press.
+ * Three install paths exist:
+ * - `"native"` — the browser supports/has offered a native install
+ *   (Android/Chromium, and desktop Chromium/Edge). The prompt is still only
+ *   ever replayed from an explicit CTA press.
  * - `"ios"` — iOS/iPadOS Safari exposes no programmatic install at all, so
  *   the "path" here is *instructions* (Share → Add to Home Screen → Add).
  *   Nothing is ever claimed to be automatic.
- * - `null` — no working path (unsupported browser, an already-consumed
- *   prompt, or the app is already installed). No CTA is rendered at all in
- *   this state: a button that can't install is worse than no button.
+ * - `null` — the app is genuinely already running as an installed app.
+ *
+ * Round 2026-09-26 (Phase 1 — visible install entry). Two corrections to the
+ * original 2026-09-25 model, both about *visibility*:
+ *
+ * 1. `"native"` is no longer conditional on a live `beforeinstallprompt`.
+ *    Previously an absent event produced `null`, which made the footer entry
+ *    invisible — and the event is *always* absent under `npm run dev`, because
+ *    `ServiceWorkerRegister` is production-only and Chromium requires a service
+ *    worker with a fetch handler before it will propose installs. Persistent
+ *    discovery must not depend on a transient, browser-specific event, so the
+ *    entry's visibility is now driven by state that is knowable on every
+ *    browser. A held native prompt survives as an *enhancement* that changes
+ *    what the CTA does at press time, never whether the entry exists.
+ * 2. A stored "installed" marker no longer hides anything. Standalone/installed
+ *    detection is runtime-only, so a stale key — or an install on a different
+ *    profile — can never permanently remove the entry from a normal tab.
+ *
+ * 3. VISIBILITY AND ACTION ARE SEPARATED (Round 39, later the same day). This
+ *    provider holds only ACTION state. It cannot unmount the entry: nothing
+ *    it exposes is consulted for visibility, and it no longer publishes an
+ *    `isInstalled` flag at all — that flag existed purely to remove the
+ *    entry. Hiding an installed app's entry is now `display-mode` CSS in
+ *    `globals.css`, resolved by the browser at paint time, which is why
+ *    `server button present → hydrated button gone` can no longer happen.
  *
  * Everything is fail-silent and local: no network, no dependency, no
  * analytics, and no interaction with the Smart Clinic Assistant or booking.
  */
 
 /**
- * These two keys are the only things this feature ever writes — both purely
- * local UI preferences, never patient data.
+ * The single key this feature writes: a purely local UI preference (popup
+ * suppression), never patient data.
  */
 const DISMISSED_UNTIL_STORAGE_KEY = "sadighi.pwa-install.dismissed-until";
-const INSTALLED_STORAGE_KEY = "sadighi.pwa-install.installed";
 const DISMISSAL_WINDOW_MS = 7 * 24 * 60 * 60 * 1000;
 
 /**
@@ -52,7 +73,6 @@ export interface BeforeInstallPromptEvent extends Event {
   userChoice: Promise<{ outcome: "accepted" | "dismissed" }>;
 }
 
-export type PwaInstallPath = "native" | "ios";
 export type PwaInstallView = "intro" | "ios-steps";
 
 /**
@@ -72,6 +92,15 @@ let earlyInstallPrompt: BeforeInstallPromptEvent | null = null;
 
 if (typeof window !== "undefined") {
   window.addEventListener("beforeinstallprompt", (event) => {
+    // Suppressing the browser's own mini-infobar is what makes the custom
+    // sheet the only place installation is offered — and, per the brief, the
+    // held event is only ever replayed from an explicit CTA press.
+    //
+    // This module-level slot is the single source of truth for "a native
+    // prompt is available right now". It is read at press time rather than
+    // mirrored into React state, precisely so that visibility never depends
+    // on it; and it is cleared the moment it is consumed, so a spent event
+    // can never be replayed.
     event.preventDefault();
     earlyInstallPrompt = event as BeforeInstallPromptEvent;
   });
@@ -113,28 +142,39 @@ function rememberDismissal(): void {
   writePreference(DISMISSED_UNTIL_STORAGE_KEY, String(Date.now() + DISMISSAL_WINDOW_MS));
 }
 
-function rememberInstalled(): void {
-  writePreference(INSTALLED_STORAGE_KEY, "1");
-}
-
 /* ------------------------------------------------------------------ */
 /* Environment detection                                               */
 /* ------------------------------------------------------------------ */
 
 /**
- * Already running as an installed app → never promote installation again.
- * `display-mode` covers the standard case; `navigator.standalone` is iOS
- * Safari's own pre-standard flag (Safari does not implement `display-mode:
- * standalone` reliably on older versions); the `android-app://` referrer is
- * how a Chrome Trusted Web Activity reports itself.
+ * Already running as an installed app → the entry is hidden (by the
+ * `display-mode` CSS guard, never by removing it from the tree).
+ *
+ * Round 39 (2026-09-26): only `(display-mode: standalone)` is consulted.
+ * `fullscreen` and `minimal-ui` were both REMOVED, because for this app they
+ * can only ever be false positives:
+ *
+ * - The manifest declares `display: "standalone"`, so a real installed launch
+ *   reports `standalone` — never `fullscreen`.
+ * - A normal browser window can still match either: Chromium reports
+ *   `minimal-ui` in some managed/app-style window states, and `fullscreen`
+ *   matches any fullscreen mode (F11, fullscreen video, and — verified —
+ *   Chrome's own device-emulation mode).
+ *
+ * A false positive here is not cosmetic: it suppressed the install popup AND,
+ * via the old `data-standalone` attribute, removed the entries for the whole
+ * session. Both are why "nothing shows on mobile" was reproducible.
+ *
+ * `document.referrer` starting with `android-app://` is how a Chrome Trusted
+ * Web Activity reports itself; `navigator.standalone` is iOS Safari's own
+ * pre-standard flag, which it needs because Safari does not implement
+ * `display-mode: standalone` reliably on older versions.
  */
 export function isRunningStandalone(): boolean {
   if (typeof window === "undefined") return false;
   if ((navigator as Navigator & { standalone?: boolean }).standalone === true) return true;
   if (document.referrer.startsWith("android-app://")) return true;
-  return ["(display-mode: standalone)", "(display-mode: fullscreen)", "(display-mode: minimal-ui)"].some(
-    (query) => window.matchMedia(query).matches,
-  );
+  return window.matchMedia("(display-mode: standalone)").matches;
 }
 
 /**
@@ -163,15 +203,18 @@ export function isMobileDevice(): boolean {
 interface PwaInstallContextValue {
   dict: PwaInstallDictionary;
   locale: Locale;
-  /** The working install path right now, or `null` when there isn't one. */
-  path: PwaInstallPath | null;
-  isInstalled: boolean;
   isSheetOpen: boolean;
   view: PwaInstallView;
-  /** Opens the sheet directly in `view` — the caller decides, because the
-   * footer entry (explicit intent) and the auto-promotion differ on iOS. */
+  /** Opens the sheet directly in `view` — the caller decides, because an
+   * explicit entry point (explicit intent) and the auto-promotion differ. */
   openSheet: (view: PwaInstallView) => void;
-  /** The one install action: native prompt on Chromium, instructions on iOS. */
+  /**
+   * The one install action. On a real native prompt it installs immediately
+   * on the patient's device; on iOS (which exposes no programmatic install)
+   * it reveals the three Add-to-Home-Screen steps. If a browser offers
+   * neither — no prompt held and not iOS — it says so in one short line
+   * rather than inventing a per-browser tutorial.
+   */
   requestInstall: () => void;
   /** Closes the sheet and suppresses auto-promotion for 7 days. */
   dismiss: () => void;
@@ -188,57 +231,56 @@ export function PwaInstallProvider({
   locale: Locale;
   children: React.ReactNode;
 }) {
-  const [path, setPath] = useState<PwaInstallPath | null>(null);
-  const [isInstalled, setIsInstalled] = useState(false);
   const [isSheetOpen, setIsSheetOpen] = useState(false);
   const [view, setView] = useState<PwaInstallView>("intro");
-  const deferredPromptRef = useRef<BeforeInstallPromptEvent | null>(null);
 
   useEffect(() => {
-    if (isRunningStandalone() || readPreference(INSTALLED_STORAGE_KEY) === "1") {
-      setIsInstalled(true);
-      return;
-    }
-
-    if (isIosDevice()) {
-      setPath("ios");
-    } else if (earlyInstallPrompt) {
-      // Fired before hydration — see the module-scope note above.
-      deferredPromptRef.current = earlyInstallPrompt;
-      setPath("native");
-    }
-
-    const handleBeforeInstallPrompt = (event: Event) => {
-      // Suppressing the browser's own mini-infobar is what makes the custom
-      // sheet the only place installation is offered — and, per the brief,
-      // the held event is only ever replayed from an explicit CTA press.
-      event.preventDefault();
-      deferredPromptRef.current = event as BeforeInstallPromptEvent;
-      setPath("native");
+    // Standalone hiding is owned by CSS (`display-mode` in `globals.css`),
+    // which the browser resolves live and which the server and client agree
+    // on. The ONE case CSS cannot cover is iOS Safari, which historically
+    // does not resolve `display-mode` — so the attribute below is written
+    // ONLY for `navigator.standalone === true`.
+    //
+    // Round 39 (2026-09-26): it deliberately does NOT mirror the
+    // `display-mode` media queries. Doing so made a JS effect the authority
+    // for hiding on every platform, and an effect that runs once can latch a
+    // wrong reading for the whole session — the exact class of bug that kept
+    // removing this entry. Now no desktop/mobile browser can reach this path
+    // at all; only a genuine installed iOS app can, where it is correct.
+    const markIosStandalone = () => {
+      if (typeof navigator !== "undefined" && (navigator as Navigator & { standalone?: boolean }).standalone === true) {
+        document.body.dataset.standalone = "true";
+      }
     };
+    markIosStandalone();
 
     const handleInstalled = () => {
-      deferredPromptRef.current = null;
-      setPath(null);
-      rememberInstalled();
-      setIsInstalled(true);
+      earlyInstallPrompt = null;
       setIsSheetOpen(false);
     };
 
-    window.addEventListener("beforeinstallprompt", handleBeforeInstallPrompt);
+    const handleVisibility = () => {
+      // Re-check when the tab becomes visible again, so a launch that changes
+      // display mode (an install completing, a resume into the installed app)
+      // is picked up instead of leaving a stale reading in place.
+      if (document.visibilityState === "visible") markIosStandalone();
+    };
+
     window.addEventListener("appinstalled", handleInstalled);
+    document.addEventListener("visibilitychange", handleVisibility);
 
     return () => {
-      window.removeEventListener("beforeinstallprompt", handleBeforeInstallPrompt);
       window.removeEventListener("appinstalled", handleInstalled);
+      document.removeEventListener("visibilitychange", handleVisibility);
+      delete document.body.dataset.standalone;
     };
   }, []);
 
   /**
    * Opening the sheet is explicit about which view to show: an explicit
-   * entry point on iOS jumps straight to the instructions (that IS the
-   * install action there), while the auto-promotion opens the intro and
-   * lets the CTA lead into the steps.
+   * entry point jumps straight to the iOS instructions when that IS the
+   * install action there, while the auto-promotion opens the intro and lets
+   * the CTA lead there.
    */
   const openSheet = useCallback((nextView: PwaInstallView) => {
     setView(nextView);
@@ -251,20 +293,23 @@ export function PwaInstallProvider({
   }, []);
 
   const requestInstall = useCallback(() => {
-    const deferred = deferredPromptRef.current;
+    // The module-level slot is read at press time (not mirrored into state),
+    // and cleared before awaiting: the event is single-use, so this also
+    // stops a second press or a double-tap from calling `prompt()` twice.
+    const deferred = earlyInstallPrompt;
 
     if (!deferred) {
-      // iOS has no programmatic install — show the manual steps instead.
-      if (isIosDevice()) {
-        setView("ios-steps");
-        setIsSheetOpen(true);
-      }
+      // No native prompt held. iOS exposes no programmatic install at all, so
+      // its three real steps are the honest answer; anything else is told
+      // plainly that this browser installs from its own menu — rather than a
+      // long per-browser tutorial, which is noise on a desktop and was
+      // explicitly rejected by the owner.
+      setView(isIosDevice() ? "ios-steps" : "intro");
+      setIsSheetOpen(true);
       return;
     }
 
-    // The held event is single-use: clear it before awaiting so a second
-    // press (or a double-tap) can't call `prompt()` twice.
-    deferredPromptRef.current = null;
+    earlyInstallPrompt = null;
 
     void (async () => {
       try {
@@ -272,25 +317,24 @@ export function PwaInstallProvider({
         const choice = await deferred.userChoice;
 
         if (choice.outcome === "accepted") {
-          rememberInstalled();
-          setIsInstalled(true);
+          // The CSS `display-mode` guard hides the entry once the installed
+          // app is actually running; nothing here removes it from the tree.
           setIsSheetOpen(false);
           return;
         }
 
         // The patient declined the browser's own dialog — treated exactly
-        // like a decline here: nothing is asked again for 7 days. The
-        // footer entry disappears with the `path` reset below, which is
-        // honest (the browser is no longer offering an install) rather
-        // than a CTA that would do nothing.
+        // like a decline here: nothing is asked again for 7 days. Only the
+        // automatic promotion is suppressed; the entry itself stays visible,
+        // because installing is still possible on this browser.
         rememberDismissal();
         setIsSheetOpen(false);
       } catch {
-        // `prompt()` can reject (event already consumed, user gesture
-        // lost). Nothing to recover — fall back to "not installable now".
-        setIsSheetOpen(false);
-      } finally {
-        setPath(null);
+        // `prompt()` can reject (event already consumed, user gesture lost).
+        // Keep the sheet open on the intro so the patient still sees the
+        // offer instead of a press that appears to do nothing.
+        setView("intro");
+        setIsSheetOpen(true);
       }
     })();
   }, []);
@@ -299,15 +343,13 @@ export function PwaInstallProvider({
     () => ({
       dict,
       locale,
-      path: isInstalled ? null : path,
-      isInstalled,
       isSheetOpen,
       view,
       openSheet,
       requestInstall,
       dismiss,
     }),
-    [dict, locale, path, isInstalled, isSheetOpen, view, openSheet, requestInstall, dismiss],
+    [dict, locale, isSheetOpen, view, openSheet, requestInstall, dismiss],
   );
 
   return <PwaInstallContext.Provider value={value}>{children}</PwaInstallContext.Provider>;

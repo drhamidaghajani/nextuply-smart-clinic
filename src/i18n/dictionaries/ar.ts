@@ -130,6 +130,7 @@ export const pwaInstall = {
   instructionsNote:
     "بعد إتمام هذه الخطوات الثلاث تظهر أيقونة العيادة على الشاشة الرئيسية لهاتفك، وتُفتح من هناك.",
   instructionsDoneCta: "فهمت",
+  unavailableNote: "إذا لم تظهر نافذة التثبيت، فاختر «تثبيت التطبيق» أو «إضافة إلى الشاشة الرئيسية» من قائمة المتصفح.",
 } satisfies PwaInstallDictionary;
 
 export const hero = {

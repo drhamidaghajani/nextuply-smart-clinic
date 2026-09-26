@@ -72,6 +72,15 @@ export interface PwaInstallDictionary {
   instructionsNote: string;
   /** Label of the "I understand" button that closes the instructions view. */
   instructionsDoneCta: string;
+  /**
+   * Round 40 (2026-09-26, per Hamid). Replaces the previous per-browser
+   * `manualTitle`/`manualIntro`/`manualSteps`/`manualNote` block, which listed
+   * Chrome/Edge, Safari, Firefox, Android and iOS instructions. He rejected
+   * that list outright: a desktop visitor does not go looking for an install
+   * inside a browser, so it is reduced to ONE quiet line shown under the
+   * sheet's CTA, pointing at the browser's own menu without enumerating it.
+   */
+  unavailableNote: string;
 }
 
 export interface HeroDictionary {

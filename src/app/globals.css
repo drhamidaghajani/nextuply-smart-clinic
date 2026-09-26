@@ -375,6 +375,70 @@ html:has(.smooth-anchor-scroll) {
   }
 }
 
+/* Round 39 (2026-09-26): persistent PWA install discovery.
+
+   The install entry's VISIBILITY is owned here, in CSS, and not by any React
+   state. This matters because visibility used to be a client-state decision
+   that could only be evaluated after hydration, which made the entry's
+   presence a function of effect timing: it existed in the server HTML and
+   could then be removed by the first client render.
+
+   A `display-mode` guard has no such window: the server-rendered HTML and the
+   first client render agree unconditionally, and the browser itself — the only
+   thing that actually knows whether the app is running installed — resolves
+   the media query at paint time, with no effect and no hydration step. Normal
+   document flow is therefore the DEFAULT and needs no rule at all; only the
+   "already installed" states hide the entry.
+
+   `display-mode: browser` is deliberately NOT used as the visible case: its
+   support is uneven, and a browser that failed to match it would silently hide
+   the entry — the exact failure this rule exists to prevent.
+
+   iOS Safari historically does not resolve `display-mode` here, so
+   `body[data-standalone="true"]` is the equivalent hook for it. That attribute
+   is written by the provider's effect, which means it can only ever *remove*
+   the entry on a runtime-confirmed standalone launch — never on a normal tab,
+   and never by removing it from the server HTML or the first render.
+
+   Both rules are class/attribute-scoped and global by design: they must apply
+   wherever the entry is mounted (footer, mobile menu, or any future surface),
+   so no Tailwind display utility on the element can accidentally outrank them.
+
+   `minimal-ui` and `fullscreen` are deliberately NOT in this list, matching
+   `isRunningStandalone()`: this app's manifest declares
+   `display: "standalone"`, so a genuine install reports `standalone` — while
+   a normal browser window can still match `fullscreen` (F11, fullscreen
+   video) or `minimal-ui` (Chromium's device-emulation and some managed
+   window states). Those false positives are what previously hid the entry on
+   a plain mobile browser. */
+@media (display-mode: standalone) {
+  .pwa-install-entry {
+    display: none !important;
+  }
+}
+
+body[data-standalone="true"] .pwa-install-entry {
+  display: none !important;
+}
+
+/* Round 40 (2026-09-26, per Hamid): the FOOTER entry is a mobile affordance
+   only. A desktop visitor does not go looking for an app install inside a
+   desktop page, so the footer copy is hidden on fine-pointer/hover devices
+   while the mobile menu's entry (which cannot be reached on desktop anyway)
+   is left alone.
+
+   This is a media query rather than a JS device check on purpose: a
+   `useEffect`-driven device test would only be knowable after hydration, so
+   the footer link would render and then vanish — reintroducing exactly the
+   hydration flip that caused the earlier "server button present, live DOM
+   empty" bug. The browser resolves this before first paint, and the server
+   HTML and the first client render agree on it. */
+@media (hover: hover) and (pointer: fine) {
+  .pwa-install-entry--footer {
+    display: none !important;
+  }
+}
+
 /* Respect prefers-reduced-motion globally — DESIGN_SYSTEM.md §5 */
 @media (prefers-reduced-motion: reduce) {
   *,

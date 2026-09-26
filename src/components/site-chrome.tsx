@@ -119,9 +119,12 @@ export function SiteChrome({
           structurally absent from `/{locale}/internal/*` (which returns
           early above), cannot be reached by any internal page, and add
           nothing to the internal bundle path. `PwaInstallPrompt` renders
-          `null` unless there is a real install path, and its own
-          auto-promotion is mobile-only and 7-day-suppressed once
-          dismissed. Nothing in the Smart Clinic Assistant's tree is
+          `null` unless there is an install path, and its own auto-promotion
+          is mobile-only and 7-day-suppressed once dismissed. Round 39
+          (2026-09-26): the provider now owns ACTION only — the footer and
+          mobile-menu entries are always rendered and are hidden, when the
+          app is genuinely installed, purely by the `display-mode` rule in
+          `globals.css`. Nothing in the Smart Clinic Assistant's tree is
           touched by this. */}
       <GoogleAnalytics locale={locale} />
       <SiteHeader dict={headerDict} locale={locale} />
